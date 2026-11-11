@@ -1,0 +1,8 @@
+# Keep LF line endings on every platform so Prettier and EAS (Linux/macOS builders) agree with Windows checkouts.
+* text=auto eol=lf
+
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.ttf binary
+*.otf binary
