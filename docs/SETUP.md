@@ -184,6 +184,9 @@ Mit Mitgliedschaft:
    eas build --platform ios --profile development
    ```
 
+   Fragt EAS, ob die App nur Standard-Verschlüsselung nutzt („standard/exempt encryption“), mit
+   **Y** antworten – PUSH verwendet nur die übliche HTTPS-Verbindung.
+
 3. Den QR-Code am Ende mit dem iPhone scannen und die App installieren.
 4. Auf dem iPhone den Entwicklermodus einschalten: Einstellungen → Datenschutz & Sicherheit →
    Entwicklermodus → an (das iPhone startet neu).
