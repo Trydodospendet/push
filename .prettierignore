@@ -1,0 +1,12 @@
+node_modules/
+.expo/
+dist/
+android/
+ios/
+package-lock.json
+expo-env.d.ts
+# The specification is maintained by the project owner and stays as written.
+CLAUDE.md
+# Generated and managed by the Supabase CLI.
+supabase/.branches/
+supabase/.temp/
