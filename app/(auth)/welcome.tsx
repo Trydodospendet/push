@@ -1,3 +1,4 @@
+import { useRouter } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 
 import { Button, Screen, Text } from '@/components';
@@ -6,8 +7,7 @@ import { de } from '@/i18n/de';
 import { spacing } from '@/theme';
 
 export default function WelcomeScreen() {
-  // Navigation to the sign-in screen is wired up in Phase 1 (account).
-  const handleStart = () => undefined;
+  const router = useRouter();
 
   return (
     <Screen contentStyle={styles.content}>
@@ -19,7 +19,7 @@ export default function WelcomeScreen() {
           {de.welcome.claim}
         </Text>
       </View>
-      <Button label={de.welcome.start} onPress={handleStart} />
+      <Button label={de.welcome.start} onPress={() => router.push('/sign-in')} />
     </Screen>
   );
 }
