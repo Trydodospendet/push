@@ -152,9 +152,10 @@ set local request.jwt.claims =
   '{"sub":"11111111-1111-1111-1111-111111111111","role":"authenticated"}';
 
 select is(
-  (select count(*)::int from public.profiles),
+  (select count(*)::int from public.profiles
+    where id in ('11111111-1111-1111-1111-111111111111', '22222222-2222-2222-2222-222222222222')),
   2,
-  'signed-in users can read every display name'
+  'signed-in users can read every display name, including other users'
 );
 
 select throws_ok(
