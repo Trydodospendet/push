@@ -1,7 +1,7 @@
 # PUSH – Einrichtung Schritt für Schritt
 
 Diese Anleitung ist für Windows mit PowerShell geschrieben. Alle Befehle kannst du kopieren und im
-Projektordner ausführen. Stand: **Phase 2 (Challenges & Wallet)**.
+Projektordner ausführen. Stand: **Phase 3 (Health-Daten)**.
 
 Projektordner öffnen:
 
@@ -269,8 +269,17 @@ Bisher nötige Builds: einer in Phase 0, ein neuer in Phase 1 (wegen `expo-secur
 Anmeldung sicher auf dem Handy speichert). Ein älterer Build stürzt beim Öffnen von Phase-1-Code ab.
 Phase 2 braucht **keinen** neuen Build (`@expo/vector-icons` ist reines JavaScript).
 
-Für normale Code-Änderungen reicht `npx expo start`. Der kostenlose EAS-Tarif enthält derzeit bis zu
-15 Android- und 15 iOS-Builds (Stand November 2026, aktuelle Zahlen: <https://expo.dev/pricing>).
+Für normale Code-Änderungen reicht `npx expo start`. Seit Phase 3 enthält die App native HealthKit-
+und Health-Connect-Module. Nach diesen Konfigurationsänderungen brauchst du einen neuen Android-
+Development-Build. Starte ihn im Projektordner mit:
+
+```powershell
+eas build --platform android --profile development
+```
+
+Der Build verwendet das bestehende Expo-Projekt und Konto. Expo Go kann die nativen Health-Module
+nicht laden. Der kostenlose EAS-Tarif enthält laut Expo derzeit bis zu 15 Android- und 15 iOS-Builds
+(Stand November 2026, aktuelle Zahlen: <https://expo.dev/pricing>).
 
 ---
 

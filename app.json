@@ -13,6 +13,11 @@
     },
     "android": {
       "package": "com.pushchallenge.app",
+      "permissions": [
+        "android.permission.health.READ_EXERCISE",
+        "android.permission.health.READ_DISTANCE",
+        "android.permission.health.READ_STEPS"
+      ],
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/android-icon-foreground.png",
@@ -31,6 +36,26 @@
       ],
       "expo-font",
       "expo-secure-store",
+      [
+        "@kingstinct/react-native-healthkit",
+        {
+          "NSHealthShareUsageDescription": "PUSH liest deine Lauf-Workouts, Geh- und Laufdistanz sowie Tagesschritte, damit Challenges automatisch geprüft werden können. PUSH schreibt keine Gesundheitsdaten.",
+          "NSHealthUpdateUsageDescription": false,
+          "background": false
+        }
+      ],
+      "react-native-health-connect",
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "minSdkVersion": 26,
+            "compileSdkVersion": 36,
+            "targetSdkVersion": 36
+          }
+        }
+      ],
+      "./plugins/with-health-connect-privacy",
       [
         "expo-splash-screen",
         {
