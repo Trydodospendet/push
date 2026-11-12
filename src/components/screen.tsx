@@ -1,5 +1,12 @@
-import type { ReactNode } from 'react';
-import { ScrollView, StyleSheet, View, type StyleProp, type ViewStyle } from 'react-native';
+import type { ReactElement, ReactNode } from 'react';
+import {
+  ScrollView,
+  StyleSheet,
+  View,
+  type RefreshControlProps,
+  type StyleProp,
+  type ViewStyle,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { colors, spacing } from '@/theme';
@@ -8,18 +15,27 @@ export type ScreenProps = {
   children: ReactNode;
   /** Makes the content scrollable for screens that can exceed the viewport. */
   scroll?: boolean;
+  /** Pull-to-refresh; only used together with `scroll`. */
+  refreshControl?: ReactElement<RefreshControlProps>;
   /** Extra styles for the padded content area. */
   contentStyle?: StyleProp<ViewStyle>;
   testID?: string;
 };
 
-export function Screen({ children, scroll = false, contentStyle, testID }: ScreenProps) {
+export function Screen({
+  children,
+  scroll = false,
+  refreshControl,
+  contentStyle,
+  testID,
+}: ScreenProps) {
   return (
     <SafeAreaView style={styles.root} testID={testID}>
       {scroll ? (
         <ScrollView
           contentContainerStyle={[styles.content, styles.scrollContent, contentStyle]}
           keyboardShouldPersistTaps="handled"
+          refreshControl={refreshControl}
         >
           {children}
         </ScrollView>
