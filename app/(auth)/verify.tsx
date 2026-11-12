@@ -5,7 +5,7 @@ import { StyleSheet, View } from 'react-native';
 import { Button, ErrorState, Screen, Text, TextField } from '@/components';
 import { SIGN_IN_CODE_LENGTH } from '@/config/app';
 import { useRequestSignInCode, useVerifySignInCode } from '@/features/auth/api';
-import { toUserMessage } from '@/features/auth/errors';
+import { toUserMessage } from '@/lib/errors';
 import { signInCodeSchema, validate } from '@/features/auth/schemas';
 import { de } from '@/i18n/de';
 import { spacing } from '@/theme';

@@ -95,6 +95,7 @@ function RootNavigator() {
       </Stack.Protected>
       <Stack.Protected guard={isOnboarded} redirectTo={home}>
         <Stack.Screen name="(tabs)" />
+        <Stack.Screen name="challenge" />
       </Stack.Protected>
     </Stack>
   );

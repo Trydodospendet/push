@@ -3,7 +3,7 @@ import { StyleSheet, View } from 'react-native';
 import { Button, Card, ErrorState, LoadingState, Screen, Text } from '@/components';
 import { useMyProfile, useSignOut } from '@/features/auth/api';
 import { useSession } from '@/features/auth/auth-provider';
-import { toUserMessage } from '@/features/auth/errors';
+import { toUserMessage } from '@/lib/errors';
 import { de } from '@/i18n/de';
 import { spacing } from '@/theme';
 

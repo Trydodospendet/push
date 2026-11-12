@@ -4,7 +4,16 @@ import { de } from '@/i18n/de';
 
 /** Error messages raised by our Postgres functions (`raise exception using message = …`). */
 const databaseErrorMessages: Record<string, string> = {
+  ...de.serverErrors,
   invalid_display_name: de.onboarding.nameInvalid,
+  invalid_title: de.create.invalidTitle,
+  invalid_goal_type: de.create.invalidInput,
+  invalid_target_value: de.create.invalidInput,
+  invalid_stake: de.create.invalidInput,
+  invalid_start_date: de.create.invalidInput,
+  invalid_duration: de.create.invalidInput,
+  invalid_visibility: de.create.invalidInput,
+  invalid_max_participants: de.create.invalidInput,
 };
 
 /** Supabase Auth error codes, see https://supabase.com/docs/guides/auth/debugging/error-codes */

@@ -4,7 +4,7 @@ import { StyleSheet, View } from 'react-native';
 
 import { Button, Screen, Text, TextField } from '@/components';
 import { useRequestSignInCode } from '@/features/auth/api';
-import { toUserMessage } from '@/features/auth/errors';
+import { toUserMessage } from '@/lib/errors';
 import { emailSchema, validate } from '@/features/auth/schemas';
 import { de } from '@/i18n/de';
 import { spacing } from '@/theme';
