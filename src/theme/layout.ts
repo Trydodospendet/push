@@ -4,6 +4,8 @@ export const layout = {
   buttonHeight: 56,
   progressBarHeight: 8,
   borderWidth: 1,
+  chipHeight: 44,
+  iconSize: 24,
 } as const;
 
 export const opacity = {

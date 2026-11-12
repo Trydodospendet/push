@@ -1,12 +1,15 @@
 import { Tabs } from 'expo-router';
 
+import { Icon, type IconName } from '@/components';
 import { de } from '@/i18n/de';
 import { colors, layout, typography } from '@/theme';
 
-/**
- * Text-only tabs for now: icons need an icon library, which is not part of the approved
- * dependencies yet (see docs/SETUP.md, open points).
- */
+function tabIcon(name: IconName, focusedName: IconName) {
+  return function TabIcon({ focused }: { focused: boolean }) {
+    return <Icon name={focused ? focusedName : name} color={focused ? 'text' : 'textMuted'} />;
+  };
+}
+
 export default function TabsLayout() {
   return (
     <Tabs
@@ -15,9 +18,8 @@ export default function TabsLayout() {
         sceneStyle: { backgroundColor: colors.bg },
         tabBarActiveTintColor: colors.text,
         tabBarInactiveTintColor: colors.textMuted,
-        tabBarIconStyle: { display: 'none' },
-        tabBarLabelStyle: { ...typography.button, fontSize: 14 },
-        tabBarItemStyle: { justifyContent: 'center', minHeight: layout.minTouchTarget },
+        tabBarLabelStyle: { ...typography.caption, fontFamily: typography.button.fontFamily },
+        tabBarItemStyle: { minHeight: layout.minTouchTarget },
         tabBarStyle: {
           backgroundColor: colors.bg,
           borderTopColor: colors.border,
@@ -27,19 +29,35 @@ export default function TabsLayout() {
     >
       <Tabs.Screen
         name="index"
-        options={{ title: de.tabs.home, tabBarAccessibilityLabel: de.tabs.home }}
+        options={{
+          title: de.tabs.home,
+          tabBarAccessibilityLabel: de.tabs.home,
+          tabBarIcon: tabIcon('home-outline', 'home'),
+        }}
       />
       <Tabs.Screen
         name="challenges"
-        options={{ title: de.tabs.challenges, tabBarAccessibilityLabel: de.tabs.challenges }}
+        options={{
+          title: de.tabs.challenges,
+          tabBarAccessibilityLabel: de.tabs.challenges,
+          tabBarIcon: tabIcon('trophy-outline', 'trophy'),
+        }}
       />
       <Tabs.Screen
         name="wallet"
-        options={{ title: de.tabs.wallet, tabBarAccessibilityLabel: de.tabs.wallet }}
+        options={{
+          title: de.tabs.wallet,
+          tabBarAccessibilityLabel: de.tabs.wallet,
+          tabBarIcon: tabIcon('wallet-outline', 'wallet'),
+        }}
       />
       <Tabs.Screen
         name="profile"
-        options={{ title: de.tabs.profile, tabBarAccessibilityLabel: de.tabs.profile }}
+        options={{
+          title: de.tabs.profile,
+          tabBarAccessibilityLabel: de.tabs.profile,
+          tabBarIcon: tabIcon('person-outline', 'person'),
+        }}
       />
     </Tabs>
   );

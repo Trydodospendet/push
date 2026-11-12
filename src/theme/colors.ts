@@ -14,3 +14,6 @@ export const colors = {
 } as const;
 
 export type ColorToken = keyof typeof colors;
+
+/** Dimmed backdrop behind sheets (the background color with 70 % opacity). */
+export const scrim = 'rgba(10, 10, 10, 0.7)';

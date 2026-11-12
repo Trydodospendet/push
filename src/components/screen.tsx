@@ -7,7 +7,7 @@ import {
   type StyleProp,
   type ViewStyle,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, type Edge } from 'react-native-safe-area-context';
 
 import { colors, spacing } from '@/theme';
 
@@ -19,6 +19,8 @@ export type ScreenProps = {
   refreshControl?: ReactElement<RefreshControlProps>;
   /** Extra styles for the padded content area. */
   contentStyle?: StyleProp<ViewStyle>;
+  /** Safe-area edges to pad; screens below a navigation header leave out 'top'. */
+  edges?: readonly Edge[];
   testID?: string;
 };
 
@@ -27,10 +29,11 @@ export function Screen({
   scroll = false,
   refreshControl,
   contentStyle,
+  edges,
   testID,
 }: ScreenProps) {
   return (
-    <SafeAreaView style={styles.root} testID={testID}>
+    <SafeAreaView style={styles.root} edges={edges} testID={testID}>
       {scroll ? (
         <ScrollView
           contentContainerStyle={[styles.content, styles.scrollContent, contentStyle]}
