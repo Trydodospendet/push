@@ -179,6 +179,7 @@ export type Database = {
           invite_code: string | null;
           max_participants: number | null;
           min_participants: number;
+          mode: string;
           participant_count: number;
           pot_cents: number | null;
           settled_at: string | null;
@@ -202,6 +203,7 @@ export type Database = {
           invite_code?: string | null;
           max_participants?: number | null;
           min_participants?: number;
+          mode?: string;
           participant_count?: number;
           pot_cents?: never;
           settled_at?: string | null;
@@ -224,6 +226,7 @@ export type Database = {
           invite_code?: string | null;
           max_participants?: number | null;
           min_participants?: number;
+          mode?: string;
           participant_count?: number;
           pot_cents?: never;
           settled_at?: string | null;
@@ -349,11 +352,13 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      advance_challenges: { Args: Record<PropertyKey, never>; Returns: number };
       create_challenge: {
         Args: {
           p_duration_days: number;
           p_goal_type: string;
           p_max_participants?: number;
+          p_mode?: string;
           p_stake_cents: number;
           p_start_date: string;
           p_target_value: number;
@@ -370,6 +375,7 @@ export type Database = {
           invite_code: string | null;
           max_participants: number | null;
           min_participants: number;
+          mode: string;
           participant_count: number;
           pot_cents: number | null;
           settled_at: string | null;
@@ -401,6 +407,7 @@ export type Database = {
           invite_code: string | null;
           max_participants: number | null;
           min_participants: number;
+          mode: string;
           participant_count: number;
           pot_cents: number | null;
           settled_at: string | null;
@@ -419,6 +426,16 @@ export type Database = {
           isOneToOne: true;
           isSetofReturn: false;
         };
+      };
+      get_leaderboard: {
+        Args: { p_challenge_id: string };
+        Returns: {
+          display_name: string;
+          goal_reached: boolean;
+          is_me: boolean;
+          rank: number;
+          user_id: string;
+        }[];
       };
       get_my_profile: {
         Args: Record<PropertyKey, never>;
@@ -514,6 +531,7 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      settle_challenge: { Args: { p_challenge_id: string }; Returns: boolean };
       sync_daily_steps: { Args: { p_days: Json }; Returns: number };
       sync_workouts: { Args: { p_workouts: Json }; Returns: number };
     };

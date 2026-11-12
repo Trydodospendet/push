@@ -106,4 +106,9 @@ select public.join_challenge_by_code('LAUF26');
 select pg_temp.as_user('c0000000-0000-4000-8000-000000000003');
 select public.join_challenge((select id from seed_challenges where name = 'half'));
 
+-- Solo: Ben bets 5.00 on himself (the stake is booked when the solo goal is created).
+select pg_temp.as_user('b0000000-0000-4000-8000-000000000002');
+select public.create_challenge('Mein 10-km-Lauf', 'run_single', 10000, 500,
+  (now() at time zone 'Europe/Berlin')::date + 1, 7, 'private', null, 'solo');
+
 select set_config('request.jwt.claims', '', false);
