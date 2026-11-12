@@ -386,6 +386,37 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      get_challenge_by_code: {
+        Args: { p_code: string };
+        Returns: {
+          created_at: string;
+          creator_id: string;
+          ends_at: string;
+          fee_bps: number;
+          goal_type: string;
+          id: string;
+          invite_code: string | null;
+          max_participants: number | null;
+          min_participants: number;
+          participant_count: number;
+          pot_cents: number | null;
+          settled_at: string | null;
+          stake_cents: number;
+          starts_at: string;
+          status: string;
+          sync_grace_hours: number;
+          target_value: number;
+          timezone: string;
+          title: string;
+          visibility: string;
+        };
+        SetofOptions: {
+          from: '*';
+          to: 'challenges';
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
       get_my_profile: {
         Args: Record<PropertyKey, never>;
         Returns: {

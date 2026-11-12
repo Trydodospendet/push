@@ -2,7 +2,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 
-select plan(60);
+select plan(63);
 
 -- Helpers ------------------------------------------------------------------------------
 
@@ -28,9 +28,9 @@ $$;
 
 insert into auth.users (id, email, aud, role)
 values
-  ('aaaaaaaa-0000-0000-0000-000000000001', 'anna@example.com', 'authenticated', 'authenticated'),
-  ('bbbbbbbb-0000-0000-0000-000000000002', 'ben@example.com', 'authenticated', 'authenticated'),
-  ('cccccccc-0000-0000-0000-000000000003', 'clara@example.com', 'authenticated', 'authenticated');
+  ('aaaaaaaa-0000-0000-0000-000000000001', 'anna@pgtap.test', 'authenticated', 'authenticated'),
+  ('bbbbbbbb-0000-0000-0000-000000000002', 'ben@pgtap.test', 'authenticated', 'authenticated'),
+  ('cccccccc-0000-0000-0000-000000000003', 'clara@pgtap.test', 'authenticated', 'authenticated');
 
 select private.post_user_entry('cccccccc-0000-0000-0000-000000000003', 'stake', -9950);
 
@@ -251,13 +251,15 @@ select pg_temp.logout();
 select pg_temp.login('bbbbbbbb-0000-0000-0000-000000000002');
 
 select is(
-  (select count(*)::int from public.challenges where visibility = 'private'),
+  (select count(*)::int from public.challenges
+    where visibility = 'private' and id in (select id from ids)),
   0,
   'private challenges are invisible to others'
 );
 
 select is(
-  (select count(*)::int from public.challenges where visibility = 'public'),
+  (select count(*)::int from public.challenges
+    where visibility = 'public' and id in (select id from ids)),
   2,
   'public challenges are visible to everybody'
 );
@@ -285,13 +287,32 @@ grant select on invite to authenticated;
 select pg_temp.login('bbbbbbbb-0000-0000-0000-000000000002');
 
 select is(
+  (public.get_challenge_by_code(lower((select code from invite)))).title,
+  'Team Schritte',
+  'a challenge can be previewed with its invite code before joining'
+);
+
+select throws_ok(
+  $$ select public.get_challenge_by_code('ZZZZZZ') $$,
+  'P0001', 'invalid_invite_code', 'previewing an unknown code fails'
+);
+
+select is(
+  (select count(*)::int from public.challenge_participants
+    where user_id = 'bbbbbbbb-0000-0000-0000-000000000002'),
+  0,
+  'previewing does not join'
+);
+
+select is(
   (public.join_challenge_by_code(' ' || lower((select code from invite)) || ' ')).challenge_id,
   (select id from ids where name = 'private'),
   'joining by code ignores case and surrounding spaces'
 );
 
 select is(
-  (select count(*)::int from public.challenges where visibility = 'private'),
+  (select count(*)::int from public.challenges
+    where visibility = 'private' and id in (select id from ids)),
   1,
   'after joining, the private challenge is visible'
 );

@@ -8,8 +8,8 @@ select plan(36);
 
 insert into auth.users (id, email, aud, role)
 values
-  ('11111111-1111-1111-1111-111111111111', 'anna@example.com', 'authenticated', 'authenticated'),
-  ('22222222-2222-2222-2222-222222222222', 'ben@example.com', 'authenticated', 'authenticated');
+  ('11111111-1111-1111-1111-111111111111', 'anna@pgtap.test', 'authenticated', 'authenticated'),
+  ('22222222-2222-2222-2222-222222222222', 'ben@pgtap.test', 'authenticated', 'authenticated');
 
 -- Schema -------------------------------------------------------------------------------
 
