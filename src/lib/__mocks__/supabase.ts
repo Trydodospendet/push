@@ -1,12 +1,13 @@
 import type { AuthChangeEvent, AuthError, Session } from '@supabase/supabase-js';
 
-type AuthResult = { data: object; error: AuthError | null };
-
 /**
  * Manual Jest mock for '@/lib/supabase' (activate with `jest.mock('@/lib/supabase')`).
- * Tests control the session with `mockAuth` and stub responses on `supabase.rpc` / `from`.
+ * Tests control the session with `mockAuth`, table contents with `mockDb` and stub RPC
+ * responses on `supabase.rpc`.
  */
 type Listener = (event: AuthChangeEvent, session: Session | null) => void;
+type AuthResult = { data: object; error: AuthError | null };
+type Row = Record<string, unknown>;
 
 let currentSession: Session | null = null;
 const listeners = new Set<Listener>();
@@ -44,20 +45,59 @@ export const mockAuth = {
   },
 };
 
-/** Query builder stub for `supabase.from(table).select().eq().single()`. */
-type SingleRowBuilder<T> = {
-  select: jest.Mock<SingleRowBuilder<T>>;
-  eq: jest.Mock<SingleRowBuilder<T>>;
-  single: jest.Mock<Promise<{ data: T; error: null }>>;
+/**
+ * Tiny in-memory "database" for `supabase.from(table)`. Rows are returned as stored
+ * (embedded relations such as `profile` or `challenge` are stored on the row); only `eq`
+ * filters are applied, everything else (select, order, limit, gt) is ignored.
+ */
+let tables: Record<string, Row | Row[]> = {};
+
+export const mockDb = {
+  set(next: Record<string, Row | Row[]>) {
+    tables = next;
+  },
+  reset() {
+    tables = {};
+  },
 };
 
-export function mockSingleRow<T>(data: T): SingleRowBuilder<T> {
-  const builder: SingleRowBuilder<T> = {
-    select: jest.fn(() => builder),
-    eq: jest.fn(() => builder),
-    single: jest.fn(async () => ({ data, error: null })),
+type QueryResult = { data: unknown; error: null };
+
+function createQuery(table: string) {
+  const filters: [string, unknown][] = [];
+
+  const rows = (): Row[] | Row | undefined => {
+    const stored = tables[table];
+    if (!Array.isArray(stored)) {
+      return stored;
+    }
+    return stored.filter((row) => filters.every(([column, value]) => row[column] === value));
   };
-  return builder;
+
+  const many = (): QueryResult => {
+    const result = rows();
+    return { data: result === undefined ? [] : result, error: null };
+  };
+
+  const one = (): QueryResult => {
+    const result = rows();
+    return { data: Array.isArray(result) ? (result[0] ?? null) : (result ?? null), error: null };
+  };
+
+  const query = {
+    select: () => query,
+    order: () => query,
+    limit: () => query,
+    gt: () => query,
+    eq: (column: string, value: unknown) => {
+      filters.push([column, value]);
+      return query;
+    },
+    single: async () => one(),
+    maybeSingle: async () => one(),
+    then: <T>(resolve: (value: QueryResult) => T) => Promise.resolve(many()).then(resolve),
+  };
+  return query;
 }
 
 export const supabase = {
@@ -76,5 +116,5 @@ export const supabase = {
     }),
   },
   rpc: jest.fn(),
-  from: jest.fn(),
+  from: jest.fn((table: string) => createQuery(table)),
 };

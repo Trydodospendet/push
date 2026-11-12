@@ -4,12 +4,13 @@ import { renderRouter, screen, waitFor } from 'expo-router/testing-library';
 jest.mock('@/lib/supabase');
 // Font loading is not part of this test (and expo-font needs native asset modules).
 jest.mock('expo-font', () => ({ useFonts: () => [true, null] }));
+jest.mock('@expo/vector-icons/Ionicons', () => ({ __esModule: true, default: () => null }));
 
 // The same module instance the app receives (src/lib/__mocks__/supabase.ts).
 const {
   createMockSession,
   mockAuth,
-  mockSingleRow,
+  mockDb,
   supabase: supabaseMock,
 } = jest.requireMock<typeof import('../src/lib/__mocks__/supabase')>('@/lib/supabase');
 
@@ -28,6 +29,7 @@ function profile(onboarded: boolean, displayName = 'Läufer 1234') {
 beforeEach(() => {
   jest.clearAllMocks();
   mockAuth.reset();
+  mockDb.reset();
 });
 
 describe('app flow', () => {
@@ -91,7 +93,7 @@ describe('app flow', () => {
     const user = userEvent.setup();
     mockAuth.setInitialSession(session);
     supabaseMock.rpc.mockResolvedValue({ data: profile(true, 'Anna Lauf'), error: null });
-    supabaseMock.from.mockReturnValue(mockSingleRow({ balance_cents: 10000 }));
+    mockDb.set({ wallets: { balance_cents: 10000 }, ledger_entries: [] });
 
     await renderRouter('./app', { initialUrl: '/' });
 
