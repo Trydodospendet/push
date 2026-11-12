@@ -1,7 +1,7 @@
 # PUSH – Einrichtung Schritt für Schritt
 
 Diese Anleitung ist für Windows mit PowerShell geschrieben. Alle Befehle kannst du kopieren und im
-Projektordner ausführen. Stand: **Phase 0 (Fundament)**.
+Projektordner ausführen. Stand: **Phase 1 (Konto)**.
 
 Projektordner öffnen:
 
@@ -41,8 +41,9 @@ Danach die Datei für lokale Einstellungen anlegen (einmalig):
 Copy-Item .env.example .env
 ```
 
-Die Datei `.env` wird nie ins Git eingecheckt. In Phase 0 liest die App sie noch nicht; ab Phase 1
-stehen dort die Zugangsdaten zum lokalen Supabase (Abschnitt 4).
+Die Datei `.env` wird nie ins Git eingecheckt. Dort stehen die Adresse und der öffentliche Schlüssel
+des lokalen Supabase (Abschnitt 4). **Ohne gültige `.env` startet die App nicht** – sie zeigt dann
+einen roten Fehlerbildschirm mit dem Hinweis auf `EXPO_PUBLIC_SUPABASE_URL`.
 
 ---
 
@@ -88,7 +89,20 @@ falls `npm run lint` Formatierungsfehler meldet.
      `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY=` ein.
    - Der Wert bei **Secret** (`sb_secret_…`) gehört **niemals** in die App oder in `.env`.
 
-4. Supabase wieder beenden (die Daten bleiben erhalten):
+4. Datenbank auf den neuesten Stand bringen (nach jedem `git pull` mit neuen Dateien in
+   `supabase/migrations/`). **Achtung: löscht alle lokalen Testdaten und Testkonten.**
+
+   ```powershell
+   npm run db:reset
+   ```
+
+5. Datenbank-Tests ausführen (pgTAP, prüft Startguthaben, Zugriffsrechte usw.):
+
+   ```powershell
+   npm run db:test
+   ```
+
+6. Supabase wieder beenden (die Daten bleiben erhalten):
 
    ```powershell
    npm run db:stop
@@ -98,10 +112,18 @@ falls `npm run lint` Formatierungsfehler meldet.
 
 - In `supabase/config.toml` sind Realtime, Storage, Edge Functions und Analytics abgeschaltet. PUSH
   braucht sie nicht, und so startet Supabase schneller und braucht weniger Arbeitsspeicher.
-- **Echtes Handy (ab Phase 1 wichtig):** `127.0.0.1` meint auf dem Handy das Handy selbst. Damit die
+- **Echtes Handy (wichtig):** `127.0.0.1` meint auf dem Handy das Handy selbst. Damit die
   App dein lokales Supabase erreicht, muss in `.env` die IP-Adresse deines PCs stehen, z. B.
   `EXPO_PUBLIC_SUPABASE_URL=http://192.168.178.20:54321`. Die Adresse findest du mit `ipconfig`
-  unter „IPv4-Adresse“. PC und Handy müssen im selben WLAN sein.
+  unter „IPv4-Adresse“. PC und Handy müssen im selben WLAN sein. Nach einer Änderung an `.env`
+  den Entwicklungsserver mit `npx expo start --clear` neu starten.
+- **Anmeldecodes:** Das lokale Supabase verschickt keine echten E-Mails. Jede Code-E-Mail landet in
+  **Mailpit** am PC: <http://127.0.0.1:54324>. Du kannst also eine beliebige, auch ausgedachte
+  Adresse verwenden (z. B. `test1@example.com`).
+- Ändert sich `supabase/config.toml` oder etwas in `supabase/templates/`, Supabase einmal neu
+  starten: `npm run db:stop`, dann `npm run db:start`.
+- `npm run db:types` erzeugt `src/lib/database.types.ts` neu (TypeScript-Typen der Datenbank).
+  Das mache ich nach jeder Migration; du brauchst es normalerweise nicht.
 
 ---
 
@@ -205,12 +227,21 @@ nutzbar sein.
 3. Den QR-Code aus dem Terminal mit der Kamera des Handys scannen – oder die installierte App
    **PUSH** öffnen und den angezeigten Server antippen.
 4. Erwartet: schwarzer Bildschirm mit **„PUSH.“**, darunter „YOUR GOALS. YOUR STAKES.“ und unten
-   ein lime-grüner Button **„Loslegen“**. (Der Button führt erst ab Phase 1 weiter.)
+   ein lime-grüner Button **„Loslegen“**. Wie es weitergeht, steht in Abschnitt 5.6.
 5. Beenden: im Terminal `Strg + C`.
 
 **Wenn das Handy keine Verbindung bekommt**
 
 - Beim ersten Start fragt die Windows-Firewall nach Node.js – für **private Netzwerke** zulassen.
+- Bleibt nach „Code senden“ die Meldung „Keine Verbindung zum Server“: Prüfe die IP in `.env`
+  (Abschnitt 4) und öffne im Browser **des Handys** `http://<deine-PC-IP>:54321`. Kommt dort keine
+  Antwort, blockiert die Windows-Firewall den Port. Einmalig in einer PowerShell **als
+  Administrator** freigeben:
+
+  ```powershell
+  New-NetFirewallRule -DisplayName "Supabase lokal" -Direction Inbound -Protocol TCP -LocalPort 54321 -Action Allow -Profile Private
+  ```
+
 - Cache leeren und neu starten: `npx expo start --clear`
 - Notlösung bei gesperrtem WLAN (z. B. Gastnetz): `npx expo start --tunnel`
 
@@ -222,8 +253,32 @@ Nur wenn sich „native“ Teile ändern – ich sage es dir dann ausdrücklich:
 - Einstellungen in `app.json` ändern sich (Berechtigungen, Icon, Splash),
 - das Expo SDK wird aktualisiert.
 
+Bisher nötige Builds: einer in Phase 0, ein neuer in Phase 1 (wegen `expo-secure-store`, das die
+Anmeldung sicher auf dem Handy speichert). Ein älterer Build stürzt beim Öffnen von Phase-1-Code ab.
+
 Für normale Code-Änderungen reicht `npx expo start`. Der kostenlose EAS-Tarif enthält derzeit bis zu
 15 Android- und 15 iOS-Builds (Stand November 2026, aktuelle Zahlen: <https://expo.dev/pricing>).
+
+---
+
+### 5.6 Konto testen (Phase 1)
+
+Voraussetzungen: Development Build mit `expo-secure-store` (seit Phase 1, siehe 5.5), Docker
+läuft, `npm run db:start`, `.env` mit der IP deines PCs, `npx expo start`.
+
+1. **Loslegen** → E-Mail eingeben (z. B. `test1@example.com`) → **Code senden**.
+2. Am PC <http://127.0.0.1:54324> öffnen, die E-Mail „Dein Anmeldecode“ anklicken, den
+   6-stelligen Code ablesen.
+3. Code in der App eingeben – nach der 6. Ziffer meldet sie dich automatisch an.
+4. Anzeigenamen wählen (3–24 Zeichen) → **Weiter**.
+5. Erwartet: Tab **Home** mit „Noch keine Challenge“. Im Tab **Wallet** steht **100,00 Credits**.
+6. App komplett schließen und neu öffnen: Du bist weiterhin angemeldet und landest direkt auf Home.
+7. Tab **Profil** → **Abmelden**: zurück auf dem Welcome-Screen.
+8. Mit derselben E-Mail erneut anmelden: Kein Namens-Schritt mehr, das Guthaben bleibt bei
+   100,00 Credits (der Bonus wird pro Konto nur einmal gebucht).
+
+In **Studio** (<http://127.0.0.1:54323>) siehst du unter „Table Editor“ die Tabellen `profiles`,
+`wallets` und `ledger_entries` mit deinem Konto und der Buchung `signup_bonus`.
 
 ---
 
@@ -238,6 +293,9 @@ Für normale Code-Änderungen reicht `npx expo start`. Der kostenlose EAS-Tarif 
 | `npm test`          | führt die automatischen Tests aus                 |
 | `npm run db:start`  | startet das lokale Supabase (Docker muss laufen)  |
 | `npm run db:status` | zeigt Adressen und Schlüssel des lokalen Supabase |
+| `npm run db:reset`  | Datenbank neu aufbauen (löscht lokale Testdaten)  |
+| `npm run db:test`   | führt die Datenbank-Tests (pgTAP) aus             |
+| `npm run db:types`  | erzeugt die TypeScript-Typen der Datenbank neu    |
 | `npm run db:stop`   | beendet das lokale Supabase                       |
 
 ---
@@ -253,5 +311,13 @@ Für normale Code-Änderungen reicht `npx expo start`. Der kostenlose EAS-Tarif 
   abschließen, zunächst nur mit Android testen, oder einen Mac mit Xcode nutzen (dort geht ein
   7 Tage gültiger Test-Build mit kostenloser Apple-ID). Spätestens vor Phase 3 (Health-Daten auf
   dem echten Gerät) muss das entschieden sein.
+- **Startguthaben:** Konto, Profil, Wallet und die 100,00 Credits entstehen schon, wenn jemand zum
+  ersten Mal einen Code für eine E-Mail-Adresse anfordert – nicht erst bei der Eingabe des Codes.
+  So arbeitet Supabase. Bei virtuellen Credits ist das unkritisch, vor echtem Geld wird es
+  geprüft.
+- **Anzeigename:** Bis du einen Namen wählst, heißt dein Profil z. B. „Läufer 4821“. Die App lässt
+  dich erst nach der Namenswahl weiter.
+- **Tab-Leiste ohne Symbole:** Für Icons bräuchte es eine Icon-Bibliothek (z. B.
+  `@expo/vector-icons`, nur JavaScript, kein neuer Build). Sie ist noch nicht freigegeben.
 - **Lokaler Android-Build ohne EAS** wäre möglich, braucht aber Android Studio und Java 17 (auf
   diesem PC ist Java 25 installiert, das passt nicht). EAS Build ist der einfachere Weg.
