@@ -1,7 +1,7 @@
 # PUSH – Einrichtung Schritt für Schritt
 
 Diese Anleitung ist für Windows mit PowerShell geschrieben. Alle Befehle kannst du kopieren und im
-Projektordner ausführen. Stand: **Phase 4 (Abrechnung, Solo und Ranked)**.
+Projektordner ausführen. Stand: **Phase 5 (Kontolöschung, Rechtliches, Supabase Cloud, Play-Store-Build)**.
 
 Projektordner öffnen:
 
@@ -270,8 +270,9 @@ Bisher nötige Builds: einer in Phase 0, ein neuer in Phase 1 (wegen `expo-secur
 Anmeldung sicher auf dem Handy speichert), ein neuer in **Phase 3** (wegen der nativen Module für
 Health Connect und HealthKit sowie neuer Berechtigungen in `app.json`). Ein älterer Build kann die
 Health-Daten nicht lesen; die App zeigt dann „Diese App-Version kann keine Gesundheitsdaten lesen“.
-Phase 2 brauchte **keinen** neuen Build (`@expo/vector-icons` ist reines JavaScript), Phase 4
-ebenfalls nicht (nur JavaScript und Datenbank – der Phase-3-Build bleibt gültig).
+Phase 2 brauchte **keinen** neuen Build (`@expo/vector-icons` ist reines JavaScript), Phase 4 und
+Phase 5 ebenfalls nicht (nur JavaScript und Datenbank – der Phase-3-Build bleibt gültig). Für den
+Play Store brauchst du zusätzlich einen **Produktions-Build** (Abschnitt 9).
 
 Für normale Code-Änderungen reicht `npx expo start`. Den Phase-3-Build für Android startest du im
 Projektordner mit:
@@ -463,6 +464,21 @@ Abrechnung 24 Stunden später (Zeit für späte Synchronisierungen).
 - Rundung immer zugunsten des Hauses: Gewinner bekommen den abgerundeten Anteil, übrige Cent gehen
   als „rounding“ ans Haus.
 
+### 5.10 Konto löschen und Rechtliches testen (Phase 5)
+
+Voraussetzungen wie in 5.7 (`npm run db:reset`). **Kein neuer Build nötig.**
+
+1. Als `anna@example.com` anmelden. Anna ist bei offenen Challenges dabei (Einsatz wird erstattet).
+2. Tab **Profil** → **Datenschutz**: Die Datenschutzerklärung erscheint, Platzhalter stehen in
+   eckigen Klammern. Zurück, dann **Impressum** ebenso.
+3. **Konto löschen** → das Sheet erklärt, was passiert. **Abbrechen** schließt es, nichts passiert.
+4. Erneut **Konto löschen** → **Endgültig löschen**. Erwartet: zurück auf dem Welcome-Screen.
+5. Als `ben@example.com` anmelden → Ranked → „5 km am Stück“: In der Teilnehmerliste fehlt Anna
+   (sie wurde vor dem Start erstattet und ist ausgestiegen).
+6. In Studio prüfen: `auth.users` und `profiles` enthalten Anna nicht mehr, ihre Buchungen in
+   `ledger_entries` stehen noch da, aber mit leerem `user_id`.
+7. Mit `anna@example.com` neu anmelden ergibt ein **neues** Konto mit 100,00 Credits.
+
 ---
 
 ## 6. Befehle im Überblick
@@ -509,8 +525,178 @@ Abrechnung 24 Stunden später (Zeit für späte Synchronisierungen).
   `min_participants` per SQL auf 1 setzt.
 - **Challenges starten immer um 0:00 Uhr** (Zeitzone Europe/Berlin) und dauern ganze Tage. So ist
   bei „Tägliche Schritte“ jeder Tag vollständig. Frühester Start ist morgen, spätester in 30 Tagen.
-- **Testkonten löschen:** Ein Konto, das Challenges erstellt hat oder bei Challenges dabei war,
-  lässt sich in Studio nicht einfach löschen (die Buchungen hängen daran). Zum Aufräumen
-  `npm run db:reset` verwenden. Das richtige „Konto löschen“ kommt in Phase 5.
+- **Konten löschen:** in der App unter Profil → **Konto löschen**. Für Löschanfragen per E-Mail
+  (ohne App) im SQL Editor: `select private.delete_account((select id from auth.users where email = 'name@example.com'));`
+  Nicht in Studio direkt bei `auth.users` löschen – dann fehlen Erstattungen und Verfall-Regeln.
+- **Rechtstexte:** stehen doppelt – in der App (`src/i18n/de.ts`, Bereich `legal`, Firmendaten in
+  `src/config/app.ts` → `LEGAL`) und als Webseiten in `docs/legal/`. Bei Änderungen immer beide
+  anpassen.
 - **Lokaler Android-Build ohne EAS** wäre möglich, braucht aber Android Studio und Java 17 (auf
   diesem PC ist Java 25 installiert, das passt nicht). EAS Build ist der einfachere Weg.
+
+---
+
+## 8. Supabase Cloud (für den Play Store)
+
+Bisher läuft die Datenbank nur auf deinem PC. Für Tester und den Play Store braucht die App eine
+Datenbank im Internet. Der kostenlose Supabase-Tarif reicht dafür. **Diese Schritte machst du
+selbst** – ich lege nichts in der Cloud an.
+
+### 8.1 Projekt anlegen
+
+1. Auf <https://supabase.com> kostenlos registrieren und anmelden.
+2. **New project**:
+   - **Name:** `push`
+   - **Database Password:** auf **Generate a password** klicken und das Passwort sicher speichern
+     (z. B. im Passwort-Manager). Du brauchst es gleich wieder.
+   - **Region:** **Central EU (Frankfurt)** – wichtig für den Datenschutz (steht so in der
+     Datenschutzerklärung).
+   - **Plan:** Free
+3. Warten, bis das Projekt fertig ist (1–2 Minuten).
+4. Die **Project Ref** notieren: Sie steht in der Adresse des Browsers
+   (`https://supabase.com/dashboard/project/`**`abcdefghijklmnopqrst`**) und unter
+   **Project Settings → General → Project ID**.
+
+### 8.2 pg_cron einschalten
+
+`pg_cron` startet alle 5 Minuten die Statuswechsel und Abrechnungen.
+
+1. Im Dashboard links **Database → Extensions**.
+2. Nach `pg_cron` suchen und den Schalter **einschalten** (Schema so lassen, wie vorgeschlagen).
+
+(Die Migration schaltet `pg_cron` zur Sicherheit ebenfalls ein; ist es schon an, passiert nichts.)
+
+### 8.3 Migrationen hochladen
+
+Im Projektordner (PowerShell). Docker muss dafür **nicht** laufen.
+
+```powershell
+npx supabase login
+```
+
+Öffnet den Browser; dort bestätigen.
+
+```powershell
+npx supabase link --project-ref DEINE_PROJECT_REF
+```
+
+Fragt nach dem Datenbank-Passwort aus 8.1. Danach zuerst ansehen, was hochgeladen würde:
+
+```powershell
+npx supabase db push --dry-run
+```
+
+Es sollten alle Dateien aus `supabase/migrations/` aufgelistet sein. Dann wirklich hochladen:
+
+```powershell
+npx supabase db push
+```
+
+- **Niemals** `--include-seed` verwenden: Die Testkonten aus `seed.sql` gehören nicht in die Cloud.
+- Nach jeder späteren Phase mit neuen Migrationen wieder `npx supabase db push` ausführen.
+
+Prüfen, ob der Zeitplan läuft – im Dashboard **SQL Editor**:
+
+```sql
+select jobname, schedule, active from cron.job;
+```
+
+Erwartet: eine Zeile `advance-challenges`, `*/5 * * * *`, `true`. Die letzten Läufe siehst du unter
+**Integrations → Cron** (oder mit
+`select status, start_time from cron.job_run_details order by start_time desc limit 5;`).
+
+### 8.4 Anmeldung per E-Mail-Code einrichten
+
+Die lokalen Einstellungen aus `supabase/config.toml` gelten **nicht** für die Cloud. Im Dashboard:
+
+1. **Authentication → Sign In / Providers → Email**:
+   - **Enable Email provider:** an
+   - **Confirm email:** an
+   - **Email OTP Length:** `6`
+   - **Email OTP Expiration:** `3600`
+   - Speichern.
+2. **Authentication → Emails → Templates**: Bei **Confirm signup** und bei **Magic Link** jeweils
+   - **Subject:** `Dein Anmeldecode`
+   - **Body:** den kompletten Inhalt der Datei `supabase/templates/sign-in-code.html` einfügen
+     (enthält `{{ .Token }}`, also den 6-stelligen Code).
+3. **Eigener E-Mail-Versand (SMTP) – Pflicht für Tester:** Der eingebaute Versand von Supabase
+   schickt Mails nur an Mitglieder deines Supabase-Teams und nur wenige pro Stunde. Für echte Tester
+   brauchst du einen E-Mail-Dienst, z. B. **Resend** (kostenloser Tarif, eigene Domain nötig):
+   - Bei Resend registrieren, deine Domain hinzufügen und die angezeigten DNS-Einträge bei deinem
+     Domain-Anbieter eintragen, API-Key erzeugen.
+   - In Supabase **Authentication → Emails → SMTP Settings** → **Enable custom SMTP**:
+     Host `smtp.resend.com`, Port `465`, Username `resend`, Password = der API-Key,
+     Sender email z. B. `login@deine-domain.de`, Sender name `PUSH`.
+   - Danach unter **Authentication → Rate Limits** die E-Mails pro Stunde passend einstellen
+     (z. B. 30).
+   - Den gewählten Dienst in die Datenschutzerklärung eintragen (Platzhalter „E-Mail-Dienst“).
+
+### 8.5 `.env.production` anlegen
+
+```powershell
+Copy-Item .env.production.example .env.production
+```
+
+`.env.production` mit einem Editor öffnen und eintragen:
+
+- `EXPO_PUBLIC_SUPABASE_URL` – Dashboard → **Project Settings → Data API → Project URL**
+  (`https://….supabase.co`)
+- `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY` – Dashboard → **Project Settings → API Keys** →
+  **Publishable key** (`sb_publishable_…`)
+
+Der **Secret key** (`sb_secret_…`) gehört **niemals** in diese Datei. `.env.production` wird nicht
+eingecheckt.
+
+Die EAS-Cloud-Builds sehen deine lokale Datei nicht. Deshalb die Werte einmal zu EAS hochladen
+(und nach jeder Änderung erneut):
+
+```powershell
+eas env:push production --path .env.production
+```
+
+Prüfen:
+
+```powershell
+eas env:list production
+```
+
+Deine lokale `.env` (lokales Supabase für die Entwicklung) bleibt unverändert. `npx expo start`
+verwendet weiterhin `.env`; nur der Produktions-Build verwendet die Cloud-Werte.
+
+### 8.6 Gut zu wissen (Free-Tarif)
+
+- **Pausieren:** Kostenlose Projekte werden nach etwa einer Woche ohne Nutzung pausiert. Dann
+  meldet die App „Keine Verbindung zum Server“, und `pg_cron` läuft nicht. Im Dashboard auf
+  **Restore project** klicken.
+- **Backups:** Im Free-Tarif gibt es keine herunterladbaren Backups. Für echte Nutzer später auf
+  einen bezahlten Tarif wechseln.
+- **Gebühr:** Auch in der Cloud ist die Plattformgebühr 0 %. Ändern im SQL Editor wie in 5.9.
+- **Löschanfragen per E-Mail:** im SQL Editor (E-Mail-Adresse anpassen):
+
+  ```sql
+  select private.delete_account((select id from auth.users where email = 'name@example.com'));
+  ```
+
+---
+
+## 9. Produktions-Build für den Play Store (Android)
+
+Voraussetzungen: Abschnitt 8 ist erledigt (`eas env:list production` zeigt beide Werte).
+
+```powershell
+eas build --platform android --profile production
+```
+
+- Ergebnis ist eine **`.aab`-Datei** (Android App Bundle) – die lädt man in der Play Console hoch.
+  Auf dem Handy direkt installieren lässt sie sich nicht.
+- Die **Versionsnummer für Google** (`versionCode`) erhöht EAS bei jedem Produktions-Build
+  automatisch. Die sichtbare Version (`1.0.0` in `app.json` → `version`) änderst du selbst, wenn du
+  eine neue Version veröffentlichen willst.
+- Der Signierschlüssel ist derselbe, den EAS in 5.2 angelegt hat. **Nie löschen** – ohne ihn kann
+  die App im Store nicht mehr aktualisiert werden (Google speichert zusätzlich eine Kopie, wenn du
+  „Play App Signing“ nutzt, was Standard ist).
+- Der Produktions-Build enthält **keinen** Entwicklungsserver und verbindet sich mit der Cloud-
+  Datenbank.
+
+Alles, was danach in der Play Console auszufüllen ist (inkl. fertiger Texte), steht in
+**`docs/RELEASE.md`**.

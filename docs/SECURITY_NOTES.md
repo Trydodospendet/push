@@ -73,3 +73,24 @@ Teilnehmer (wer weiter ist), aber keine Werte. Das ist bewusst so gewollt (Auftr
   **Produktentscheidung, vor echtem Geld rechtlich prüfen** (Glücksspielrecht, Verbraucherschutz).
 - Die Gebühr (`private.settings.fee_bps`) wird beim Erstellen in die Challenge kopiert und ändert
   sich danach nicht mehr.
+
+## 7. Konto löschen (Phase 5)
+
+- `delete_my_account()` löscht nur das **eigene** Konto (`auth.uid()`). Die eigentliche Arbeit macht
+  `private.delete_account(user_id)`; diese Funktion ist für App-Nutzer nicht aufrufbar und dient
+  dem Betreiber für Löschanfragen per E-Mail (SQL Editor in Supabase, siehe `docs/RELEASE.md`).
+- **Einsatz-Regel:** Noch nicht gestartete Challenges (`open`) werden erstattet. In laufenden
+  Challenges (`active`, `settling`) verfällt der Einsatz: Die Teilnahme bleibt als anonyme,
+  verlorene Zeile im Topf und wird normal abgerechnet. Sonst würde den Gewinnern Geld fehlen, und
+  die Summe aller Buchungen einer Challenge wäre nicht mehr 0. **Vor echtem Geld rechtlich prüfen**
+  (verfallender Einsatz bei Kontolöschung).
+- Gelöscht werden Auth-Nutzer, Profil, Wallet (Restguthaben verfällt – virtuelle Credits),
+  Läufe und Tagesschritte. Ledger-Buchungen und Teilnahmen bleiben mit `user_id = NULL`
+  (anonymisiert). Der Ledger bleibt append-only; nur dieses Anonymisieren ist erlaubt.
+- Von anderen erstellte Challenges laufen weiter; selbst erstellte behalten `creator_id = NULL`.
+- **Restrisiko:** Bei sehr kleinen Challenges (z. B. 2 Personen) kann ein anderer Teilnehmer aus der
+  Teilnehmerliste („Gelöschtes Konto“) erraten, wer gelöscht hat. Gesundheitsdaten sind nicht mehr
+  vorhanden.
+- Lokal auf dem Handy werden die Sitzung und der Health-Status gelöscht. Die
+  Health-Connect-Berechtigung selbst entzieht die App nicht automatisch; der Nutzer wird darauf
+  hingewiesen.

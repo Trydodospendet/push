@@ -7,6 +7,14 @@
     "development": {
       "developmentClient": true,
       "distribution": "internal"
+    },
+    "production": {
+      "distribution": "store",
+      "environment": "production",
+      "autoIncrement": true,
+      "android": {
+        "buildType": "app-bundle"
+      }
     }
   }
 }
