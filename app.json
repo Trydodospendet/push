@@ -9,10 +9,10 @@
     "backgroundColor": "#0A0A0A",
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.meliimmood.push"
+      "bundleIdentifier": "com.pushchallenge.app"
     },
     "android": {
-      "package": "com.meliimmood.push",
+      "package": "com.pushchallenge.app",
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/android-icon-foreground.png",
@@ -41,6 +41,20 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {
+        "asyncRoutes": {
+          "web": true
+        }
+      },
+      "expo-status-bar": {
+        "style": "light"
+      },
+      "eas": {
+        "projectId": "82e0dc3f-92f8-4b90-8fd2-9a23f4a81d15"
+      }
+    },
+    "owner": "darab2004"
   }
 }

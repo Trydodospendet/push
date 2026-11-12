@@ -141,7 +141,7 @@ erscheinen also ohne neuen Build.
    git commit -m "chore: link EAS project"
    ```
 
-> **App-Kennung:** In `app.json` steht die technische App-Kennung `com.meliimmood.push` (bei
+> **App-Kennung:** In `app.json` steht die technische App-Kennung `com.pushchallenge.app` (bei
 > `ios.bundleIdentifier` und `android.package`). Sie ist für Nutzer unsichtbar und wurde am
 > 11.11.2026 so festgelegt. Nach einer Veröffentlichung im Store lässt sie sich nicht mehr ändern.
 
