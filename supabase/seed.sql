@@ -75,6 +75,16 @@ insert into seed_challenges
 select 'half', (public.create_challenge('Halbmarathon-Woche', 'run_total', 21100, 2000,
   (now() at time zone 'Europe/Berlin')::date + 1, 14, 'public', 10)).id;
 
+select pg_temp.as_user('b0000000-0000-4000-8000-000000000002');
+insert into seed_challenges
+select 'big_stake', (public.create_challenge('Großer Einsatz', 'run_single', 10000, 5000,
+  (now() at time zone 'Europe/Berlin')::date + 2, 7, 'public')).id;
+
+select pg_temp.as_user('c0000000-0000-4000-8000-000000000003');
+insert into seed_challenges
+select 'weekend', (public.create_challenge('10 km am Wochenende', 'run_single', 10000, 2000,
+  (now() at time zone 'Europe/Berlin')::date + 3, 3, 'public')).id;
+
 -- A fixed, easy-to-type invite code for manual tests.
 update public.challenges set invite_code = 'LAUF26'
  where id = (select id from seed_challenges where name = 'office');
@@ -85,6 +95,8 @@ select pg_temp.as_user('a0000000-0000-4000-8000-000000000001');
 select public.join_challenge((select id from seed_challenges where name = 'five_k'));
 select public.join_challenge((select id from seed_challenges where name = 'office'));
 select public.join_challenge((select id from seed_challenges where name = 'half'));
+-- Leaves Anna with 15.00 credits: too little for the 20.00 stake of "10 km am Wochenende".
+select public.join_challenge((select id from seed_challenges where name = 'big_stake'));
 
 select pg_temp.as_user('b0000000-0000-4000-8000-000000000002');
 select public.join_challenge((select id from seed_challenges where name = 'five_k'));
