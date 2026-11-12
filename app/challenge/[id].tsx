@@ -14,11 +14,16 @@ import { ChallengeFacts } from '@/features/challenges/challenge-facts';
 import {
   challengeDays,
   describeGoal,
+  formatFee,
   goalRule,
+  isFinished,
   isJoinable,
+  isSolo,
+  modeLabel,
   statusLabel,
 } from '@/features/challenges/format';
 import { JoinSheet } from '@/features/challenges/join-sheet';
+import { Leaderboard } from '@/features/challenges/leaderboard';
 import type { Challenge, Participant } from '@/features/challenges/types';
 import { ActivityList } from '@/features/health/activity-list';
 import { useMyProgress } from '@/features/health/api';
@@ -101,8 +106,36 @@ function ChallengeDetail({
   const me = participants.find((participant) => participant.userId === userId);
   const isParticipant = me !== undefined;
   const isCreator = challenge.creator_id === userId;
-  const joinable = isJoinable(challenge);
+  const solo = isSolo(challenge);
+  // A solo goal is joined when it is created; leaving it is final.
+  const joinable = isJoinable(challenge) && !solo;
+  const leavable = isJoinable(challenge);
+  const showRanking =
+    !solo &&
+    (challenge.status === 'active' ||
+      challenge.status === 'settling' ||
+      challenge.status === 'settled');
   const { firstDay } = challengeDays(challenge);
+
+  const rules = [
+    goalRule(challenge.goal_type, challenge.target_value),
+    de.challenge.ruleStart(formatDayLabel(firstDay)),
+    de.challenge.ruleOnlyPeriod,
+    de.challenge.ruleManual,
+    de.challenge.ruleGrace(challenge.sync_grace_hours),
+    ...(solo
+      ? [de.challenge.ruleSoloWin, de.challenge.ruleSoloLose]
+      : [
+          de.challenge.ruleMinParticipants(challenge.min_participants),
+          de.challenge.rulePayout,
+          de.challenge.ruleAllWin,
+          de.challenge.ruleNobody,
+          ...(challenge.fee_bps > 0 ? [de.challenge.ruleFee(formatFee(challenge.fee_bps))] : []),
+          de.challenge.ruleRounding,
+          de.challenge.ruleRanking,
+        ]),
+    de.challenge.ruleLeave,
+  ];
 
   const closeSheet = () => {
     setSheet(null);
@@ -132,8 +165,9 @@ function ChallengeDetail({
     >
       <View style={styles.header}>
         <View style={styles.badges}>
+          <Pill label={modeLabel(challenge.mode)} />
           <Pill label={statusLabel(challenge.status)} />
-          {isParticipant ? <Pill label={de.challenges.joinedBadge} tone="accent" /> : null}
+          {isParticipant && !solo ? <Pill label={de.challenges.joinedBadge} tone="accent" /> : null}
         </View>
         <Text variant="title" accessibilityRole="header">
           {challenge.title}
@@ -142,6 +176,10 @@ function ChallengeDetail({
           {describeGoal(challenge.goal_type, challenge.target_value)}
         </Text>
       </View>
+
+      {me && (isFinished(challenge) || challenge.status === 'settling') ? (
+        <ResultCard challenge={challenge} me={me} />
+      ) : null}
 
       <ChallengeFacts challenge={challenge} />
 
@@ -196,42 +234,36 @@ function ChallengeDetail({
         <ActivityList challenge={challenge} userId={userId} />
       ) : null}
 
-      <View style={styles.section}>
-        <Text variant="label" color="textSecondary" accessibilityRole="header">
-          {de.challenge.participantList}
-        </Text>
-        {participantsLoading ? (
-          <LoadingState />
-        ) : isParticipant ? (
-          <Card style={styles.participants}>
-            {participants.map((participant) => (
-              <ParticipantRow
-                key={participant.userId}
-                participant={participant}
-                isMe={participant.userId === userId}
-              />
-            ))}
-          </Card>
-        ) : (
-          <Text color="textMuted">{de.challenge.participantsHidden}</Text>
-        )}
-      </View>
+      {solo ? null : (
+        <View style={styles.section}>
+          <Text variant="label" color="textSecondary" accessibilityRole="header">
+            {showRanking && isParticipant ? de.challenge.ranking : de.challenge.participantList}
+          </Text>
+          {participantsLoading ? (
+            <LoadingState />
+          ) : !isParticipant ? (
+            <Text color="textMuted">{de.challenge.participantsHidden}</Text>
+          ) : showRanking ? (
+            <Leaderboard challenge={challenge} />
+          ) : (
+            <Card style={styles.participants}>
+              {participants.map((participant) => (
+                <ParticipantRow
+                  key={participant.userId}
+                  participant={participant}
+                  isMe={participant.userId === userId}
+                />
+              ))}
+            </Card>
+          )}
+        </View>
+      )}
 
       <View style={styles.section}>
         <Text variant="label" color="textSecondary" accessibilityRole="header">
           {de.challenge.rules}
         </Text>
-        {[
-          goalRule(challenge.goal_type, challenge.target_value),
-          de.challenge.ruleStart(formatDayLabel(firstDay)),
-          de.challenge.ruleOnlyPeriod,
-          de.challenge.ruleManual,
-          de.challenge.ruleGrace(challenge.sync_grace_hours),
-          de.challenge.ruleMinParticipants(challenge.min_participants),
-          de.challenge.rulePayout,
-          de.challenge.ruleNobody,
-          de.challenge.ruleLeave,
-        ].map((rule) => (
+        {rules.map((rule) => (
           <Text key={rule} color="textSecondary">
             {`• ${rule}`}
           </Text>
@@ -247,12 +279,12 @@ function ChallengeDetail({
         {!isParticipant && joinable && !participantsLoading ? (
           <Button label={de.challenge.join} onPress={() => setSheet('join')} />
         ) : null}
-        {!isParticipant && !joinable ? (
+        {!isParticipant && !joinable && !solo ? (
           <Text variant="caption" color="textMuted">
             {de.challenge.notJoinable}
           </Text>
         ) : null}
-        {isParticipant && joinable ? (
+        {isParticipant && leavable ? (
           <Button
             label={de.challenge.leave}
             variant="secondary"
@@ -262,7 +294,7 @@ function ChallengeDetail({
       </View>
 
       <JoinSheet
-        challenge={challenge}
+        stakeCents={challenge.stake_cents}
         visible={sheet === 'join'}
         onClose={closeSheet}
         joining={join.isPending}
@@ -311,6 +343,37 @@ function resultLabel(result: string): string {
   }
 }
 
+/** Own result: waiting for the settlement, won (with payout), lost or refunded. */
+function ResultCard({ challenge, me }: { challenge: Challenge; me: Participant }) {
+  let title: string;
+  let text: string | null = null;
+  if (challenge.status === 'settling') {
+    title = de.challenge.resultPending;
+  } else if (challenge.status === 'cancelled' || me.result === 'refunded') {
+    title = de.challenge.resultCancelled;
+    text = de.challenge.resultRefundText(formatAmount(me.payoutCents ?? me.stakeCents));
+  } else if (me.result === 'success') {
+    title = de.challenge.resultWon;
+    text = de.challenge.resultWonPayout(formatAmount(me.payoutCents ?? 0));
+  } else {
+    title = de.challenge.resultLost;
+    text = de.challenge.resultLostText;
+  }
+  const won = challenge.status === 'settled' && me.result === 'success';
+
+  return (
+    <Card style={styles.result}>
+      <Text variant="label" color="textSecondary" accessibilityRole="header">
+        {de.challenge.result}
+      </Text>
+      <Text variant="heading" color={won ? 'accent' : 'text'}>
+        {title}
+      </Text>
+      {text ? <Text color="textSecondary">{text}</Text> : null}
+    </Card>
+  );
+}
+
 function ParticipantRow({ participant, isMe }: { participant: Participant; isMe: boolean }) {
   const name = isMe ? `${participant.displayName} ${de.challenge.you}` : participant.displayName;
   const result = resultLabel(participant.result);
@@ -338,6 +401,9 @@ const styles = StyleSheet.create({
   },
   inviteCard: {
     gap: spacing.sm,
+  },
+  result: {
+    gap: spacing.xs,
   },
   section: {
     gap: spacing.sm,

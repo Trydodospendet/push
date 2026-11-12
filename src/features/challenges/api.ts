@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tansta
 import { supabase } from '@/lib/supabase';
 
 import type { CreateChallengeInput } from './schemas';
-import type { Challenge, MyChallenge, Participant } from './types';
+import type { Challenge, LeaderboardEntry, MyChallenge, Participant } from './types';
 
 export const challengeKeys = {
   all: ['challenges'] as const,
@@ -11,6 +11,7 @@ export const challengeKeys = {
   mine: (userId: string) => [...challengeKeys.all, 'mine', userId] as const,
   detail: (id: string) => [...challengeKeys.all, 'detail', id] as const,
   participants: (id: string) => [...challengeKeys.all, 'participants', id] as const,
+  leaderboard: (id: string) => [...challengeKeys.all, 'leaderboard', id] as const,
   byCode: (code: string) => [...challengeKeys.all, 'code', code] as const,
 };
 
@@ -23,7 +24,7 @@ function invalidateAfterBooking(queryClient: QueryClient) {
   ]);
 }
 
-/** Public challenges that are open and have not started yet. */
+/** Public ranked challenges that are open and have not started yet. */
 export function useOpenChallenges() {
   return useQuery({
     queryKey: challengeKeys.open(),
@@ -31,6 +32,7 @@ export function useOpenChallenges() {
       const { data, error } = await supabase
         .from('challenges')
         .select('*')
+        .eq('mode', 'ranked')
         .eq('visibility', 'public')
         .eq('status', 'open')
         .gt('starts_at', new Date().toISOString())
@@ -107,7 +109,9 @@ export function useParticipants(challengeId: string) {
     queryFn: async (): Promise<Participant[]> => {
       const { data, error } = await supabase
         .from('challenge_participants')
-        .select('user_id, result, stake_cents, joined_at, profile:profiles(display_name)')
+        .select(
+          'user_id, result, stake_cents, payout_cents, joined_at, profile:profiles(display_name)',
+        )
         .eq('challenge_id', challengeId)
         .order('joined_at');
       if (error) {
@@ -118,6 +122,30 @@ export function useParticipants(challengeId: string) {
         displayName: row.profile?.display_name ?? '',
         result: row.result,
         stakeCents: row.stake_cents,
+        payoutCents: row.payout_cents,
+      }));
+    },
+  });
+}
+
+/** Ranking of a ranked challenge, computed by the server (empty for non-participants). */
+export function useLeaderboard(challengeId: string, enabled: boolean) {
+  return useQuery({
+    queryKey: challengeKeys.leaderboard(challengeId),
+    enabled,
+    queryFn: async (): Promise<LeaderboardEntry[]> => {
+      const { data, error } = await supabase.rpc('get_leaderboard', {
+        p_challenge_id: challengeId,
+      });
+      if (error) {
+        throw error;
+      }
+      return data.map((row) => ({
+        rank: row.rank,
+        userId: row.user_id,
+        displayName: row.display_name,
+        isMe: row.is_me,
+        goalReached: row.goal_reached,
       }));
     },
   });
@@ -151,13 +179,15 @@ export function useCreateChallenge() {
         p_start_date: input.startDate,
         p_duration_days: input.durationDays,
         p_visibility: input.visibility,
+        p_mode: input.mode,
       });
       if (error) {
         throw error;
       }
       return data;
     },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: challengeKeys.all }),
+    // A solo goal books the stake right away.
+    onSuccess: () => invalidateAfterBooking(queryClient),
   });
 }
 

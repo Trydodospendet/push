@@ -17,6 +17,10 @@ export const SIGN_IN_CODE_LENGTH = 6;
 /** Timezone of new profiles and challenges (DB default). */
 export const DEFAULT_TIMEZONE = 'Europe/Berlin';
 
+/** DB: challenges.mode – solo (bet on yourself) or ranked (shared pool against others). */
+export const CHALLENGE_MODES = ['solo', 'ranked'] as const;
+export type ChallengeMode = (typeof CHALLENGE_MODES)[number];
+
 export const GOAL_TYPES = ['run_single', 'run_total', 'steps_daily'] as const;
 export type GoalType = (typeof GOAL_TYPES)[number];
 

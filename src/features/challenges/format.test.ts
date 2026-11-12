@@ -1,12 +1,36 @@
 import {
   challengeDays,
   describeGoal,
+  formatFee,
   formatPeriod,
   formatTarget,
+  isFinished,
   isJoinable,
+  modeLabel,
   statusLabel,
   suggestTitle,
 } from './format';
+
+describe('modes and fees', () => {
+  it('labels the two modes', () => {
+    expect(modeLabel('solo')).toBe('Solo');
+    expect(modeLabel('ranked')).toBe('Ranked');
+  });
+
+  it.each([
+    [1000, '10 %'],
+    [250, '2,5 %'],
+    [0, '0 %'],
+  ])('formats %p basis points as %p', (bps, expected) => {
+    expect(formatFee(bps).replace(/\s/g, ' ')).toBe(expected);
+  });
+
+  it('treats settled and cancelled challenges as finished', () => {
+    expect(isFinished({ status: 'settled' })).toBe(true);
+    expect(isFinished({ status: 'cancelled' })).toBe(true);
+    expect(isFinished({ status: 'settling' })).toBe(false);
+  });
+});
 
 describe('goal formatting', () => {
   it.each([

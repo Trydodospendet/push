@@ -11,6 +11,7 @@ const valid = {
   startDate: '2026-11-14',
   durationDays: 7,
   visibility: 'public',
+  mode: 'ranked',
 } as const;
 
 describe('createChallengeSchema (same limits as public.create_challenge)', () => {
@@ -34,6 +35,7 @@ describe('createChallengeSchema (same limits as public.create_challenge)', () =>
     ['duration 0 days', { durationDays: 0 }],
     ['duration 43 days', { durationDays: 43 }],
     ['unknown visibility', { visibility: 'secret' }],
+    ['unknown mode', { mode: 'duel' }],
   ])('rejects %s', (_reason, override) => {
     expect(schema.safeParse({ ...valid, ...override }).success).toBe(false);
   });
@@ -47,6 +49,7 @@ describe('createChallengeSchema (same limits as public.create_challenge)', () =>
     expect(
       schema.safeParse({ ...valid, goalType: 'run_total', targetValue: 500_000 }).success,
     ).toBe(true);
+    expect(schema.safeParse({ ...valid, mode: 'solo', visibility: 'private' }).success).toBe(true);
   });
 });
 

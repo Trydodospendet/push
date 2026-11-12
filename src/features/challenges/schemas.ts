@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import {
+  CHALLENGE_MODES,
   CHALLENGE_TITLE_MAX_LENGTH,
   CHALLENGE_TITLE_MIN_LENGTH,
   DURATION_MAX_DAYS,
@@ -35,6 +36,7 @@ export function createChallengeSchema(today: string) {
       startDate: z.iso.date(),
       durationDays: z.int().min(DURATION_MIN_DAYS).max(DURATION_MAX_DAYS),
       visibility: z.enum(['public', 'private']),
+      mode: z.enum(CHALLENGE_MODES),
     })
     .refine(
       ({ goalType, targetValue }) =>

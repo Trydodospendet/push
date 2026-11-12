@@ -7,10 +7,10 @@ import { de } from '@/i18n/de';
 import { formatAmount } from '@/lib/money';
 import { spacing } from '@/theme';
 
-import type { Challenge } from './types';
-
 export type JoinSheetProps = {
-  challenge: Challenge;
+  stakeCents: number;
+  /** Solo goals bet on yourself; the texts differ from joining a ranked pool. */
+  solo?: boolean;
   visible: boolean;
   onClose: () => void;
   onConfirm: () => void;
@@ -18,9 +18,10 @@ export type JoinSheetProps = {
   error: string | null;
 };
 
-/** The only way to join: states the stake and the virtual-credits notice before paying. */
+/** The only way to pay a stake: states it and the virtual-credits notice before paying. */
 export function JoinSheet({
-  challenge,
+  stakeCents,
+  solo = false,
   visible,
   onClose,
   onConfirm,
@@ -29,15 +30,16 @@ export function JoinSheet({
 }: JoinSheetProps) {
   const session = useSession();
   const balance = useWalletBalance(session.user.id);
+  const stake = formatAmount(stakeCents);
 
   return (
     <Sheet
       visible={visible}
-      title={de.joinSheet.title}
+      title={solo ? de.joinSheet.soloTitle : de.joinSheet.title}
       onClose={onClose}
       closeLabel={de.joinSheet.cancel}
     >
-      <Text>{de.joinSheet.stake(formatAmount(challenge.stake_cents))}</Text>
+      <Text>{solo ? de.joinSheet.soloStake(stake) : de.joinSheet.stake(stake)}</Text>
       {balance.data !== undefined ? (
         <Text variant="caption" color="textSecondary">
           {de.joinSheet.balance(formatAmount(balance.data))}
@@ -52,7 +54,11 @@ export function JoinSheet({
         </Text>
       ) : null}
       <View style={styles.actions}>
-        <Button label={de.joinSheet.confirm} onPress={onConfirm} loading={joining} />
+        <Button
+          label={solo ? de.joinSheet.soloConfirm : de.joinSheet.confirm}
+          onPress={onConfirm}
+          loading={joining}
+        />
         <Button label={de.joinSheet.cancel} variant="secondary" onPress={onClose} />
       </View>
     </Sheet>

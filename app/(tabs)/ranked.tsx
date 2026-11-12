@@ -1,14 +1,16 @@
 import { useRouter } from 'expo-router';
 import { RefreshControl, StyleSheet, View } from 'react-native';
 
-import { Button, ErrorState, LoadingState, Screen, Text } from '@/components';
+import { Button, Screen, Text } from '@/components';
 import { useSession } from '@/features/auth/auth-provider';
 import { useMyChallenges, useOpenChallenges } from '@/features/challenges/api';
-import { ChallengeCard } from '@/features/challenges/challenge-card';
+import { ChallengeSection } from '@/features/challenges/challenge-section';
+import { isFinished, isSolo } from '@/features/challenges/format';
 import { de } from '@/i18n/de';
 import { colors, spacing } from '@/theme';
 
-export default function ChallengesScreen() {
+/** Ranked: shared pools against other people. */
+export default function RankedScreen() {
   const router = useRouter();
   const session = useSession();
   const mine = useMyChallenges(session.user.id);
@@ -20,9 +22,20 @@ export default function ChallengesScreen() {
     void open.refetch();
   };
 
-  const myIds = new Set(mine.data?.filter((c) => c.isParticipant).map((c) => c.id));
-  const createdIds = new Set(mine.data?.filter((c) => c.isCreator).map((c) => c.id));
-  const myActive = mine.data?.filter((c) => c.status !== 'settled' && c.status !== 'cancelled');
+  const myRanked = mine.data?.filter((challenge) => !isSolo(challenge));
+  const myIds = new Set(myRanked?.filter((c) => c.isParticipant).map((c) => c.id));
+  const createdIds = new Set(myRanked?.filter((c) => c.isCreator).map((c) => c.id));
+  const toItem = (challenge: { id: string }) => ({
+    joined: myIds.has(challenge.id),
+    created: createdIds.has(challenge.id),
+  });
+
+  const mineState = {
+    loading: mine.isPending,
+    error: mine.isError,
+    retrying: mine.isFetching,
+    onRetry: () => void mine.refetch(),
+  };
 
   return (
     <Screen
@@ -38,12 +51,20 @@ export default function ChallengesScreen() {
         />
       }
     >
-      <Text variant="title" accessibilityRole="header">
-        {de.challenges.title}
-      </Text>
+      <View style={styles.header}>
+        <Text variant="title" accessibilityRole="header">
+          {de.challenges.title}
+        </Text>
+        <Text color="textSecondary">{de.challenges.intro}</Text>
+      </View>
       <View style={styles.actions}>
         <View style={styles.action}>
-          <Button label={de.challenges.create} onPress={() => router.push('/challenge/create')} />
+          <Button
+            label={de.challenges.create}
+            onPress={() =>
+              router.push({ pathname: '/challenge/create', params: { mode: 'ranked' } })
+            }
+          />
         </View>
         <View style={styles.action}>
           <Button
@@ -54,57 +75,37 @@ export default function ChallengesScreen() {
         </View>
       </View>
 
-      <View style={styles.section}>
-        <Text variant="label" color="textSecondary" accessibilityRole="header">
-          {de.challenges.mine}
-        </Text>
-        {mine.isPending ? (
-          <LoadingState />
-        ) : mine.isError ? (
-          <ErrorState
-            message={de.challenges.error}
-            onRetry={() => mine.refetch()}
-            retrying={mine.isFetching}
-          />
-        ) : myActive && myActive.length > 0 ? (
-          myActive.map((challenge) => (
-            <ChallengeCard
-              key={challenge.id}
-              challenge={challenge}
-              joined={challenge.isParticipant}
-              created={challenge.isCreator}
-            />
-          ))
-        ) : (
-          <Text color="textMuted">{de.challenges.emptyMine}</Text>
-        )}
-      </View>
+      <ChallengeSection
+        label={de.challenges.mine}
+        emptyText={de.challenges.emptyMine}
+        errorText={de.challenges.error}
+        items={myRanked
+          ?.filter((challenge) => !isFinished(challenge))
+          .map((challenge) => ({ challenge, ...toItem(challenge) }))}
+        {...mineState}
+      />
 
-      <View style={styles.section}>
-        <Text variant="label" color="textSecondary" accessibilityRole="header">
-          {de.challenges.open}
-        </Text>
-        {open.isPending ? (
-          <LoadingState />
-        ) : open.isError ? (
-          <ErrorState
-            message={de.challenges.error}
-            onRetry={() => open.refetch()}
-            retrying={open.isFetching}
-          />
-        ) : open.data.length > 0 ? (
-          open.data.map((challenge) => (
-            <ChallengeCard
-              key={challenge.id}
-              challenge={challenge}
-              joined={myIds.has(challenge.id)}
-              created={createdIds.has(challenge.id)}
-            />
-          ))
-        ) : (
-          <Text color="textMuted">{de.challenges.emptyOpen}</Text>
-        )}
-      </View>
+      <ChallengeSection
+        label={de.challenges.open}
+        emptyText={de.challenges.emptyOpen}
+        errorText={de.challenges.error}
+        items={open.data?.map((challenge) => ({ challenge, ...toItem(challenge) }))}
+        loading={open.isPending}
+        error={open.isError}
+        retrying={open.isFetching}
+        onRetry={() => void open.refetch()}
+      />
+
+      <ChallengeSection
+        label={de.challenges.finished}
+        emptyText={de.challenges.emptyFinished}
+        errorText={de.challenges.error}
+        items={myRanked
+          ?.filter((challenge) => challenge.isParticipant && isFinished(challenge))
+          .reverse()
+          .map((challenge) => ({ challenge, ...toItem(challenge) }))}
+        {...mineState}
+      />
     </Screen>
   );
 }
@@ -115,14 +116,14 @@ const styles = StyleSheet.create({
     paddingBottom: spacing.xl,
     gap: spacing.lg,
   },
+  header: {
+    gap: spacing.xs,
+  },
   actions: {
     flexDirection: 'row',
     gap: spacing.sm,
   },
   action: {
     flex: 1,
-  },
-  section: {
-    gap: spacing.sm,
   },
 });

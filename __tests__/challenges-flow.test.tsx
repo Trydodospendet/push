@@ -47,6 +47,7 @@ function challenge(overrides: Record<string, unknown> = {}) {
     min_participants: 2,
     max_participants: null,
     visibility: 'public',
+    mode: 'ranked',
     invite_code: null,
     status: 'open',
     participant_count: 1,
@@ -88,9 +89,9 @@ function mockRpc(handlers: Record<string, RpcHandler> = {}) {
   });
 }
 
-async function openChallengesTab(user: ReturnType<typeof userEvent.setup>) {
+async function openRankedTab(user: ReturnType<typeof userEvent.setup>) {
   await renderRouter('./app', { initialUrl: '/' });
-  await user.press(await screen.findByRole('button', { name: 'Challenges' }));
+  await user.press(await screen.findByRole('button', { name: 'Ranked' }));
 }
 
 beforeEach(() => {
@@ -185,7 +186,7 @@ describe('challenges', () => {
       },
     });
 
-    await openChallengesTab(user);
+    await openRankedTab(user);
     await user.press(await screen.findByRole('button', { name: /^5 km am Stück/ }));
 
     expect(await screen.findByText('Ein Lauf über mindestens 5 km')).toBeOnTheScreen();
@@ -232,7 +233,7 @@ describe('challenges', () => {
         : { data: null, error: { code: 'P0001', message: 'insufficient_funds' } },
     );
 
-    await openChallengesTab(user);
+    await openRankedTab(user);
     await user.press(await screen.findByRole('button', { name: /^5 km am Stück/ }));
     await user.press(await screen.findByRole('button', { name: 'Beitreten' }));
     await user.press(await screen.findByRole('button', { name: 'Jetzt beitreten' }));
@@ -266,7 +267,7 @@ describe('challenges', () => {
       },
     });
 
-    await openChallengesTab(user);
+    await openRankedTab(user);
     await user.press(await screen.findByRole('button', { name: 'Code eingeben' }));
     await user.type(await screen.findByLabelText('Einladungscode'), 'lauf26');
     await user.press(screen.getByRole('button', { name: 'Challenge anzeigen' }));
@@ -288,7 +289,7 @@ describe('challenges', () => {
     mockDb.set({ challenges: [], challenge_participants: [] });
     mockRpc();
 
-    await openChallengesTab(user);
+    await openRankedTab(user);
     await user.press(await screen.findByRole('button', { name: 'Code eingeben' }));
     await user.type(await screen.findByLabelText('Einladungscode'), 'AB-1');
     await user.press(screen.getByRole('button', { name: 'Challenge anzeigen' }));
@@ -316,7 +317,7 @@ describe('challenges', () => {
       },
     });
 
-    await openChallengesTab(user);
+    await openRankedTab(user);
     await user.press(await screen.findByRole('button', { name: 'Erstellen' }));
     await user.press(await screen.findByRole('radio', { name: 'Tägliche Schritte' }));
     expect(screen.getByRole('radio', { name: '10.000 Schritte' })).toBeChecked();
@@ -332,6 +333,7 @@ describe('challenges', () => {
       p_start_date: tomorrow,
       p_duration_days: 14,
       p_visibility: 'public',
+      p_mode: 'ranked',
     });
     expect(
       await screen.findByText(

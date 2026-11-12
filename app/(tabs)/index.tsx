@@ -59,7 +59,7 @@ export default function HomeScreen() {
           </Text>
           <Text color="textSecondary">{de.home.emptyText}</Text>
         </View>
-        <Button label={de.home.findChallenge} onPress={() => router.navigate('/challenges')} />
+        <Button label={de.home.findChallenge} onPress={() => router.navigate('/ranked')} />
       </Screen>
     );
   }

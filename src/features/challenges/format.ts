@@ -80,6 +80,29 @@ export function statusLabel(status: string): string {
   return status in de.status ? de.status[status as ChallengeStatus] : status;
 }
 
+export function isSolo(challenge: Pick<Challenge, 'mode'>): boolean {
+  return challenge.mode === 'solo';
+}
+
+export function modeLabel(mode: string): string {
+  return mode === 'solo' ? de.mode.solo : de.mode.ranked;
+}
+
+/** Settled or cancelled: nothing changes anymore. */
+export function isFinished(challenge: Pick<Challenge, 'status'>): boolean {
+  return challenge.status === 'settled' || challenge.status === 'cancelled';
+}
+
+const percentFormat = new Intl.NumberFormat('de-DE', {
+  style: 'percent',
+  maximumFractionDigits: 2,
+});
+
+/** Basis points as a percentage, e.g. 1000 → '10 %'. */
+export function formatFee(feeBps: number): string {
+  return percentFormat.format(feeBps / 10_000);
+}
+
 /** Joining and leaving are only possible while the challenge is open and has not started. */
 export function isJoinable(challenge: Pick<Challenge, 'status' | 'starts_at'>, now = new Date()) {
   return challenge.status === 'open' && now < new Date(challenge.starts_at);

@@ -85,7 +85,7 @@ export default function JoinByCodeScreen() {
           <ChallengeFacts challenge={preview.data} />
           <Button label={de.challenge.join} onPress={() => setSheetVisible(true)} />
           <JoinSheet
-            challenge={preview.data}
+            stakeCents={preview.data.stake_cents}
             visible={sheetVisible}
             onClose={() => {
               setSheetVisible(false);

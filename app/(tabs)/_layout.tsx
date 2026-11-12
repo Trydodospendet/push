@@ -36,10 +36,18 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
-        name="challenges"
+        name="solo"
         options={{
-          title: de.tabs.challenges,
-          tabBarAccessibilityLabel: de.tabs.challenges,
+          title: de.tabs.solo,
+          tabBarAccessibilityLabel: de.tabs.solo,
+          tabBarIcon: tabIcon('flag-outline', 'flag'),
+        }}
+      />
+      <Tabs.Screen
+        name="ranked"
+        options={{
+          title: de.tabs.ranked,
+          tabBarAccessibilityLabel: de.tabs.ranked,
           tabBarIcon: tabIcon('trophy-outline', 'trophy'),
         }}
       />
