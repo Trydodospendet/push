@@ -23,6 +23,226 @@ export type Database = {
   };
   public: {
     Tables: {
+      activity_daily_steps: {
+        Row: {
+          date: string;
+          is_valid: boolean;
+          platform: string | null;
+          steps: number;
+          synced_at: string;
+          user_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          date: string;
+          is_valid: boolean;
+          platform?: string | null;
+          steps: number;
+          synced_at?: string;
+          user_id: string;
+        };
+        Update: {
+          date?: string;
+          is_valid?: boolean;
+          platform?: string | null;
+          steps?: number;
+          synced_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'activity_daily_steps_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      activity_workouts: {
+        Row: {
+          activity_type: string;
+          distance_m: number;
+          duration_s: number;
+          end_at: string;
+          id: string;
+          invalid_reason: string | null;
+          is_valid: boolean;
+          platform: string;
+          source_name: string | null;
+          source_record_id: string;
+          start_at: string;
+          synced_at: string;
+          user_id: string;
+          was_user_entered: boolean;
+        };
+        ComputedFields: never;
+        Insert: {
+          activity_type: string;
+          distance_m: number;
+          duration_s: number;
+          end_at: string;
+          id?: string;
+          invalid_reason?: string | null;
+          is_valid: boolean;
+          platform: string;
+          source_name?: string | null;
+          source_record_id: string;
+          start_at: string;
+          synced_at?: string;
+          user_id: string;
+          was_user_entered: boolean;
+        };
+        Update: {
+          activity_type?: string;
+          distance_m?: number;
+          duration_s?: number;
+          end_at?: string;
+          id?: string;
+          invalid_reason?: string | null;
+          is_valid?: boolean;
+          platform?: string;
+          source_name?: string | null;
+          source_record_id?: string;
+          start_at?: string;
+          synced_at?: string;
+          user_id?: string;
+          was_user_entered?: boolean;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'activity_workouts_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      challenge_participants: {
+        Row: {
+          challenge_id: string;
+          joined_at: string;
+          payout_cents: number | null;
+          progress_value: number;
+          result: string;
+          stake_cents: number;
+          user_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          challenge_id: string;
+          joined_at?: string;
+          payout_cents?: number | null;
+          progress_value?: number;
+          result?: string;
+          stake_cents: number;
+          user_id: string;
+        };
+        Update: {
+          challenge_id?: string;
+          joined_at?: string;
+          payout_cents?: number | null;
+          progress_value?: number;
+          result?: string;
+          stake_cents?: number;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'challenge_participants_challenge_id_fkey';
+            columns: ['challenge_id'];
+            isOneToOne: false;
+            referencedRelation: 'challenges';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'challenge_participants_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      challenges: {
+        Row: {
+          created_at: string;
+          creator_id: string;
+          ends_at: string;
+          fee_bps: number;
+          goal_type: string;
+          id: string;
+          invite_code: string | null;
+          max_participants: number | null;
+          min_participants: number;
+          participant_count: number;
+          pot_cents: number | null;
+          settled_at: string | null;
+          stake_cents: number;
+          starts_at: string;
+          status: string;
+          sync_grace_hours: number;
+          target_value: number;
+          timezone: string;
+          title: string;
+          visibility: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          created_at?: string;
+          creator_id: string;
+          ends_at: string;
+          fee_bps?: number;
+          goal_type: string;
+          id?: string;
+          invite_code?: string | null;
+          max_participants?: number | null;
+          min_participants?: number;
+          participant_count?: number;
+          pot_cents?: never;
+          settled_at?: string | null;
+          stake_cents: number;
+          starts_at: string;
+          status?: string;
+          sync_grace_hours?: number;
+          target_value: number;
+          timezone?: string;
+          title: string;
+          visibility: string;
+        };
+        Update: {
+          created_at?: string;
+          creator_id?: string;
+          ends_at?: string;
+          fee_bps?: number;
+          goal_type?: string;
+          id?: string;
+          invite_code?: string | null;
+          max_participants?: number | null;
+          min_participants?: number;
+          participant_count?: number;
+          pot_cents?: never;
+          settled_at?: string | null;
+          stake_cents?: number;
+          starts_at?: string;
+          status?: string;
+          sync_grace_hours?: number;
+          target_value?: number;
+          timezone?: string;
+          title?: string;
+          visibility?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'challenges_creator_id_fkey';
+            columns: ['creator_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       ledger_entries: {
         Row: {
           account: string;
@@ -53,6 +273,13 @@ export type Database = {
           user_id?: string | null;
         };
         Relationships: [
+          {
+            foreignKeyName: 'ledger_entries_challenge_id_fkey';
+            columns: ['challenge_id'];
+            isOneToOne: false;
+            referencedRelation: 'challenges';
+            referencedColumns: ['id'];
+          },
           {
             foreignKeyName: 'ledger_entries_user_id_fkey';
             columns: ['user_id'];
@@ -119,6 +346,46 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      create_challenge: {
+        Args: {
+          p_duration_days: number;
+          p_goal_type: string;
+          p_max_participants?: number;
+          p_stake_cents: number;
+          p_start_date: string;
+          p_target_value: number;
+          p_title: string;
+          p_visibility: string;
+        };
+        Returns: {
+          created_at: string;
+          creator_id: string;
+          ends_at: string;
+          fee_bps: number;
+          goal_type: string;
+          id: string;
+          invite_code: string | null;
+          max_participants: number | null;
+          min_participants: number;
+          participant_count: number;
+          pot_cents: number | null;
+          settled_at: string | null;
+          stake_cents: number;
+          starts_at: string;
+          status: string;
+          sync_grace_hours: number;
+          target_value: number;
+          timezone: string;
+          title: string;
+          visibility: string;
+        };
+        SetofOptions: {
+          from: '*';
+          to: 'challenges';
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
       get_my_profile: {
         Args: Record<PropertyKey, never>;
         Returns: {
@@ -131,6 +398,60 @@ export type Database = {
         SetofOptions: {
           from: '*';
           to: 'profiles';
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      join_challenge: {
+        Args: { p_challenge_id: string };
+        Returns: {
+          challenge_id: string;
+          joined_at: string;
+          payout_cents: number | null;
+          progress_value: number;
+          result: string;
+          stake_cents: number;
+          user_id: string;
+        };
+        SetofOptions: {
+          from: '*';
+          to: 'challenge_participants';
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      join_challenge_by_code: {
+        Args: { p_code: string };
+        Returns: {
+          challenge_id: string;
+          joined_at: string;
+          payout_cents: number | null;
+          progress_value: number;
+          result: string;
+          stake_cents: number;
+          user_id: string;
+        };
+        SetofOptions: {
+          from: '*';
+          to: 'challenge_participants';
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      leave_challenge: {
+        Args: { p_challenge_id: string };
+        Returns: {
+          account: string;
+          amount_cents: number;
+          challenge_id: string | null;
+          created_at: string;
+          id: string;
+          type: string;
+          user_id: string | null;
+        };
+        SetofOptions: {
+          from: '*';
+          to: 'ledger_entries';
           isOneToOne: true;
           isSetofReturn: false;
         };
