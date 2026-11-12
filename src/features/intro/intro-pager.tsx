@@ -6,6 +6,7 @@ import {
   View,
   type NativeScrollEvent,
   type NativeSyntheticEvent,
+  type ScrollViewInstance,
 } from 'react-native';
 
 import { Button, Illustration, Screen, Text } from '@/components';
@@ -21,7 +22,7 @@ export type IntroPagerProps = {
 /** Three swipeable pages: how it works, automatic checking, how winnings are paid. */
 export function IntroPager({ onFinish }: IntroPagerProps) {
   const { width } = useWindowDimensions();
-  const scroll = useRef<ScrollView>(null);
+  const scroll = useRef<ScrollViewInstance>(null);
   const [index, setIndex] = useState(0);
   const pages = de.intro.pages(healthSourceName);
   const last = index === pages.length - 1;

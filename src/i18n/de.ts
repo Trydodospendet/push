@@ -270,8 +270,6 @@ export const de = {
     create: 'Solo-Ziel setzen',
     current: 'LAUFENDE ZIELE',
     finished: 'ABGESCHLOSSEN',
-    emptyCurrent: 'Du hast gerade kein Solo-Ziel.',
-    emptyFinished: 'Noch keine abgeschlossenen Ziele.',
     error: 'Deine Solo-Ziele konnten nicht geladen werden.',
   },
   home: {
@@ -308,7 +306,6 @@ export const de = {
       ] as const,
   },
   stats: {
-    streakLabel: 'SERIE',
     streak: (days: number) => (days === 1 ? '1 Tag in Folge' : `${days} Tage in Folge`),
     streakNone: 'Starte heute deine Serie',
     streakHint: 'Ein Tag zählt mit einem gültigen Lauf oder mindestens 8.000 Schritten.',
@@ -344,7 +341,6 @@ export const de = {
     possibleWinSetting: 'Wird berechnet …',
     verified: 'Automatisch geprüft',
     verifiedHint: (source: string) => `Ergebnisse kommen aus ${source}.`,
-    howItWorks: "So funktioniert's",
   },
   emptyStates: {
     walletTitle: 'Noch keine Buchungen',
@@ -361,7 +357,6 @@ export const de = {
     soloCurrentText: 'Tippe oben auf „Solo-Ziel setzen“ und wette auf dich selbst.',
     soloFinishedTitle: 'Noch nichts abgeschlossen',
     soloFinishedText: 'Deine erreichten und verpassten Ziele erscheinen hier.',
-    homeAction: 'Challenge finden',
   },
   challenges: {
     title: 'Ranked',
@@ -372,9 +367,6 @@ export const de = {
     mine: 'MEINE CHALLENGES',
     open: 'OFFENE CHALLENGES',
     finished: 'ABGESCHLOSSEN',
-    emptyMine: 'Du bist noch bei keiner Challenge dabei.',
-    emptyFinished: 'Noch keine abgeschlossenen Challenges.',
-    emptyOpen: 'Gerade gibt es keine offenen Challenges. Erstell doch selbst eine!',
     error: 'Die Challenges konnten nicht geladen werden.',
     joinedBadge: 'Dabei',
     createdBadge: 'Von dir',
@@ -527,7 +519,6 @@ export const de = {
     balanceAccessibility: (amount: string) => `Guthaben: ${amount} Credits`,
     error: 'Dein Guthaben konnte nicht geladen werden.',
     history: 'BUCHUNGEN',
-    historyEmpty: 'Noch keine Buchungen.',
     historyError: 'Die Buchungen konnten nicht geladen werden.',
     entryType: {
       signup_bonus: 'Startguthaben',

@@ -36,16 +36,10 @@ export function ChallengeFacts({ challenge }: { challenge: Challenge }) {
   return (
     <Card style={styles.card}>
       <Fact label={de.challenge.period} value={formatPeriod(challenge)} />
-      <View style={styles.row}>
-        <Fact
-          label={de.challenge.stake}
-          value={`${formatAmount(challenge.stake_cents)} ${de.common.credits}`}
-        />
-        <Fact
-          label={de.challenge.pot}
-          value={`${formatAmount(challenge.pot_cents ?? 0)} ${de.common.credits}`}
-        />
-      </View>
+      <Fact
+        label={de.challenge.stake}
+        value={`${formatAmount(challenge.stake_cents)} ${de.common.credits}`}
+      />
       <Fact
         label={de.challenge.participants}
         value={
@@ -60,10 +54,6 @@ export function ChallengeFacts({ challenge }: { challenge: Challenge }) {
 
 const styles = StyleSheet.create({
   card: {
-    gap: spacing.md,
-  },
-  row: {
-    flexDirection: 'row',
     gap: spacing.md,
   },
   fact: {

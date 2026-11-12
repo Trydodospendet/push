@@ -2,7 +2,17 @@ import { useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { RefreshControl, Share, StyleSheet, View } from 'react-native';
 
-import { Button, Card, ErrorState, LoadingState, Pill, Screen, Sheet, Text } from '@/components';
+import {
+  Avatar,
+  Button,
+  Card,
+  ErrorState,
+  LoadingState,
+  Pill,
+  Screen,
+  Sheet,
+  Text,
+} from '@/components';
 import { useSession } from '@/features/auth/auth-provider';
 import {
   useChallenge,
@@ -22,6 +32,7 @@ import {
   modeLabel,
   statusLabel,
 } from '@/features/challenges/format';
+import { PotCard } from '@/features/challenges/pot-card';
 import { JoinSheet } from '@/features/challenges/join-sheet';
 import { Leaderboard } from '@/features/challenges/leaderboard';
 import type { Challenge, Participant } from '@/features/challenges/types';
@@ -180,6 +191,8 @@ function ChallengeDetail({
       {me && (isFinished(challenge) || challenge.status === 'settling') ? (
         <ResultCard challenge={challenge} me={me} />
       ) : null}
+
+      <PotCard challenge={challenge} />
 
       <ChallengeFacts challenge={challenge} />
 
@@ -379,6 +392,7 @@ function ParticipantRow({ participant, isMe }: { participant: Participant; isMe:
   const result = resultLabel(participant.result);
   return (
     <View style={styles.participantRow} accessible accessibilityLabel={`${name}: ${result}`}>
+      <Avatar name={participant.displayName} size="sm" highlight={isMe} />
       <Text style={styles.participantName} numberOfLines={1}>
         {name}
       </Text>

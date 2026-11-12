@@ -35,10 +35,7 @@ export async function loadCelebrationState(userId: string, now: Date): Promise<C
   return fresh;
 }
 
-export async function saveCelebrationState(
-  userId: string,
-  state: CelebrationState,
-): Promise<void> {
+export async function saveCelebrationState(userId: string, state: CelebrationState): Promise<void> {
   await secureStorage.setItem(
     storageKey(userId),
     JSON.stringify({ ...state, seen: state.seen.slice(-MAX_SEEN) }),

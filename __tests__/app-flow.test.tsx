@@ -3,6 +3,7 @@ import { renderRouter, screen, waitFor } from 'expo-router/testing-library';
 
 jest.mock('@/lib/supabase');
 jest.mock('@/features/health/storage');
+jest.mock('@/features/intro/storage');
 jest.mock('@/features/health/native');
 // Font loading is not part of this test (and expo-font needs native asset modules).
 jest.mock('expo-font', () => ({ useFonts: () => [true, null] }));
@@ -18,6 +19,9 @@ const {
 const { mockHealthState, saveHealthState, clearHealthState } = jest.requireMock<
   typeof import('../src/features/health/__mocks__/storage')
 >('@/features/health/storage');
+const { mockIntro, saveIntroSeen } = jest.requireMock<
+  typeof import('../src/features/intro/__mocks__/storage')
+>('@/features/intro/storage');
 const { mockAdapter } = jest.requireMock<typeof import('../src/features/health/__mocks__/native')>(
   '@/features/health/native',
 );
@@ -39,9 +43,29 @@ beforeEach(() => {
   mockAuth.reset();
   mockDb.reset();
   mockHealthState.reset();
+  mockIntro.reset();
 });
 
 describe('app flow', () => {
+  it('shows the three intro pages once, then continues to the app', async () => {
+    const user = userEvent.setup();
+    mockIntro.set(false);
+    mockAuth.setInitialSession(session);
+    supabaseMock.rpc.mockResolvedValue({ data: profile(true, 'Anna Lauf'), error: null });
+
+    await renderRouter('./app', { initialUrl: '/' });
+
+    expect(await screen.findByText("So funktioniert's")).toBeOnTheScreen();
+    expect(screen.getByText('Automatisch geprüft über Apple Health')).toBeOnTheScreen();
+    expect(screen.getByText('So wird ausgezahlt')).toBeOnTheScreen();
+    await user.press(screen.getByRole('button', { name: 'Weiter' }));
+    await user.press(screen.getByRole('button', { name: 'Weiter' }));
+    await user.press(screen.getByRole('button', { name: "Los geht's" }));
+
+    expect(await screen.findByText('Noch keine Challenge')).toBeOnTheScreen();
+    expect(saveIntroSeen).toHaveBeenCalledWith('user-1');
+  });
+
   it('signs up a new user: welcome → email → code → name → health → home', async () => {
     const user = userEvent.setup();
     mockHealthState.set({});

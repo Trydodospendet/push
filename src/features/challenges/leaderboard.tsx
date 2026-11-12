@@ -1,6 +1,6 @@
 import { StyleSheet, View } from 'react-native';
 
-import { Card, ErrorState, LoadingState, Pill, Text } from '@/components';
+import { Avatar, Card, ErrorState, LoadingState, Pill, Text } from '@/components';
 import { de } from '@/i18n/de';
 import { spacing } from '@/theme';
 
@@ -51,6 +51,7 @@ export function Leaderboard({ challenge }: { challenge: Challenge }) {
             >
               {de.challenge.rank(entry.rank)}
             </Text>
+            <Avatar name={entry.displayName} size="sm" highlight={entry.isMe} />
             <Text style={styles.name} numberOfLines={1}>
               {name}
             </Text>

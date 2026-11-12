@@ -12,6 +12,7 @@ import {
 import { AppState } from 'react-native';
 
 import { challengeKeys } from '@/features/challenges/api';
+import { statsKeys } from '@/features/stats/api';
 import { toUserMessage } from '@/lib/errors';
 
 import { activityKeys } from './api';
@@ -129,6 +130,7 @@ export function HealthProvider({ userId, timezone, children }: HealthProviderPro
           await Promise.all([
             queryClient.invalidateQueries({ queryKey: challengeKeys.all }),
             queryClient.invalidateQueries({ queryKey: activityKeys.all }),
+            queryClient.invalidateQueries({ queryKey: statsKeys.all }),
           ]);
         } catch (syncError) {
           setError(toUserMessage(syncError));

@@ -1,7 +1,9 @@
+import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
-import { Pressable, RefreshControl, StyleSheet, View } from 'react-native';
+import { Pressable, RefreshControl, StyleSheet } from 'react-native';
 
-import { Button, Card, ErrorState, LoadingState, Screen, Text } from '@/components';
+import { Card, EmptyState, ErrorState, LoadingState, Screen, Text } from '@/components';
+import { DEFAULT_TIMEZONE } from '@/config/app';
 import { useSession } from '@/features/auth/auth-provider';
 import { useMyChallenges } from '@/features/challenges/api';
 import { ChallengeCard } from '@/features/challenges/challenge-card';
@@ -10,12 +12,15 @@ import { useHealth } from '@/features/health/health-provider';
 import { pickPrimaryChallenge } from '@/features/health/progress';
 import { ProgressSummary } from '@/features/health/progress-summary';
 import { HealthBanner, useLastSyncText } from '@/features/health/sync-status';
+import { RecentWins, StreakAndWeek } from '@/features/stats/home-sections';
+import { statsKeys } from '@/features/stats/api';
 import { de } from '@/i18n/de';
 import { colors, opacity, spacing } from '@/theme';
 
 /** The joined challenges: the most important one with its progress, the others as cards. */
 export default function HomeScreen() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const session = useSession();
   const health = useHealth();
   const mine = useMyChallenges(session.user.id);
@@ -25,7 +30,8 @@ export default function HomeScreen() {
       challenge.isParticipant && challenge.status !== 'settled' && challenge.status !== 'cancelled',
   );
   const primary = joined ? pickPrimaryChallenge(joined) : undefined;
-  const lastSync = useLastSyncText(primary?.timezone ?? 'Europe/Berlin');
+  const timezone = primary?.timezone ?? DEFAULT_TIMEZONE;
+  const lastSync = useLastSyncText(timezone);
 
   if (mine.isPending) {
     return (
@@ -49,17 +55,19 @@ export default function HomeScreen() {
 
   if (!joined || joined.length === 0) {
     return (
-      <Screen contentStyle={styles.emptyContent}>
+      <Screen scroll contentStyle={styles.content}>
         <Text variant="label" color="textSecondary">
           {de.home.label}
         </Text>
-        <View style={styles.empty}>
-          <Text variant="title" accessibilityRole="header">
-            {de.home.emptyTitle}
-          </Text>
-          <Text color="textSecondary">{de.home.emptyText}</Text>
-        </View>
-        <Button label={de.home.findChallenge} onPress={() => router.navigate('/ranked')} />
+        <EmptyState
+          icon="flag-outline"
+          title={de.home.emptyTitle}
+          text={de.home.emptyText}
+          actionLabel={de.home.findChallenge}
+          onAction={() => router.navigate('/ranked')}
+        />
+        <StreakAndWeek userId={session.user.id} />
+        <RecentWins userId={session.user.id} timezone={timezone} />
       </Screen>
     );
   }
@@ -77,6 +85,7 @@ export default function HomeScreen() {
             void health.sync().then(() => {
               void mine.refetch();
               void progress.refetch();
+              void queryClient.invalidateQueries({ queryKey: statsKeys.all });
             });
           }}
           tintColor={colors.accent}
@@ -106,11 +115,13 @@ export default function HomeScreen() {
                 value={progress.data?.[primary.id] ?? 0}
                 now={new Date()}
                 footer={health.connected ? lastSync : null}
+                ring
               />
             </Card>
           </Pressable>
         </>
       ) : null}
+      <StreakAndWeek userId={session.user.id} />
       {others.length > 0 ? (
         <>
           <Text variant="label" color="textSecondary" accessibilityRole="header">
@@ -121,24 +132,16 @@ export default function HomeScreen() {
           ))}
         </>
       ) : null}
+      <RecentWins userId={session.user.id} timezone={timezone} />
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  emptyContent: {
-    paddingTop: spacing.xl,
-    paddingBottom: spacing.lg,
-  },
-  empty: {
-    flex: 1,
-    justifyContent: 'center',
-    gap: spacing.xs,
-  },
   content: {
     paddingTop: spacing.xl,
     paddingBottom: spacing.xl,
-    gap: spacing.sm,
+    gap: spacing.md,
   },
   primary: {
     gap: spacing.md,

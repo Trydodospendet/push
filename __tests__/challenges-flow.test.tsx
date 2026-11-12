@@ -5,6 +5,7 @@ import { addDays, toLocalDate } from '@/lib/dates';
 
 jest.mock('@/lib/supabase');
 jest.mock('@/features/health/storage');
+jest.mock('@/features/intro/storage');
 jest.mock('@/features/health/native');
 // Font loading is not part of these tests (and expo-font needs native asset modules).
 jest.mock('expo-font', () => ({ useFonts: () => [true, null] }));
@@ -141,8 +142,10 @@ describe('progress', () => {
 
     await renderRouter('./app', { initialUrl: '/' });
 
-    expect(await screen.findByLabelText('3,25 von 5,00 km')).toBeOnTheScreen();
-    expect(screen.getByText('3,25 / 5,00')).toBeOnTheScreen();
+    expect(
+      await screen.findByLabelText('Fortschritt der Challenge: 3,25 von 5,00 km'),
+    ).toBeOnTheScreen();
+    expect(screen.getByText('von 5,00 km')).toBeOnTheScreen();
     expect(screen.getByText('Noch 5 Tage')).toBeOnTheScreen();
     expect(
       screen.getByText(

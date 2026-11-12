@@ -1,5 +1,13 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { AccessibilityInfo, Animated, Easing, Modal, StyleSheet, View } from 'react-native';
+import { useCallback, useEffect, useState } from 'react';
+import {
+  AccessibilityInfo,
+  Animated,
+  Easing,
+  Modal,
+  StyleSheet,
+  useAnimatedValue,
+  View,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Button, Icon, Text } from '@/components';
@@ -60,7 +68,7 @@ export function WinCelebration() {
 
 function CelebrationModal({ win, onClose }: { win: Win; onClose: () => void }) {
   const insets = useSafeAreaInsets();
-  const progress = useRef(new Animated.Value(0)).current;
+  const progress = useAnimatedValue(0);
 
   useEffect(() => {
     let cancelled = false;

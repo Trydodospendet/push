@@ -5,6 +5,7 @@ import { addDays, toLocalDate } from '@/lib/dates';
 
 jest.mock('@/lib/supabase');
 jest.mock('@/features/health/storage');
+jest.mock('@/features/intro/storage');
 jest.mock('@/features/health/native');
 jest.mock('expo-font', () => ({ useFonts: () => [true, null] }));
 jest.mock('@expo/vector-icons/Ionicons', () => ({ __esModule: true, default: () => null }));
@@ -143,7 +144,7 @@ describe('solo', () => {
     });
 
     await openTab(user, 'Solo');
-    expect(await screen.findByText('Du hast gerade kein Solo-Ziel.')).toBeOnTheScreen();
+    expect(await screen.findByText('Kein Ziel gesetzt')).toBeOnTheScreen();
 
     await user.press(screen.getByRole('button', { name: 'Solo-Ziel setzen' }));
     await user.press(await screen.findByRole('radio', { name: '5,00 Credits' }));
@@ -199,7 +200,7 @@ describe('solo', () => {
     mockRpc({ get_my_progress: () => [{ challenge_id: missed.id, progress_value: 7200 }] });
 
     await openTab(user, 'Solo');
-    expect(await screen.findByText('Du hast gerade kein Solo-Ziel.')).toBeOnTheScreen();
+    expect(await screen.findByText('Kein Ziel gesetzt')).toBeOnTheScreen();
     await user.press(screen.getByRole('button', { name: /^Mein 10-km-Lauf/ }));
 
     expect(await screen.findByText('Ziel nicht geschafft.')).toBeOnTheScreen();
@@ -228,7 +229,9 @@ describe('ranked', () => {
 
     await openTab(user, 'Ranked');
     expect(await screen.findByText('ABGESCHLOSSEN')).toBeOnTheScreen();
-    expect(screen.getByText('Du bist noch bei keiner Challenge dabei.')).toBeOnTheScreen();
+    expect(
+      screen.getByText('Tritt einer offenen Challenge bei oder tippe oben auf „Erstellen“.'),
+    ).toBeOnTheScreen();
     await user.press(await screen.findByRole('button', { name: /^5 km am Stück/ }));
 
     expect(await screen.findByText('Ziel geschafft!')).toBeOnTheScreen();

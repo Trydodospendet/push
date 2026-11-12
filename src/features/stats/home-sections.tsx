@@ -48,7 +48,9 @@ export function StreakAndWeek({ userId }: { userId: string }) {
           <Icon name="flame" color={streak > 0 ? 'onAccent' : 'textMuted'} />
         </View>
         <View style={styles.streakText}>
-          <Text variant="heading">{streak > 0 ? de.stats.streak(streak) : de.stats.streakNone}</Text>
+          <Text variant="heading">
+            {streak > 0 ? de.stats.streak(streak) : de.stats.streakNone}
+          </Text>
           <Text variant="caption" color="textSecondary">
             {de.stats.streakHint}
           </Text>

@@ -28,14 +28,15 @@ returns date
 language sql
 as $$ select (now() at time zone 'Europe/Berlin')::date; $$;
 
--- Local noon of a day (today + offset). Today is capped at a minute ago so it is never in the future.
+-- Local noon of a day (today + offset). Today is capped so a short run that started then has
+-- already ended (the server rejects runs that end in the future).
 create function pg_temp.at(p_offset integer)
 returns timestamptz
 language sql
 as $$
   select case
     when p_offset = 0 then
-      least(now() - interval '1 minute',
+      least(now() - interval '4 minutes',
             (pg_temp.today()::timestamp + interval '12 hours') at time zone 'Europe/Berlin')
     else ((pg_temp.today() + p_offset)::timestamp + interval '12 hours') at time zone 'Europe/Berlin'
   end;
@@ -72,7 +73,7 @@ values
 -- Two days ago she only walked 9,000 steps, which still counts as an active day.
 select pg_temp.login('aaaaaaaa-0000-0000-0000-000000000001');
 select public.sync_workouts(jsonb_build_array(
-  pg_temp.w('a-today', pg_temp.at(0), 5000, 1800),
+  pg_temp.w('a-today', pg_temp.at(0), 500, 180),
   pg_temp.w('a-yesterday', pg_temp.at(-1), 3000, 1000),
   pg_temp.w('a-old', pg_temp.at(-4), 2000, 700),
   pg_temp.w('a-manual', pg_temp.at(-3), 9000, 3600, true)));
@@ -87,7 +88,7 @@ select is(
 );
 select is(
   (select total_distance_m from public.get_my_stats()),
-  10000::bigint,
+  5500::bigint,
   'total distance sums valid runs only (manual entries are left out)'
 );
 select is(
@@ -98,7 +99,7 @@ select is(
 select results_eq(
   $$ select day, distance_m from public.get_my_week()
       where day in (pg_temp.today(), pg_temp.today() - 1, pg_temp.today() - 3) order by day $$,
-  $$ values (pg_temp.today() - 3, 0), (pg_temp.today() - 1, 3000), (pg_temp.today(), 5000) $$,
+  $$ values (pg_temp.today() - 3, 0), (pg_temp.today() - 1, 3000), (pg_temp.today(), 500) $$,
   'the week shows valid metres per local day and ignores manual runs'
 );
 select pg_temp.logout();
