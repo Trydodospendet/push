@@ -252,6 +252,16 @@ otp_expiry = 3600
 # admin_email = "admin@email.com"
 # sender_name = "Admin"
 
+# Sign-in code (email OTP). New users receive the "confirmation" email, existing users the
+# "magic_link" email; both only show the 6-digit code because the app does not use links.
+[auth.email.template.confirmation]
+subject = "Dein Anmeldecode"
+content_path = "./supabase/templates/sign-in-code.html"
+
+[auth.email.template.magic_link]
+subject = "Dein Anmeldecode"
+content_path = "./supabase/templates/sign-in-code.html"
+
 # Uncomment to customize email template
 # [auth.email.template.invite]
 # subject = "You have been invited"
