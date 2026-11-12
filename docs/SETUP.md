@@ -1,7 +1,7 @@
 # PUSH – Einrichtung Schritt für Schritt
 
 Diese Anleitung ist für Windows mit PowerShell geschrieben. Alle Befehle kannst du kopieren und im
-Projektordner ausführen. Stand: **Phase 3 (Health-Daten)**.
+Projektordner ausführen. Stand: **Phase 4 (Abrechnung, Solo und Ranked)**.
 
 Projektordner öffnen:
 
@@ -101,12 +101,13 @@ falls `npm run lint` Formatierungsfehler meldet.
    | Testkonto (E-Mail)  | Name  | Guthaben      | dabei bei                                                         |
    | ------------------- | ----- | ------------- | ----------------------------------------------------------------- |
    | `anna@example.com`  | Anna  | 15,00 Credits | 5 km am Stück, Halbmarathon-Woche, Büro-Lauftreff, Großer Einsatz |
-   | `ben@example.com`   | Ben   | 80,00 Credits | 5 km am Stück, 10.000 Schritte täglich, Büro-Lauftreff            |
+   | `ben@example.com`   | Ben   | 75,00 Credits | 5 km am Stück, 10.000 Schritte täglich, Büro-Lauftreff, Solo-Ziel |
    | `clara@example.com` | Clara | 80,00 Credits | Halbmarathon-Woche                                                |
 
    Die private Challenge „Büro-Lauftreff“ hat den Einladungscode **`LAUF26`**. Außerdem gibt es
    „Großer Einsatz“ (50,00) und „10 km am Wochenende“ (20,00, noch niemand dabei). Alle
-   Beispiel-Challenges starten 1–3 Tage nach dem Reset, man kann also noch beitreten.
+   Beispiel-Challenges starten 1–3 Tage nach dem Reset, man kann also noch beitreten. Ben hat
+   außerdem das Solo-Ziel „Mein 10-km-Lauf“ (Einsatz 5,00).
 
 5. Datenbank-Tests ausführen (pgTAP, prüft Startguthaben, Zugriffsrechte usw.):
 
@@ -269,7 +270,8 @@ Bisher nötige Builds: einer in Phase 0, ein neuer in Phase 1 (wegen `expo-secur
 Anmeldung sicher auf dem Handy speichert), ein neuer in **Phase 3** (wegen der nativen Module für
 Health Connect und HealthKit sowie neuer Berechtigungen in `app.json`). Ein älterer Build kann die
 Health-Daten nicht lesen; die App zeigt dann „Diese App-Version kann keine Gesundheitsdaten lesen“.
-Phase 2 brauchte **keinen** neuen Build (`@expo/vector-icons` ist reines JavaScript).
+Phase 2 brauchte **keinen** neuen Build (`@expo/vector-icons` ist reines JavaScript), Phase 4
+ebenfalls nicht (nur JavaScript und Datenbank – der Phase-3-Build bleibt gültig).
 
 Für normale Code-Änderungen reicht `npx expo start`. Den Phase-3-Build für Android startest du im
 Projektordner mit:
@@ -310,7 +312,8 @@ Für den Test „zwei Nutzer in derselben Challenge“ meldest du dich nacheinan
 (Profil → Abmelden → mit der anderen E-Mail anmelden). Die Codes stehen jeweils in Mailpit.
 
 1. **Als neues Konto** (z. B. `test1@example.com`) anmelden, Namen wählen.
-2. Tab **Challenges**: Unter „Offene Challenges“ stehen die Beispiel-Challenges.
+2. Tab **Ranked** (hieß bis Phase 3 „Challenges“): Unter „Offene Challenges“ stehen die
+   Beispiel-Challenges.
 3. „5 km am Stück“ antippen → Ziel, Zeitraum, Einsatz, Teilnehmer, Topf und Regeln prüfen.
 4. **Beitreten** → im Sheet steht „Du setzt 10,00 Credits …“ und der Testphasen-Hinweis →
    **Jetzt beitreten**.
@@ -344,14 +347,16 @@ App eingeschaltet sein).
    erscheint „Automatisch geprüft statt behauptet“ → **Health Connect verbinden** → im
    System-Dialog **Alles zulassen** (Läufe, Distanz, Schritte). Bei „Später“ erscheint auf Home ein
    Hinweis mit demselben Knopf; im Profil gibt es **Erneut verbinden** und **Jetzt synchronisieren**.
-2. **Challenge starten lassen:** Challenges starten erst nach 0:00 Uhr des Folgetags und werden erst
-   in Phase 4 automatisch aktiv. Zum Testen setzt du eine Challenge von Hand auf „läuft“. In Studio
-   (<http://127.0.0.1:54323>) → SQL Editor, einmal ausführen (nach dem Beitritt zu „5 km am Stück“):
+2. **Challenge starten lassen:** Challenges starten erst um 0:00 Uhr des Folgetags; seit Phase 4
+   setzt die Datenbank sie dann automatisch auf „läuft“ (alle 5 Minuten). Zum sofortigen Testen
+   verlegst du den Start in die Vergangenheit. In Studio (<http://127.0.0.1:54323>) → SQL Editor,
+   einmal ausführen (nach dem Beitritt zu „5 km am Stück“):
 
    ```sql
    update public.challenges
-      set status = 'active', starts_at = now() - interval '1 day', ends_at = now() + interval '6 days'
+      set starts_at = now() - interval '1 day', ends_at = now() + interval '6 days'
     where title = '5 km am Stück';
+   select public.advance_challenges();
    ```
 
 3. **Echter Lauf:** Einen Lauf von mindestens 5 km aufzeichnen (Uhr oder Lauf-App, die an Health
@@ -375,6 +380,88 @@ App eingeschaltet sein).
   Erlaube die Rechte dann in der App **Health Connect** → App-Berechtigungen → PUSH.
 - **iPhone:** Der Code für Apple Health ist vorhanden, wurde aber noch **nicht auf einem Gerät
   getestet** (siehe Abschnitt 7 und `docs/SECURITY_NOTES.md`).
+
+### 5.9 Solo, Ranked und Abrechnung testen (Phase 4)
+
+Voraussetzungen wie in 5.7. **Kein neuer Build nötig** – der Phase-3-Build reicht.
+
+Die App hat jetzt zwei getrennte Bereiche (Tabs):
+
+- **Solo:** Du setzt dir selbst ein Ziel und einen Einsatz. Geschafft → Einsatz zurück. Nicht
+  geschafft → der Einsatz geht an das Haus-Konto. Der Einsatz wird schon beim Setzen des Ziels
+  abgebucht (nach einem Bestätigungs-Sheet).
+- **Ranked:** gemeinsamer Topf gegen andere. Wer es schafft, bekommt den Einsatz zurück plus einen
+  gleichen Anteil an den Einsätzen der anderen. Ab dem Start zeigt die Challenge eine
+  **Rangliste** (nur Reihenfolge und „geschafft/offen“, keine Kilometer der anderen; ausgezahlt wird
+  nicht nach Platz).
+
+**A. Solo in der App**
+
+1. Tab **Solo** → **Solo-Ziel setzen** → z. B. „Ein Lauf“, „5 km“, Einsatz „5,00“ →
+   **Weiter zum Einsatz**.
+2. Im Sheet steht „Du setzt 5,00 Credits auf dich selbst …“ → **Einsatz setzen**.
+3. Erwartet: Detailseite des Ziels mit Pill „Solo“, ohne Teilnehmerliste und Topf. Im Wallet
+   „Einsatz −5,00“. Bis zum Start kannst du noch aussteigen (Einsatz zurück).
+
+**B. Abrechnung im Zeitraffer (Simulation)**
+
+Das Skript spielt eine Ranked-Challenge und ein Solo-Ziel mit den Testkonten bis zur Abrechnung
+durch (Anna und Ben schaffen 5 km, Clara trägt 10 km von Hand ein und verliert; Bens Solo-Ziel
+„10 km insgesamt“ scheitert mit 9,1 km). Es ändert nur die Zeitpunkte – alle Buchungen machen die
+echten Datenbank-Funktionen.
+
+```powershell
+npm run db:reset
+```
+
+```powershell
+Get-Content supabase\scripts\simulate_challenge.sql | docker exec -i supabase_db_push psql -U postgres -d postgres
+```
+
+Erwartet am Ende: Anna und Ben bekommen je **7,50** (5,00 Einsatz + 2,50 von Clara), Clara 0,
+Bens Solo-Einsatz von 3,00 geht als „forfeit“ ans Haus, die Summe je Challenge ist **0**, und der
+zweite Aufruf von `settle_challenge` liefert `f` (nichts passiert doppelt).
+
+In der App als `anna@example.com` anmelden: Tab **Ranked** → „Abgeschlossen“ → „Simulation 5 km“
+zeigt **„Ziel geschafft! Dir wurden 7,50 Credits gutgeschrieben.“** und die Rangliste. Im Wallet
+steht „Auszahlung +7,50“. Als `ben@example.com`: Tab **Solo** → „Abgeschlossen“ →
+„Simulation Solo“ zeigt **„Ziel nicht geschafft. Dein Einsatz ist verfallen.“**
+
+**C. Eine eigene Challenge von Hand abrechnen** (SQL Editor in Studio)
+
+```sql
+-- 1. Zeitraum in die Vergangenheit legen und Kulanzzeit abschalten
+update public.challenges
+   set starts_at = now() - interval '2 days', ends_at = now() - interval '1 minute',
+       sync_grace_hours = 0
+ where title = 'DEIN TITEL';
+-- 2. Starten (oder absagen), Zeitraum beenden und abrechnen – alles in einem Aufruf
+select public.advance_challenges();
+```
+
+Ohne dein Zutun passiert dasselbe automatisch alle 5 Minuten (`pg_cron`): Start um 0:00 Uhr
+(zu wenige Teilnehmer → abgesagt, alle bekommen den Einsatz zurück), Ende nach dem letzten Tag,
+Abrechnung 24 Stunden später (Zeit für späte Synchronisierungen).
+
+**Haus-Konto und Gebühr**
+
+- Das Haus-Konto gibt es nur im Ledger (`account = 'house'`). Nutzer sehen diese Buchungen nie.
+  Saldo ansehen:
+
+  ```sql
+  select type, sum(amount_cents) from public.ledger_entries where account = 'house' group by type;
+  ```
+
+- Die Gebühr ist ein Konfigurationswert, Standard **0**. Sie gilt nur für Ranked, nur auf die
+  verlorenen Einsätze, und wird beim Erstellen einer Challenge fest übernommen (spätere Änderungen
+  betreffen nur neue Challenges). Ändern, z. B. auf 10 %:
+
+  ```sql
+  update private.settings set fee_bps = 1000;
+  ```
+
+- Rundung immer zugunsten des Hauses: Gewinner bekommen den abgerundeten Anteil, übrige Cent gehen
+  als „rounding“ ans Haus.
 
 ---
 
@@ -416,6 +503,10 @@ App eingeschaltet sein).
 - **Verlassen ist endgültig:** Wer eine Challenge vor dem Start verlässt, bekommt den Einsatz
   zurück, kann aber nicht erneut beitreten. Grund: Pro Person und Challenge darf es nur eine
   Einsatz-Buchung geben (Schutz vor Doppelbuchungen, siehe CLAUDE.md 5.1).
+- **Ranked mit nur einer Person:** Eine Ranked-Challenge braucht beim Start mindestens 2 Personen,
+  sonst wird sie abgesagt und der Einsatz erstattet. Die Abrechnung beherrscht auch den Fall „nur
+  eine Person“ (gewinnt → Einsatz zurück, verliert → Haus); er tritt aber nur ein, wenn man
+  `min_participants` per SQL auf 1 setzt.
 - **Challenges starten immer um 0:00 Uhr** (Zeitzone Europe/Berlin) und dauern ganze Tage. So ist
   bei „Tägliche Schritte“ jeder Tag vollständig. Frühester Start ist morgen, spätester in 30 Tagen.
 - **Testkonten löschen:** Ein Konto, das Challenges erstellt hat oder bei Challenges dabei war,

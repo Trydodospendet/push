@@ -55,3 +55,21 @@ iOS-Test mit echten Nutzern prüfen.
 
 Teilnehmer sehen von anderen nur „geschafft / offen“. Die Spalte `challenge_participants.progress_value`
 ist für Clients gesperrt (Spaltenrecht); den eigenen Fortschritt liefert `get_my_progress()`.
+
+**Seit Phase 4:** Die Rangliste in Ranked (`get_leaderboard`) verrät die **Reihenfolge** der
+Teilnehmer (wer weiter ist), aber keine Werte. Das ist bewusst so gewollt (Auftrag Phase 4).
+
+## 6. Abrechnung und Haus-Konto (Phase 4)
+
+- `settle_challenge` und `advance_challenges` sind für App-Nutzer **nicht aufrufbar** (nur
+  Datenbank/`pg_cron`). Sonst könnte jemand eine Challenge während der Kulanzzeit abrechnen und
+  späte Synchronisierungen anderer abschneiden. Zusätzlich prüft `settle_challenge` selbst, dass
+  die Kulanzzeit vorbei ist.
+- Doppelte Abrechnung ist dreifach verhindert: Statusprüfung unter Zeilensperre (`FOR UPDATE`),
+  Unique-Index für `stake/payout/refund` je Person und Challenge, Unique-Index für Haus-Buchungen
+  (`fee/rounding/forfeit`) je Challenge.
+- Das Haus-Konto existiert nur als Ledger-Buchungen (`account = 'house'`) und ist für Nutzer
+  unsichtbar. Verfallene Einsätze (Solo verfehlt, niemand gewinnt) gehen vollständig ans Haus –
+  **Produktentscheidung, vor echtem Geld rechtlich prüfen** (Glücksspielrecht, Verbraucherschutz).
+- Die Gebühr (`private.settings.fee_bps`) wird beim Erstellen in die Challenge kopiert und ändert
+  sich danach nicht mehr.
