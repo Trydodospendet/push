@@ -125,31 +125,34 @@ export type Database = {
       challenge_participants: {
         Row: {
           challenge_id: string;
+          id: string;
           joined_at: string;
           payout_cents: number | null;
           progress_value: number;
           result: string;
           stake_cents: number;
-          user_id: string;
+          user_id: string | null;
         };
         ComputedFields: never;
         Insert: {
           challenge_id: string;
+          id?: string;
           joined_at?: string;
           payout_cents?: number | null;
           progress_value?: number;
           result?: string;
           stake_cents: number;
-          user_id: string;
+          user_id?: string | null;
         };
         Update: {
           challenge_id?: string;
+          id?: string;
           joined_at?: string;
           payout_cents?: number | null;
           progress_value?: number;
           result?: string;
           stake_cents?: number;
-          user_id?: string;
+          user_id?: string | null;
         };
         Relationships: [
           {
@@ -171,7 +174,7 @@ export type Database = {
       challenges: {
         Row: {
           created_at: string;
-          creator_id: string;
+          creator_id: string | null;
           ends_at: string;
           fee_bps: number;
           goal_type: string;
@@ -195,7 +198,7 @@ export type Database = {
         ComputedFields: never;
         Insert: {
           created_at?: string;
-          creator_id: string;
+          creator_id?: string | null;
           ends_at: string;
           fee_bps?: number;
           goal_type: string;
@@ -218,7 +221,7 @@ export type Database = {
         };
         Update: {
           created_at?: string;
-          creator_id?: string;
+          creator_id?: string | null;
           ends_at?: string;
           fee_bps?: number;
           goal_type?: string;
@@ -367,7 +370,7 @@ export type Database = {
         };
         Returns: {
           created_at: string;
-          creator_id: string;
+          creator_id: string | null;
           ends_at: string;
           fee_bps: number;
           goal_type: string;
@@ -395,11 +398,12 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      delete_my_account: { Args: Record<PropertyKey, never>; Returns: undefined };
       get_challenge_by_code: {
         Args: { p_code: string };
         Returns: {
           created_at: string;
-          creator_id: string;
+          creator_id: string | null;
           ends_at: string;
           fee_bps: number;
           goal_type: string;
@@ -464,12 +468,13 @@ export type Database = {
         Args: { p_challenge_id: string };
         Returns: {
           challenge_id: string;
+          id: string;
           joined_at: string;
           payout_cents: number | null;
           progress_value: number;
           result: string;
           stake_cents: number;
-          user_id: string;
+          user_id: string | null;
         };
         SetofOptions: {
           from: '*';
@@ -482,12 +487,13 @@ export type Database = {
         Args: { p_code: string };
         Returns: {
           challenge_id: string;
+          id: string;
           joined_at: string;
           payout_cents: number | null;
           progress_value: number;
           result: string;
           stake_cents: number;
-          user_id: string;
+          user_id: string | null;
         };
         SetofOptions: {
           from: '*';

@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tanstack/react-query';
 
+import { de } from '@/i18n/de';
 import { supabase } from '@/lib/supabase';
 
 import type { CreateChallengeInput } from './schemas';
@@ -110,7 +111,7 @@ export function useParticipants(challengeId: string) {
       const { data, error } = await supabase
         .from('challenge_participants')
         .select(
-          'user_id, result, stake_cents, payout_cents, joined_at, profile:profiles(display_name)',
+          'id, user_id, result, stake_cents, payout_cents, joined_at, profile:profiles(display_name)',
         )
         .eq('challenge_id', challengeId)
         .order('joined_at');
@@ -118,8 +119,9 @@ export function useParticipants(challengeId: string) {
         throw error;
       }
       return data.map((row) => ({
+        id: row.id,
         userId: row.user_id,
-        displayName: row.profile?.display_name ?? '',
+        displayName: row.profile?.display_name ?? de.challenge.deletedAccount,
         result: row.result,
         stakeCents: row.stake_cents,
         payoutCents: row.payout_cents,

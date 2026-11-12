@@ -37,6 +37,11 @@ export async function loadHealthState(userId: string): Promise<HealthState> {
   }
 }
 
+/** Forgets the connection state of an account on this phone (after account deletion). */
+export async function clearHealthState(userId: string): Promise<void> {
+  await secureStorage.removeItem(storageKey(userId));
+}
+
 export async function saveHealthState(userId: string, state: HealthState): Promise<void> {
   await secureStorage.setItem(storageKey(userId), JSON.stringify(state));
 }

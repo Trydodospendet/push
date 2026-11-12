@@ -2,8 +2,123 @@ import {
   APP_NAME,
   DISPLAY_NAME_MAX_LENGTH,
   DISPLAY_NAME_MIN_LENGTH,
+  LEGAL,
   SIGN_IN_CODE_LENGTH,
 } from '@/config/app';
+
+/** One section of a legal page: heading plus paragraphs. */
+export type LegalSection = { title: string; paragraphs: readonly string[] };
+
+const operatorLines = [LEGAL.operatorName, LEGAL.street, `${LEGAL.city}, ${LEGAL.country}`];
+
+const privacySections: readonly LegalSection[] = [
+  {
+    title: '1. Verantwortlicher',
+    paragraphs: [...operatorLines, `E-Mail: ${LEGAL.email}`],
+  },
+  {
+    title: '2. Worum es geht',
+    paragraphs: [
+      `${APP_NAME} ist eine App, in der du auf deine eigenen Lauf- und Schrittziele setzt. Ob du ein Ziel erreichst, wird automatisch anhand deiner Gesundheitsdaten geprüft.`,
+      'Testphase: Es werden ausschließlich virtuelle Credits verwendet. Es gibt keine Zahlungen und keine Auszahlungen.',
+    ],
+  },
+  {
+    title: '3. Welche Daten wir verarbeiten',
+    paragraphs: [
+      'Konto: deine E-Mail-Adresse (für die Anmeldung per Code), dein Anzeigename und deine Zeitzone.',
+      'Challenges und Credits: an welchen Challenges du teilnimmst, deine Einsätze, Ergebnisse und die Buchungen deiner virtuellen Credits.',
+      'Gesundheits- und Fitnessdaten (Health Connect bzw. Apple Health), nur lesend und nur aus den letzten 45 Tagen: Lauf-Workouts (Beginn, Ende, Distanz, Dauer, Name der aufzeichnenden App und ob der Lauf von Hand eingetragen wurde) sowie deine Schritte pro Tag.',
+      `${APP_NAME} schreibt keine Daten in Health Connect oder Apple Health und liest keine anderen Gesundheitsdaten (z. B. keine Herzfrequenz, kein Gewicht, keine GPS-Routen).`,
+      'Technische Daten: Bei jeder Verbindung zum Server werden IP-Adresse, Zeitpunkt und Art der Anfrage in Server-Protokollen des Hosting-Anbieters erfasst.',
+      'Auf deinem Gerät: deine Anmeldung und der Verbindungsstatus zu den Gesundheitsdaten, gespeichert im verschlüsselten Gerätespeicher.',
+    ],
+  },
+  {
+    title: '4. Zwecke und Rechtsgrundlagen',
+    paragraphs: [
+      'Konto, Challenges und Credits: um dir die App bereitzustellen (Art. 6 Abs. 1 lit. b DSGVO).',
+      'Gesundheitsdaten: ausschließlich, um automatisch zu prüfen, ob du die Ziele deiner Challenges erreichst, und um dir deinen Fortschritt anzuzeigen. Rechtsgrundlage ist deine ausdrückliche Einwilligung (Art. 9 Abs. 2 lit. a und Art. 6 Abs. 1 lit. a DSGVO), die du mit der Freigabe im Berechtigungsdialog erteilst.',
+      'Du kannst die Einwilligung jederzeit widerrufen, indem du den Zugriff in Health Connect bzw. in der Health-App entziehst. Danach kann dein Fortschritt nicht mehr geprüft werden; bereits übertragene Daten bleiben bis zur Löschung deines Kontos gespeichert.',
+      'Server-Protokolle: für den sicheren Betrieb und die Fehlersuche (berechtigtes Interesse, Art. 6 Abs. 1 lit. f DSGVO).',
+      'Wir nutzen keine Werbung, keine Analyse- oder Tracking-Dienste und verkaufen keine Daten.',
+    ],
+  },
+  {
+    title: '5. Health Connect und Apple Health',
+    paragraphs: [
+      'Die Nutzung von Daten, die über Health Connect empfangen werden, erfolgt gemäß der Health-Connect-Berechtigungsrichtlinie einschließlich der Anforderungen zur eingeschränkten Nutzung („Limited Use“).',
+      'Gesundheitsdaten werden nicht für Werbung verwendet, nicht verkauft und nicht an Dritte weitergegeben – außer an den unten genannten Hosting-Anbieter, der sie nur in unserem Auftrag speichert.',
+      'Andere Teilnehmer deiner Challenges sehen nur deinen Anzeigenamen, ob du das Ziel erreicht hast und deinen Platz in der Rangliste – nie deine Gesundheitsdaten.',
+    ],
+  },
+  {
+    title: '6. Empfänger und Auftragsverarbeiter',
+    paragraphs: [
+      `Supabase Inc. (Datenbank, Anmeldung, Hosting). Serverstandort: ${LEGAL.supabaseRegion}. Mit Supabase besteht ein Vertrag zur Auftragsverarbeitung; für mögliche Zugriffe aus den USA gelten die EU-Standardvertragsklauseln.`,
+      `${LEGAL.emailProvider} (Versand der Anmeldecodes per E-Mail; verarbeitet nur deine E-Mail-Adresse).`,
+      'Google (Play Store) bzw. Apple (App Store) stellen die App bereit und verarbeiten dabei Daten in eigener Verantwortung.',
+    ],
+  },
+  {
+    title: '7. Speicherdauer',
+    paragraphs: [
+      'Konto- und Gesundheitsdaten speichern wir, bis du dein Konto löschst.',
+      'Teilnahmen und Credit-Buchungen werden bei der Löschung anonymisiert: Der Bezug zu dir wird entfernt, die Beträge bleiben ohne Personenbezug erhalten, damit die Abrechnung der anderen Teilnehmer korrekt bleibt.',
+      'Server-Protokolle werden vom Hosting-Anbieter nach kurzer Zeit automatisch gelöscht.',
+      'Die Daten auf deinem Gerät werden beim Abmelden bzw. beim Löschen der App entfernt.',
+    ],
+  },
+  {
+    title: '8. Konto löschen',
+    paragraphs: [
+      `In der App: Profil → „Konto löschen“. Ohne App: Schreib eine E-Mail von deiner registrierten Adresse an ${LEGAL.email} mit dem Betreff „Konto löschen“. Anleitung: ${LEGAL.deletionUrl}`,
+      'Gelöscht werden: E-Mail-Adresse, Anzeigename, Guthaben und alle Gesundheitsdaten. Noch nicht gestartete Challenges werden dir vorher erstattet; Einsätze in bereits laufenden Challenges verfallen.',
+    ],
+  },
+  {
+    title: '9. Deine Rechte',
+    paragraphs: [
+      'Du hast das Recht auf Auskunft, Berichtigung, Löschung, Einschränkung der Verarbeitung, Datenübertragbarkeit und Widerspruch sowie auf Widerruf erteilter Einwilligungen mit Wirkung für die Zukunft.',
+      `Schreib uns dafür an ${LEGAL.email}. Außerdem kannst du dich bei einer Datenschutz-Aufsichtsbehörde beschweren.`,
+    ],
+  },
+  {
+    title: '10. Sicherheit',
+    paragraphs: [
+      'Alle Verbindungen sind verschlüsselt (HTTPS). Auf dem Server kann jedes Konto nur seine eigenen Daten lesen; Credits werden ausschließlich vom Server gebucht.',
+    ],
+  },
+  {
+    title: '11. Mindestalter',
+    paragraphs: [`${APP_NAME} richtet sich ausschließlich an Personen ab 18 Jahren.`],
+  },
+  {
+    title: '12. Stand',
+    paragraphs: [`Diese Datenschutzerklärung gilt ab ${LEGAL.updatedAt}.`],
+  },
+];
+
+const imprintSections: readonly LegalSection[] = [
+  {
+    title: 'Angaben gemäß § 5 DDG',
+    paragraphs: [...operatorLines, LEGAL.register, LEGAL.vatId],
+  },
+  {
+    title: 'Kontakt',
+    paragraphs: [`E-Mail: ${LEGAL.email}`, `Telefon: ${LEGAL.phone}`],
+  },
+  {
+    title: 'Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV',
+    paragraphs: operatorLines,
+  },
+  {
+    title: 'Verbraucherstreitbeilegung',
+    paragraphs: [
+      'Wir sind nicht bereit und nicht verpflichtet, an Streitbeilegungsverfahren vor einer Verbraucherschlichtungsstelle teilzunehmen.',
+    ],
+  },
+];
 
 /** All user-facing texts of the app. Screens and components never hard-code strings. */
 export const de = {
@@ -270,6 +385,7 @@ export const de = {
     joined: 'Du bist dabei',
     notJoinable: 'Beitreten ist nur vor dem Start möglich.',
     leave: 'Challenge verlassen',
+    deletedAccount: 'Gelöschtes Konto',
     creatorHint: 'Du hast diese Challenge erstellt. Tritt selbst bei, um mitzumachen.',
   },
   joinSheet: {
@@ -360,5 +476,31 @@ export const de = {
     signOut: 'Abmelden',
     signOutError: 'Abmelden hat nicht geklappt. Prüfe deine Internetverbindung.',
     error: 'Dein Profil konnte nicht geladen werden.',
+    legalLabel: 'RECHTLICHES',
+    privacy: 'Datenschutz',
+    imprint: 'Impressum',
+    accountLabel: 'KONTO',
+    deleteAccount: 'Konto löschen',
+  },
+  deleteAccount: {
+    title: 'Konto endgültig löschen?',
+    intro: 'Das kann nicht rückgängig gemacht werden.',
+    points: [
+      'Gelöscht werden deine E-Mail-Adresse, dein Anzeigename, dein Guthaben und alle synchronisierten Gesundheitsdaten.',
+      'Challenges, die noch nicht begonnen haben, verlässt du automatisch. Deinen Einsatz bekommst du vorher zurück.',
+      'In Challenges, die schon laufen, verfällt dein Einsatz. Er bleibt im Topf und wird regulär an die Gewinner verteilt.',
+      'Deine Buchungen bleiben ohne Bezug zu dir erhalten, damit die Abrechnungen der anderen stimmen.',
+    ],
+    healthHint: (source: string) =>
+      `Den Zugriff auf deine Gesundheitsdaten kannst du zusätzlich in ${source} entfernen.`,
+    confirm: 'Endgültig löschen',
+    cancel: 'Abbrechen',
+    networkError: 'Löschen hat nicht geklappt. Prüfe deine Internetverbindung.',
+  },
+  legal: {
+    privacyTitle: 'Datenschutz',
+    imprintTitle: 'Impressum',
+    privacy: privacySections,
+    imprint: imprintSections,
   },
 } as const;

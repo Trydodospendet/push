@@ -1,9 +1,10 @@
+import { router } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { Button, Card, ErrorState, LoadingState, Screen, Text } from '@/components';
+import { Button, Card, ErrorState, LoadingState, Screen, Sheet, Text } from '@/components';
 import { DEFAULT_TIMEZONE } from '@/config/app';
-import { useMyProfile, useSignOut } from '@/features/auth/api';
+import { useDeleteAccount, useMyProfile, useSignOut } from '@/features/auth/api';
 import { useSession } from '@/features/auth/auth-provider';
 import { useHealth } from '@/features/health/health-provider';
 import { healthSourceName } from '@/features/health/platform';
@@ -12,11 +13,12 @@ import { toUserMessage } from '@/lib/errors';
 import { de } from '@/i18n/de';
 import { spacing } from '@/theme';
 
-/** Name, email, health connection and sign-out. Account deletion follows in phase 5. */
+/** Name, email, health connection, legal pages, sign-out and account deletion. */
 export default function ProfileScreen() {
   const session = useSession();
   const profile = useMyProfile(session.user.id);
   const signOut = useSignOut();
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   return (
     <Screen scroll contentStyle={styles.content}>
@@ -45,6 +47,21 @@ export default function ProfileScreen() {
         </View>
       )}
       <HealthCard timezone={profile.data?.timezone ?? DEFAULT_TIMEZONE} />
+      <Card style={styles.card}>
+        <Text variant="label" color="textSecondary">
+          {de.profile.legalLabel}
+        </Text>
+        <Button
+          label={de.profile.privacy}
+          variant="secondary"
+          onPress={() => router.push('/legal/privacy')}
+        />
+        <Button
+          label={de.profile.imprint}
+          variant="secondary"
+          onPress={() => router.push('/legal/imprint')}
+        />
+      </Card>
       <View style={styles.footer}>
         {signOut.isError ? (
           <Text variant="caption" color="danger" accessibilityRole="alert">
@@ -59,8 +76,77 @@ export default function ProfileScreen() {
           onPress={() => signOut.mutate()}
           loading={signOut.isPending}
         />
+        <Button
+          label={de.profile.deleteAccount}
+          variant="danger"
+          onPress={() => setDeleteOpen(true)}
+        />
       </View>
+      <DeleteAccountSheet
+        userId={session.user.id}
+        visible={deleteOpen}
+        onClose={() => setDeleteOpen(false)}
+      />
     </Screen>
+  );
+}
+
+function DeleteAccountSheet({
+  userId,
+  visible,
+  onClose,
+}: {
+  userId: string;
+  visible: boolean;
+  onClose: () => void;
+}) {
+  const deleteAccount = useDeleteAccount(userId);
+  const close = () => {
+    if (!deleteAccount.isPending) {
+      deleteAccount.reset();
+      onClose();
+    }
+  };
+
+  return (
+    <Sheet
+      visible={visible}
+      title={de.deleteAccount.title}
+      onClose={close}
+      closeLabel={de.deleteAccount.cancel}
+    >
+      <Text color="danger">{de.deleteAccount.intro}</Text>
+      {de.deleteAccount.points.map((point) => (
+        <Text key={point} variant="caption" color="textSecondary">
+          {`• ${point}`}
+        </Text>
+      ))}
+      <Text variant="caption" color="textSecondary">
+        {de.deleteAccount.healthHint(healthSourceName)}
+      </Text>
+      <Text variant="caption" color="textMuted">
+        {de.common.virtualCreditsNotice}
+      </Text>
+      {deleteAccount.isError ? (
+        <Text variant="caption" color="danger" accessibilityRole="alert">
+          {toUserMessage(deleteAccount.error) === de.common.networkError
+            ? de.deleteAccount.networkError
+            : toUserMessage(deleteAccount.error)}
+        </Text>
+      ) : null}
+      <Button
+        label={de.deleteAccount.confirm}
+        variant="danger"
+        loading={deleteAccount.isPending}
+        onPress={() => deleteAccount.mutate()}
+      />
+      <Button
+        label={de.deleteAccount.cancel}
+        variant="secondary"
+        disabled={deleteAccount.isPending}
+        onPress={close}
+      />
+    </Sheet>
   );
 }
 

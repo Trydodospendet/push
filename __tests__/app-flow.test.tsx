@@ -15,7 +15,7 @@ const {
   mockDb,
   supabase: supabaseMock,
 } = jest.requireMock<typeof import('../src/lib/__mocks__/supabase')>('@/lib/supabase');
-const { mockHealthState, saveHealthState } = jest.requireMock<
+const { mockHealthState, saveHealthState, clearHealthState } = jest.requireMock<
   typeof import('../src/features/health/__mocks__/storage')
 >('@/features/health/storage');
 const { mockAdapter } = jest.requireMock<typeof import('../src/features/health/__mocks__/native')>(
@@ -170,6 +170,76 @@ describe('app flow', () => {
 
     await user.press(screen.getByRole('button', { name: 'Abmelden' }));
     expect(await screen.findByRole('button', { name: 'Loslegen' })).toBeOnTheScreen();
+  });
+
+  it('deletes the account only after confirmation and returns to the welcome screen', async () => {
+    const user = userEvent.setup();
+    mockAuth.setInitialSession(session);
+    supabaseMock.rpc.mockImplementation(async (fn: string) =>
+      fn === 'delete_my_account'
+        ? { data: null, error: null }
+        : { data: profile(true, 'Anna Lauf'), error: null },
+    );
+
+    await renderRouter('./app', { initialUrl: '/profile' });
+
+    await user.press(await screen.findByRole('button', { name: 'Konto löschen' }));
+    expect(screen.getByText('Konto endgültig löschen?')).toBeOnTheScreen();
+    expect(
+      screen.getByText(/In Challenges, die schon laufen, verfällt dein Einsatz/),
+    ).toBeOnTheScreen();
+
+    await user.press(screen.getByRole('button', { name: 'Abbrechen' }));
+    expect(supabaseMock.rpc).not.toHaveBeenCalledWith('delete_my_account');
+
+    await user.press(screen.getByRole('button', { name: 'Konto löschen' }));
+    await user.press(await screen.findByRole('button', { name: 'Endgültig löschen' }));
+
+    expect(await screen.findByRole('button', { name: 'Loslegen' })).toBeOnTheScreen();
+    expect(supabaseMock.rpc).toHaveBeenCalledWith('delete_my_account');
+    expect(clearHealthState).toHaveBeenCalledWith('user-1');
+    expect(supabaseMock.auth.signOut).toHaveBeenCalledWith({ scope: 'local' });
+  });
+
+  it('keeps the user signed in when the deletion fails', async () => {
+    const user = userEvent.setup();
+    mockAuth.setInitialSession(session);
+    supabaseMock.rpc.mockImplementation(async (fn: string) =>
+      fn === 'delete_my_account'
+        ? { data: null, error: { message: 'Network request failed' } }
+        : { data: profile(true, 'Anna Lauf'), error: null },
+    );
+
+    await renderRouter('./app', { initialUrl: '/profile' });
+
+    await user.press(await screen.findByRole('button', { name: 'Konto löschen' }));
+    await user.press(screen.getByRole('button', { name: 'Endgültig löschen' }));
+
+    expect(
+      await screen.findByText('Löschen hat nicht geklappt. Prüfe deine Internetverbindung.'),
+    ).toBeOnTheScreen();
+    expect(supabaseMock.auth.signOut).not.toHaveBeenCalled();
+    expect(clearHealthState).not.toHaveBeenCalled();
+  });
+
+  it('opens privacy policy and imprint from the profile', async () => {
+    const user = userEvent.setup();
+    mockAuth.setInitialSession(session);
+    supabaseMock.rpc.mockResolvedValue({ data: profile(true, 'Anna Lauf'), error: null });
+
+    await renderRouter('./app', { initialUrl: '/profile' });
+
+    await user.press(await screen.findByRole('button', { name: 'Datenschutz' }));
+    expect(
+      await screen.findByRole('header', { name: '5. Health Connect und Apple Health' }),
+    ).toBeOnTheScreen();
+    expect(screen.getByText(/Limited Use/)).toBeOnTheScreen();
+  });
+
+  it('shows the legal pages without an account', async () => {
+    await renderRouter('./app', { initialUrl: '/legal/imprint' });
+
+    expect(await screen.findByRole('header', { name: 'Angaben gemäß § 5 DDG' })).toBeOnTheScreen();
   });
 
   it('sends a signed-in user without display name to onboarding', async () => {

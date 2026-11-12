@@ -249,7 +249,7 @@ function ChallengeDetail({
             <Card style={styles.participants}>
               {participants.map((participant) => (
                 <ParticipantRow
-                  key={participant.userId}
+                  key={participant.id}
                   participant={participant}
                   isMe={participant.userId === userId}
                 />

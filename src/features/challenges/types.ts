@@ -7,7 +7,9 @@ export type ChallengeStatus = 'open' | 'active' | 'settling' | 'settled' | 'canc
 
 /** Participant as shown in the list on the detail screen. */
 export type Participant = {
-  userId: string;
+  id: string;
+  /** Null when the participant deleted their account (the participation stays anonymised). */
+  userId: string | null;
   displayName: string;
   result: string;
   stakeCents: number;

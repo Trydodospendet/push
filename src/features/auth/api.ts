@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
+import { clearHealthState } from '@/features/health/storage';
 import type { Database } from '@/lib/database.types';
 import { supabase } from '@/lib/supabase';
 
@@ -41,6 +42,25 @@ export function useSignOut() {
       if (error) {
         throw error;
       }
+    },
+  });
+}
+
+/**
+ * Deletes the account on the server (refunds, forfeits and anonymisation happen there, see
+ * the account_deletion migration), then removes the local session and health state. The
+ * auth provider receives SIGNED_OUT and shows the welcome screen.
+ */
+export function useDeleteAccount(userId: string) {
+  return useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.rpc('delete_my_account');
+      if (error) {
+        throw error;
+      }
+      await clearHealthState(userId);
+      // The user no longer exists on the server, so only the local session is removed.
+      await supabase.auth.signOut({ scope: 'local' });
     },
   });
 }

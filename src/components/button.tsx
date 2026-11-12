@@ -8,8 +8,11 @@ import { Text } from './text';
 export type ButtonProps = {
   label: string;
   onPress: () => void;
-  /** `primary`: lime fill, black text. `secondary`: outline, no fill. */
-  variant?: 'primary' | 'secondary';
+  /**
+   * `primary`: lime fill, black text. `secondary`: outline, no fill.
+   * `danger`: red outline and text, only for destructive actions (account deletion).
+   */
+  variant?: 'primary' | 'secondary' | 'danger';
   disabled?: boolean;
   loading?: boolean;
   /** Defaults to `label`. */
@@ -29,7 +32,8 @@ export function Button({
   testID,
 }: ButtonProps) {
   const isInactive = disabled || loading;
-  const contentColor = variant === 'primary' ? 'onAccent' : 'text';
+  const contentColor =
+    variant === 'primary' ? 'onAccent' : variant === 'danger' ? 'danger' : 'text';
 
   return (
     <Pressable
@@ -46,7 +50,7 @@ export function Button({
       testID={testID}
       style={({ pressed }) => [
         styles.base,
-        variant === 'primary' ? styles.primary : styles.secondary,
+        styles[variant],
         pressed && styles.pressed,
         disabled && styles.disabled,
       ]}
@@ -77,6 +81,10 @@ const styles = StyleSheet.create({
   secondary: {
     borderWidth: layout.borderWidth,
     borderColor: colors.textMuted,
+  },
+  danger: {
+    borderWidth: layout.borderWidth,
+    borderColor: colors.danger,
   },
   pressed: {
     opacity: opacity.pressed,

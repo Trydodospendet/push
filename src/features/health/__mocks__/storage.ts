@@ -24,3 +24,4 @@ export const mockHealthState = {
 
 export const loadHealthState = jest.fn(async (): Promise<HealthState> => stored);
 export const saveHealthState = jest.fn(async (): Promise<void> => undefined);
+export const clearHealthState = jest.fn(async (): Promise<void> => undefined);

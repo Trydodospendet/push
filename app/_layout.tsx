@@ -129,6 +129,7 @@ function AppStack({ isSignedIn, isOnboarded }: { isSignedIn: boolean; isOnboarde
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="challenge" />
       </Stack.Protected>
+      <Stack.Screen name="legal" />
     </Stack>
   );
 }
