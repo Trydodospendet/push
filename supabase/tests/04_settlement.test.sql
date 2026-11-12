@@ -672,7 +672,8 @@ select is(
 );
 
 select is(
-  (select count(*)::int from public.challenges where status in ('settled', 'cancelled')),
+  (select count(*)::int from public.challenges
+    where status in ('settled', 'cancelled') and id in (select id from ids)),
   15,
   'all finished challenges were checked'
 );

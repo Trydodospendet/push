@@ -484,9 +484,11 @@ select is(
   'every wallet balance equals the sum of its ledger entries'
 );
 
+-- Only the challenges of this test: settled ones in the local data have paid out their pot.
 select is(
   (select count(*)::int from public.challenges c
-    where c.pot_cents <> -(select coalesce(sum(le.amount_cents), 0)
+    where c.id in (select id from ids)
+      and c.pot_cents <> -(select coalesce(sum(le.amount_cents), 0)
                              from public.ledger_entries le where le.challenge_id = c.id)),
   0,
   'every pot equals the stakes minus refunds booked for the challenge'
