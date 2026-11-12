@@ -1,13 +1,18 @@
+import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import { Button, Card, ErrorState, LoadingState, Screen, Text } from '@/components';
+import { DEFAULT_TIMEZONE } from '@/config/app';
 import { useMyProfile, useSignOut } from '@/features/auth/api';
 import { useSession } from '@/features/auth/auth-provider';
+import { useHealth } from '@/features/health/health-provider';
+import { healthSourceName } from '@/features/health/platform';
+import { useLastSyncText } from '@/features/health/sync-status';
 import { toUserMessage } from '@/lib/errors';
 import { de } from '@/i18n/de';
 import { spacing } from '@/theme';
 
-/** Phase 1: name, email and sign-out. Settings and account deletion follow later. */
+/** Name, email, health connection and sign-out. Account deletion follows in phase 5. */
 export default function ProfileScreen() {
   const session = useSession();
   const profile = useMyProfile(session.user.id);
@@ -39,6 +44,7 @@ export default function ProfileScreen() {
           </Card>
         </View>
       )}
+      <HealthCard timezone={profile.data?.timezone ?? DEFAULT_TIMEZONE} />
       <View style={styles.footer}>
         {signOut.isError ? (
           <Text variant="caption" color="danger" accessibilityRole="alert">
@@ -55,6 +61,52 @@ export default function ProfileScreen() {
         />
       </View>
     </Screen>
+  );
+}
+
+function HealthCard({ timezone }: { timezone: string }) {
+  const health = useHealth();
+  const lastSync = useLastSyncText(timezone);
+  const [connecting, setConnecting] = useState(false);
+
+  return (
+    <Card style={styles.card}>
+      <Text variant="label" color="textSecondary">
+        {de.health.statusLabel}
+      </Text>
+      <Text>
+        {health.connected
+          ? de.health.connected(healthSourceName)
+          : de.health.notConnected(healthSourceName)}
+      </Text>
+      {health.connected ? (
+        <Text variant="caption" color="textMuted">
+          {lastSync}
+        </Text>
+      ) : null}
+      {health.error !== null ? (
+        <Text variant="caption" color="danger" accessibilityRole="alert">
+          {health.error}
+        </Text>
+      ) : null}
+      {health.connected ? (
+        <Button
+          label={de.health.syncNow}
+          variant="secondary"
+          loading={health.syncing}
+          onPress={() => void health.sync()}
+        />
+      ) : null}
+      <Button
+        label={health.connected ? de.health.reconnect : de.health.connect(healthSourceName)}
+        variant="secondary"
+        loading={connecting}
+        onPress={() => {
+          setConnecting(true);
+          void health.connect().finally(() => setConnecting(false));
+        }}
+      />
+    </Card>
   );
 }
 

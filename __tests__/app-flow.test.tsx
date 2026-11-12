@@ -2,6 +2,8 @@ import { userEvent } from '@testing-library/react-native';
 import { renderRouter, screen, waitFor } from 'expo-router/testing-library';
 
 jest.mock('@/lib/supabase');
+jest.mock('@/features/health/storage');
+jest.mock('@/features/health/native');
 // Font loading is not part of this test (and expo-font needs native asset modules).
 jest.mock('expo-font', () => ({ useFonts: () => [true, null] }));
 jest.mock('@expo/vector-icons/Ionicons', () => ({ __esModule: true, default: () => null }));
@@ -13,6 +15,12 @@ const {
   mockDb,
   supabase: supabaseMock,
 } = jest.requireMock<typeof import('../src/lib/__mocks__/supabase')>('@/lib/supabase');
+const { mockHealthState, saveHealthState } = jest.requireMock<
+  typeof import('../src/features/health/__mocks__/storage')
+>('@/features/health/storage');
+const { mockAdapter } = jest.requireMock<typeof import('../src/features/health/__mocks__/native')>(
+  '@/features/health/native',
+);
 
 const session = createMockSession('user-1', 'anna@example.com');
 
@@ -30,11 +38,13 @@ beforeEach(() => {
   jest.clearAllMocks();
   mockAuth.reset();
   mockDb.reset();
+  mockHealthState.reset();
 });
 
 describe('app flow', () => {
-  it('signs up a new user: welcome → email → code → name → home', async () => {
+  it('signs up a new user: welcome → email → code → name → health → home', async () => {
     const user = userEvent.setup();
+    mockHealthState.set({});
     supabaseMock.auth.verifyOtp.mockImplementation(async () => {
       mockAuth.signIn(session);
       return { data: {}, error: null };
@@ -86,7 +96,55 @@ describe('app flow', () => {
       p_display_name: 'Alina Lauf',
     });
 
+    expect(await screen.findByText('Automatisch geprüft statt behauptet')).toBeOnTheScreen();
+    expect(
+      screen.getByText(/Manuell eingetragene Läufe und Schritte zählen nicht/),
+    ).toBeOnTheScreen();
+    expect(mockAdapter.authorize).not.toHaveBeenCalled();
+    await user.press(screen.getByRole('button', { name: 'Apple Health verbinden' }));
+    expect(mockAdapter.authorize).toHaveBeenCalledTimes(1);
+
     expect(await screen.findByText('Noch keine Challenge')).toBeOnTheScreen();
+    expect(saveHealthState).toHaveBeenCalledWith(
+      'user-1',
+      expect.objectContaining({ introDone: true, connected: true }),
+    );
+  });
+
+  it('lets the user postpone the health connection and reminds them on Home', async () => {
+    const user = userEvent.setup();
+    mockHealthState.set({});
+    mockAuth.setInitialSession(session);
+    supabaseMock.rpc.mockResolvedValue({ data: profile(true, 'Anna Lauf'), error: null });
+
+    await renderRouter('./app', { initialUrl: '/' });
+
+    expect(await screen.findByText('Automatisch geprüft statt behauptet')).toBeOnTheScreen();
+    await user.press(screen.getByRole('button', { name: 'Später' }));
+
+    expect(await screen.findByText('Noch keine Challenge')).toBeOnTheScreen();
+    expect(mockAdapter.authorize).not.toHaveBeenCalled();
+    expect(saveHealthState).toHaveBeenCalledWith(
+      'user-1',
+      expect.objectContaining({ introDone: true, connected: false }),
+    );
+  });
+
+  it('continues without a connection when the user denies the system permission', async () => {
+    const user = userEvent.setup();
+    mockHealthState.set({});
+    mockAdapter.authorize.mockResolvedValueOnce(false);
+    mockAuth.setInitialSession(session);
+    supabaseMock.rpc.mockResolvedValue({ data: profile(true, 'Anna Lauf'), error: null });
+
+    await renderRouter('./app', { initialUrl: '/' });
+    await user.press(await screen.findByRole('button', { name: 'Apple Health verbinden' }));
+
+    expect(await screen.findByText('Noch keine Challenge')).toBeOnTheScreen();
+    expect(saveHealthState).toHaveBeenCalledWith(
+      'user-1',
+      expect.objectContaining({ introDone: true, connected: false }),
+    );
   });
 
   it('restores an onboarded session, shows the balance and signs out', async () => {

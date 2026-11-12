@@ -5,6 +5,7 @@ import { de } from '@/i18n/de';
 /** Error messages raised by our Postgres functions (`raise exception using message = …`). */
 const databaseErrorMessages: Record<string, string> = {
   ...de.serverErrors,
+  ...de.health.errors,
   invalid_display_name: de.onboarding.nameInvalid,
   invalid_title: de.create.invalidTitle,
   invalid_goal_type: de.create.invalidInput,

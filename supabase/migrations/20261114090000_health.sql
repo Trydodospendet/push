@@ -83,8 +83,8 @@ begin
       or jsonb_typeof(r->'was_user_entered') is distinct from 'boolean'
       or jsonb_typeof(r->'distance_m') is distinct from 'number'
       or jsonb_typeof(r->'duration_s') is distinct from 'number'
-      or coalesce(r->>'distance_m', '') !~ '^-?[0-9]+$'
-      or coalesce(r->>'duration_s', '') !~ '^-?[0-9]+$' then
+      or coalesce(r->>'distance_m', '') !~ '^-?[0-9]{1,9}$'
+      or coalesce(r->>'duration_s', '') !~ '^-?[0-9]{1,9}$' then
       raise exception using errcode = '22023', message = 'invalid_health_payload';
     end if;
     v_start := (r->>'start_at')::timestamptz;
@@ -141,8 +141,8 @@ begin
       or coalesce(r->>'platform', '') not in ('ios', 'android')
       or coalesce(r->>'date', '') !~ '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'
       or jsonb_typeof(r->'steps') is distinct from 'number'
-      or coalesce(r->>'steps', '') !~ '^[0-9]+$'
-      or coalesce(r->>'excluded_sources', '0') !~ '^[0-9]+$' then
+      or coalesce(r->>'steps', '') !~ '^[0-9]{1,9}$'
+      or coalesce(r->>'excluded_sources', '0') !~ '^[0-9]{1,4}$' then
       raise exception using errcode = '22023', message = 'invalid_health_payload';
     end if;
     d := (r->>'date')::date; s := (r->>'steps')::integer;
@@ -161,6 +161,23 @@ begin
   return n;
 end;
 $$;
+
+-- Participants see who is done, never how far somebody got (no health details of others).
+-- Everybody reads their own progress through get_my_progress().
+revoke select on public.challenge_participants from authenticated;
+grant select (challenge_id, user_id, stake_cents, result, payout_cents, joined_at)
+  on public.challenge_participants to authenticated;
+
+create function public.get_my_progress()
+returns table (challenge_id uuid, progress_value integer)
+language sql stable security definer set search_path = '' as $$
+  select cp.challenge_id, cp.progress_value
+    from public.challenge_participants cp
+   where cp.user_id = private.require_uid();
+$$;
+
+revoke all on function public.get_my_progress() from public, anon;
+grant execute on function public.get_my_progress() to authenticated;
 
 revoke all on function public.sync_workouts(jsonb) from public, anon;
 revoke all on function public.sync_daily_steps(jsonb) from public, anon;

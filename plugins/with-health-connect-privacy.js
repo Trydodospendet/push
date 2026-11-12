@@ -12,6 +12,7 @@ function hasAction(intentFilter, actionName) {
 }
 
 function withHealthConnectPrivacyManifest(config) {
+  const appName = config.name;
   return withAndroidManifest(config, (modConfig) => {
     const manifest = modConfig.modResults.manifest;
     const application = AndroidConfig.Manifest.getMainApplicationOrThrow(modConfig.modResults);
@@ -29,7 +30,7 @@ function withHealthConnectPrivacyManifest(config) {
       $: {
         'android:name': privacyActivityName,
         'android:exported': 'true',
-        'android:label': 'Datenschutz bei PUSH',
+        'android:label': `Datenschutz bei ${appName}`,
         'android:theme': '@android:style/Theme.Material.Light.NoActionBar',
       },
       'intent-filter': [
@@ -48,7 +49,7 @@ function withHealthConnectPrivacyManifest(config) {
         'android:exported': 'true',
         'android:targetActivity': privacyActivityName,
         'android:permission': 'android.permission.START_VIEW_PERMISSION_USAGE',
-        'android:label': 'Datenschutz bei PUSH',
+        'android:label': `Datenschutz bei ${appName}`,
       },
       'intent-filter': [
         {
@@ -60,9 +61,7 @@ function withHealthConnectPrivacyManifest(config) {
 
     const queries = manifest.queries ?? (manifest.queries = []);
     const alreadyDeclared = queries.some((query) =>
-      (query.package ?? []).some(
-        (pkg) => pkg.$['android:name'] === HEALTH_CONNECT_PACKAGE,
-      ),
+      (query.package ?? []).some((pkg) => pkg.$['android:name'] === HEALTH_CONNECT_PACKAGE),
     );
     if (!alreadyDeclared) {
       queries.push({ package: [{ $: { 'android:name': HEALTH_CONNECT_PACKAGE } }] });
@@ -73,12 +72,15 @@ function withHealthConnectPrivacyManifest(config) {
 }
 
 function withHealthConnectPrivacyActivity(config) {
+  const appName = config.name;
   return withDangerousMod(config, [
     'android',
     async (modConfig) => {
       const appPackage = modConfig.android.package;
       if (!appPackage) {
-        throw new Error('Set android.package before generating the Health Connect privacy activity.');
+        throw new Error(
+          'Set android.package before generating the Health Connect privacy activity.',
+        );
       }
 
       const packagePath = appPackage.replaceAll('.', path.sep);
@@ -116,9 +118,9 @@ class HealthConnectPrivacyActivity : Activity() {
       setBackgroundColor(Color.rgb(10, 10, 10))
     }
 
-    content.addView(textView("Datenschutz bei PUSH", 26f, Color.WHITE, true))
+    content.addView(textView("Datenschutz bei ${appName}", 26f, Color.WHITE, true))
     content.addView(textView(
-      "PUSH liest aus Health Connect ausschließlich Lauf-Sessions, die dazugehörige Distanz und Tagesschritte. Die Daten werden synchronisiert und zur Prüfung deines Challenge-Fortschritts verwendet. PUSH schreibt keine Gesundheitsdaten in Health Connect.",
+      "${appName} liest aus Health Connect ausschließlich Lauf-Sessions, die dazugehörige Distanz und Tagesschritte. Die Daten werden synchronisiert und zur Prüfung deines Challenge-Fortschritts verwendet. ${appName} schreibt keine Gesundheitsdaten in Health Connect.",
       16f,
       Color.LTGRAY,
     ))

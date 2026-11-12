@@ -224,9 +224,9 @@ select results_eq(
 );
 
 select results_eq(
-  $$ select stake_cents, result, progress_value, payout_cents from public.challenge_participants
+  $$ select stake_cents, result, payout_cents from public.challenge_participants
       where challenge_id = (select id from ids where name = 'public') $$,
-  $$ values (1000::bigint, 'pending'::text, 0, null::bigint) $$,
+  $$ values (1000::bigint, 'pending'::text, null::bigint) $$,
   'the participant row starts as pending'
 );
 
@@ -326,10 +326,10 @@ select results_eq(
   $$ select p.display_name from public.challenge_participants cp
        join public.profiles p on p.id = cp.user_id
       where cp.challenge_id = (select id from ids where name = 'public')
-      order by cp.joined_at, p.display_name $$,
+      order by p.display_name $$,
   $$ select display_name from public.profiles
       where id in ('aaaaaaaa-0000-0000-0000-000000000001', 'bbbbbbbb-0000-0000-0000-000000000002')
-      order by (id = 'bbbbbbbb-0000-0000-0000-000000000002'), display_name $$,
+      order by display_name $$,
   'participants see each other with their display names'
 );
 

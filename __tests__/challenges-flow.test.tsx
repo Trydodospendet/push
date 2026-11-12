@@ -4,6 +4,8 @@ import { renderRouter, screen, waitFor } from 'expo-router/testing-library';
 import { addDays, toLocalDate } from '@/lib/dates';
 
 jest.mock('@/lib/supabase');
+jest.mock('@/features/health/storage');
+jest.mock('@/features/health/native');
 // Font loading is not part of these tests (and expo-font needs native asset modules).
 jest.mock('expo-font', () => ({ useFonts: () => [true, null] }));
 jest.mock('@expo/vector-icons/Ionicons', () => ({ __esModule: true, default: () => null }));
@@ -75,6 +77,9 @@ function mockRpc(handlers: Record<string, RpcHandler> = {}) {
     if (fn === 'get_my_profile') {
       return { data: profile, error: null };
     }
+    if (fn === 'get_my_progress' && !handlers[fn]) {
+      return { data: [], error: null };
+    }
     const handler = handlers[fn];
     if (!handler) {
       throw new Error(`Unexpected rpc ${fn}`);
@@ -93,6 +98,67 @@ beforeEach(() => {
   mockAuth.reset();
   mockDb.reset();
   mockAuth.setInitialSession(session);
+});
+
+describe('progress', () => {
+  it('shows the server progress on Home and the runs with reasons in the detail', async () => {
+    const user = userEvent.setup();
+    const day = 24 * 60 * 60 * 1000;
+    const running = challenge({
+      status: 'active',
+      starts_at: new Date(Date.now() - day).toISOString(),
+      ends_at: new Date(Date.now() + 6 * day).toISOString(),
+    });
+    mockDb.set({
+      challenges: [running],
+      challenge_participants: [
+        participant(running, 'user-2', 'Ben'),
+        participant(running, USER_ID, 'Anna Lauf'),
+      ],
+      activity_workouts: [
+        {
+          id: 'w1',
+          user_id: USER_ID,
+          start_at: new Date(Date.now() - 3_600_000).toISOString(),
+          distance_m: 3250,
+          duration_s: 1200,
+          is_valid: true,
+          invalid_reason: null,
+        },
+        {
+          id: 'w2',
+          user_id: USER_ID,
+          start_at: new Date(Date.now() - 7_200_000).toISOString(),
+          distance_m: 9000,
+          duration_s: 3000,
+          is_valid: false,
+          invalid_reason: 'manual_entry',
+        },
+      ],
+    });
+    mockRpc({ get_my_progress: () => [{ challenge_id: running.id, progress_value: 3250 }] });
+
+    await renderRouter('./app', { initialUrl: '/' });
+
+    expect(await screen.findByLabelText('3,25 von 5,00 km')).toBeOnTheScreen();
+    expect(screen.getByText('3,25 / 5,00')).toBeOnTheScreen();
+    expect(screen.getByText('Noch 5 Tage')).toBeOnTheScreen();
+    expect(
+      screen.getByText(
+        'Apple Health ist nicht verbunden. Dein Fortschritt kann so nicht geprüft werden.',
+      ),
+    ).toBeOnTheScreen();
+
+    await user.press(screen.getByRole('button', { name: '5 km am Stück' }));
+
+    expect(await screen.findByText('DEINE LÄUFE IM ZEITRAUM')).toBeOnTheScreen();
+    expect(await screen.findByText('Lauf · 3,25 km · 20 Min.')).toBeOnTheScreen();
+    expect(screen.getByText('Lauf · 9,00 km · 50 Min.')).toBeOnTheScreen();
+    expect(
+      screen.getByText('Manuell eingetragen – manuelle Einträge zählen nie.'),
+    ).toBeOnTheScreen();
+    expect(screen.getByText('zählt nicht')).toBeOnTheScreen();
+  });
 });
 
 describe('challenges', () => {

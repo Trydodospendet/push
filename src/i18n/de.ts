@@ -52,6 +52,86 @@ export const de = {
     nameSubmit: 'Weiter',
     nameInvalid: `Der Name muss ${DISPLAY_NAME_MIN_LENGTH} bis ${DISPLAY_NAME_MAX_LENGTH} Zeichen lang sein.`,
   },
+  health: {
+    source: {
+      ios: 'Apple Health',
+      android: 'Health Connect',
+    },
+    introTitle: 'Automatisch geprüft statt behauptet',
+    introText: (source: string) =>
+      `${APP_NAME} liest deine Läufe und Tagesschritte aus ${source}. So wird dein Fortschritt automatisch geprüft – niemand kann sein Ergebnis selbst eintragen.`,
+    introPoints: [
+      'Gelesen werden nur Lauf-Workouts, die Distanz dazu und deine Tagesschritte der letzten 45 Tage.',
+      `${APP_NAME} schreibt nichts in deine Gesundheitsdaten.`,
+      'Manuell eingetragene Läufe und Schritte zählen nicht.',
+      'Andere Teilnehmer sehen nur, ob du dein Ziel geschafft hast – keine Gesundheitsdaten.',
+    ],
+    introAndroidPoint:
+      'Enthält eine App an einem Tag manuell eingetragene Schritte, zählen die Schritte dieser App an diesem Tag nicht.',
+    connect: (source: string) => `${source} verbinden`,
+    skip: 'Später',
+    skipHint: 'Ohne Verbindung kann dein Fortschritt nicht geprüft werden.',
+    statusLabel: 'GESUNDHEITSDATEN',
+    connected: (source: string) => `${source} ist verbunden.`,
+    notConnected: (source: string) => `${source} ist nicht verbunden.`,
+    reconnect: 'Erneut verbinden',
+    syncNow: 'Jetzt synchronisieren',
+    banner: (source: string) =>
+      `${source} ist nicht verbunden. Dein Fortschritt kann so nicht geprüft werden.`,
+    lastSync: (time: string) => `Zuletzt synchronisiert: ${time}`,
+    neverSynced: 'Noch nicht synchronisiert',
+    syncing: 'Synchronisiere …',
+    errors: {
+      health_unavailable: 'Auf diesem Gerät sind keine Gesundheitsdaten verfügbar.',
+      health_connect_missing:
+        'Health Connect ist nicht installiert oder muss aktualisiert werden. Installiere es aus dem Play Store.',
+      health_build_required:
+        'Diese App-Version kann keine Gesundheitsdaten lesen. Installiere den neuesten Build.',
+      health_permission:
+        'Der Zugriff auf die Gesundheitsdaten fehlt. Erlaube Läufe, Distanz und Schritte und verbinde erneut.',
+      health_missing_origin:
+        'Bei einigen Gesundheitsdaten fehlt die Quelle. Die Synchronisierung wurde abgebrochen.',
+      invalid_health_payload: 'Die Gesundheitsdaten konnten nicht verarbeitet werden.',
+      health_batch_too_large: 'Zu viele Gesundheitsdaten auf einmal. Bitte versuche es erneut.',
+      health_outside_window: 'Es können nur Daten der letzten 45 Tage synchronisiert werden.',
+    },
+  },
+  progress: {
+    barLabel: 'Fortschritt der Challenge',
+    unitKm: 'km',
+    unitDays: 'Tage geschafft',
+    spoken: (current: string, target: string) => `${current} von ${target}`,
+    days: (count: number) => (count === 1 ? '1 Tag' : `${count} Tage`),
+    remainingDays: (count: number) => (count === 1 ? 'Noch 1 Tag' : `Noch ${count} Tage`),
+    remainingHours: (count: number) => (count === 1 ? 'Noch 1 Stunde' : `Noch ${count} Stunden`),
+    remainingMinutes: (count: number) => (count === 1 ? 'Noch 1 Minute' : `Noch ${count} Minuten`),
+    ended: 'Zeitraum beendet',
+    startsOn: (date: string) => `Startet am ${date}`,
+    goalReached: 'Ziel erreicht',
+  },
+  activities: {
+    runsTitle: 'DEINE LÄUFE IM ZEITRAUM',
+    stepsTitle: 'DEINE TAGE IM ZEITRAUM',
+    invalidTitle: 'NICHT GEZÄHLT',
+    runsEmpty: 'Im Zeitraum wurde noch kein Lauf gefunden.',
+    stepsEmpty: 'Für den Zeitraum liegen noch keine Schritte vor.',
+    error: 'Deine Aktivitäten konnten nicht geladen werden.',
+    run: (distance: string, minutes: number) => `Lauf · ${distance} · ${minutes} Min.`,
+    counted: 'zählt',
+    notCounted: 'zählt nicht',
+    dayDone: 'geschafft',
+    dayOpen: 'zu wenig',
+    reason: {
+      manual_entry: 'Manuell eingetragen – manuelle Einträge zählen nie.',
+      too_fast: 'Zu schnell für einen Lauf (schneller als 2:30 min/km).',
+      too_slow: 'Zu langsam für einen Lauf (langsamer als 15:00 min/km).',
+      invalid_data: 'Unvollständige oder unplausible Daten.',
+    },
+    unknownReason: 'Diese Aktivität wurde nicht anerkannt.',
+    stepsInvalid: 'Unplausibel viele Schritte (über 80.000) – der Tag zählt nicht.',
+    stepsExcluded:
+      'Eine App mit manuell eingetragenen Schritten wurde an diesem Tag nicht mitgezählt.',
+  },
   session: {
     profileError: 'Dein Profil konnte nicht geladen werden.',
     signOut: 'Abmelden',
@@ -64,10 +144,11 @@ export const de = {
   },
   home: {
     label: 'DEINE CHALLENGES',
+    primaryLabel: 'AKTUELLE CHALLENGE',
+    moreLabel: 'WEITERE CHALLENGES',
     emptyTitle: 'Noch keine Challenge',
     emptyText: 'Such dir eine Challenge aus und setz auf dein Ziel.',
     findChallenge: 'Challenge finden',
-    progressHint: 'Dein Fortschritt erscheint hier, sobald die Challenge läuft.',
     error: 'Deine Challenges konnten nicht geladen werden.',
   },
   challenges: {
@@ -139,6 +220,7 @@ export const de = {
     ruleLeave: 'Bis zum Start kannst du jederzeit aussteigen und bekommst deinen Einsatz zurück.',
     yourProgress: 'DEIN FORTSCHRITT',
     progressPending: 'Dein Fortschritt erscheint hier, sobald die Challenge läuft.',
+    progressCancelled: 'Die Challenge wurde abgesagt.',
     participantList: 'WER IST DABEI',
     participantsHidden: 'Die Teilnehmerliste siehst du, sobald du dabei bist.',
     you: '(du)',

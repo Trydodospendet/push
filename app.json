@@ -44,6 +44,7 @@
           "background": false
         }
       ],
+      "./plugins/with-health-connect-privacy",
       "react-native-health-connect",
       [
         "expo-build-properties",
@@ -55,7 +56,6 @@
           }
         }
       ],
-      "./plugins/with-health-connect-privacy",
       [
         "expo-splash-screen",
         {

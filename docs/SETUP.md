@@ -266,12 +266,13 @@ Nur wenn sich „native“ Teile ändern – ich sage es dir dann ausdrücklich:
 - das Expo SDK wird aktualisiert.
 
 Bisher nötige Builds: einer in Phase 0, ein neuer in Phase 1 (wegen `expo-secure-store`, das die
-Anmeldung sicher auf dem Handy speichert). Ein älterer Build stürzt beim Öffnen von Phase-1-Code ab.
-Phase 2 braucht **keinen** neuen Build (`@expo/vector-icons` ist reines JavaScript).
+Anmeldung sicher auf dem Handy speichert), ein neuer in **Phase 3** (wegen der nativen Module für
+Health Connect und HealthKit sowie neuer Berechtigungen in `app.json`). Ein älterer Build kann die
+Health-Daten nicht lesen; die App zeigt dann „Diese App-Version kann keine Gesundheitsdaten lesen“.
+Phase 2 brauchte **keinen** neuen Build (`@expo/vector-icons` ist reines JavaScript).
 
-Für normale Code-Änderungen reicht `npx expo start`. Seit Phase 3 enthält die App native HealthKit-
-und Health-Connect-Module. Nach diesen Konfigurationsänderungen brauchst du einen neuen Android-
-Development-Build. Starte ihn im Projektordner mit:
+Für normale Code-Änderungen reicht `npx expo start`. Den Phase-3-Build für Android startest du im
+Projektordner mit:
 
 ```powershell
 eas build --platform android --profile development
@@ -329,6 +330,51 @@ Für den Test „zwei Nutzer in derselben Challenge“ meldest du dich nacheinan
 10. **Zu wenig Guthaben:** als `anna@example.com` anmelden (15,00 Credits) und „10 km am
     Wochenende“ (Einsatz 20,00) beitreten wollen. Erwartet: „Dein Guthaben reicht für diesen
     Einsatz nicht aus.“, das Guthaben bleibt bei 15,00.
+
+### 5.8 Health-Daten testen (Phase 3, Android)
+
+Voraussetzungen: der neue Development Build aus 5.5 ist auf dem Handy, Docker läuft,
+`npm run db:start`, `npm run db:reset`, `.env` mit der IP deines PCs, `npx expo start`.
+Health Connect ist ab Android 14 Teil des Systems. Bei Android 13 und älter installierst du die App
+**Health Connect** aus dem Play Store. Außerdem muss eine App Läufe dort eintragen (z. B. die Uhr-App,
+Google Fit, Samsung Health, Strava – je nach Gerät muss die Weitergabe an Health Connect in dieser
+App eingeschaltet sein).
+
+1. **Verbinden:** Neues Konto anlegen (oder ein bestehendes nach dem Update öffnen). Nach dem Namen
+   erscheint „Automatisch geprüft statt behauptet“ → **Health Connect verbinden** → im
+   System-Dialog **Alles zulassen** (Läufe, Distanz, Schritte). Bei „Später“ erscheint auf Home ein
+   Hinweis mit demselben Knopf; im Profil gibt es **Erneut verbinden** und **Jetzt synchronisieren**.
+2. **Challenge starten lassen:** Challenges starten erst nach 0:00 Uhr des Folgetags und werden erst
+   in Phase 4 automatisch aktiv. Zum Testen setzt du eine Challenge von Hand auf „läuft“. In Studio
+   (<http://127.0.0.1:54323>) → SQL Editor, einmal ausführen (nach dem Beitritt zu „5 km am Stück“):
+
+   ```sql
+   update public.challenges
+      set status = 'active', starts_at = now() - interval '1 day', ends_at = now() + interval '6 days'
+    where title = '5 km am Stück';
+   ```
+
+3. **Echter Lauf:** Einen Lauf von mindestens 5 km aufzeichnen (Uhr oder Lauf-App, die an Health
+   Connect schreibt). App öffnen bzw. auf Home nach unten ziehen. Erwartet: Große Zahl
+   „5,02 / 5,00“ mit Balken, „Ziel erreicht“ und „Zuletzt synchronisiert: …“. In der Challenge
+   unter **Deine Läufe im Zeitraum**: der Lauf mit „zählt“.
+4. **Manueller Lauf:** In einer App einen Lauf **von Hand eintragen** (nicht aufzeichnen) – er muss
+   in Health Connect landen. Nach dem Synchronisieren steht er in der Liste mit **„zählt nicht“** und
+   dem Grund „Manuell eingetragen – manuelle Einträge zählen nie.“; der Fortschritt ändert sich nicht.
+5. **Schritte:** Challenge „10.000 Schritte täglich“ ebenso auf „läuft“ setzen (`title` im SQL
+   anpassen). Pro Tag erscheint „geschafft“ oder „zu wenig“.
+
+**Wichtig zu wissen**
+
+- **Manuelle Schritte:** Health Connect kann Schritte nicht „ohne die manuellen“ zählen. Enthält eine
+  App an einem Tag manuell eingetragene Schritte, lässt PUSH **diese App für den ganzen Tag weg**.
+  Dann können auch echte Schritte dieser App fehlen (Sicherheit vor Genauigkeit).
+- **Rückblick:** Android erlaubt nur die 30 Tage **vor** der ersten Verbindung. Ältere Tage werden
+  nie mit 0 überschrieben, sondern gar nicht erst gesendet.
+- **Zwei Verweigerungen:** Lehnst du den System-Dialog zweimal ab, zeigt Android ihn nicht mehr.
+  Erlaube die Rechte dann in der App **Health Connect** → App-Berechtigungen → PUSH.
+- **iPhone:** Der Code für Apple Health ist vorhanden, wurde aber noch **nicht auf einem Gerät
+  getestet** (siehe Abschnitt 7 und `docs/SECURITY_NOTES.md`).
 
 ---
 

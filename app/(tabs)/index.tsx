@@ -1,22 +1,31 @@
 import { useRouter } from 'expo-router';
-import { RefreshControl, StyleSheet, View } from 'react-native';
+import { Pressable, RefreshControl, StyleSheet, View } from 'react-native';
 
-import { Button, ErrorState, LoadingState, Screen, Text } from '@/components';
+import { Button, Card, ErrorState, LoadingState, Screen, Text } from '@/components';
 import { useSession } from '@/features/auth/auth-provider';
 import { useMyChallenges } from '@/features/challenges/api';
 import { ChallengeCard } from '@/features/challenges/challenge-card';
+import { useMyProgress } from '@/features/health/api';
+import { useHealth } from '@/features/health/health-provider';
+import { pickPrimaryChallenge } from '@/features/health/progress';
+import { ProgressSummary } from '@/features/health/progress-summary';
+import { HealthBanner, useLastSyncText } from '@/features/health/sync-status';
 import { de } from '@/i18n/de';
-import { colors, spacing } from '@/theme';
+import { colors, opacity, spacing } from '@/theme';
 
-/** Phase 2: the challenges the user joined. Progress (big number + bar) follows in phase 3. */
+/** The joined challenges: the most important one with its progress, the others as cards. */
 export default function HomeScreen() {
   const router = useRouter();
   const session = useSession();
+  const health = useHealth();
   const mine = useMyChallenges(session.user.id);
+  const progress = useMyProgress(session.user.id);
   const joined = mine.data?.filter(
     (challenge) =>
       challenge.isParticipant && challenge.status !== 'settled' && challenge.status !== 'cancelled',
   );
+  const primary = joined ? pickPrimaryChallenge(joined) : undefined;
+  const lastSync = useLastSyncText(primary?.timezone ?? 'Europe/Berlin');
 
   if (mine.isPending) {
     return (
@@ -55,15 +64,20 @@ export default function HomeScreen() {
     );
   }
 
+  const others = joined.filter((challenge) => challenge.id !== primary?.id);
+
   return (
     <Screen
       scroll
       contentStyle={styles.content}
       refreshControl={
         <RefreshControl
-          refreshing={mine.isRefetching}
+          refreshing={mine.isRefetching || health.syncing}
           onRefresh={() => {
-            void mine.refetch();
+            void health.sync().then(() => {
+              void mine.refetch();
+              void progress.refetch();
+            });
           }}
           tintColor={colors.accent}
           colors={[colors.onAccent]}
@@ -71,15 +85,42 @@ export default function HomeScreen() {
         />
       }
     >
-      <Text variant="label" color="textSecondary" accessibilityRole="header">
-        {de.home.label}
-      </Text>
-      {joined.map((challenge) => (
-        <ChallengeCard key={challenge.id} challenge={challenge} joined />
-      ))}
-      <Text variant="caption" color="textMuted">
-        {de.home.progressHint}
-      </Text>
+      <HealthBanner />
+      {primary ? (
+        <>
+          <Text variant="label" color="textSecondary" accessibilityRole="header">
+            {de.home.primaryLabel}
+          </Text>
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={primary.title}
+            onPress={() => router.push({ pathname: '/challenge/[id]', params: { id: primary.id } })}
+            style={({ pressed }) => pressed && styles.pressed}
+          >
+            <Card style={styles.primary}>
+              <Text variant="heading" numberOfLines={2}>
+                {primary.title}
+              </Text>
+              <ProgressSummary
+                challenge={primary}
+                value={progress.data?.[primary.id] ?? 0}
+                now={new Date()}
+                footer={health.connected ? lastSync : null}
+              />
+            </Card>
+          </Pressable>
+        </>
+      ) : null}
+      {others.length > 0 ? (
+        <>
+          <Text variant="label" color="textSecondary" accessibilityRole="header">
+            {de.home.moreLabel}
+          </Text>
+          {others.map((challenge) => (
+            <ChallengeCard key={challenge.id} challenge={challenge} joined />
+          ))}
+        </>
+      ) : null}
     </Screen>
   );
 }
@@ -98,5 +139,11 @@ const styles = StyleSheet.create({
     paddingTop: spacing.xl,
     paddingBottom: spacing.xl,
     gap: spacing.sm,
+  },
+  primary: {
+    gap: spacing.md,
+  },
+  pressed: {
+    opacity: opacity.pressed,
   },
 });

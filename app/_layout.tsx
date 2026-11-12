@@ -8,6 +8,8 @@ import { useEffect, useState } from 'react';
 import { Button, ErrorState, LoadingState, Screen } from '@/components';
 import { useMyProfile, useSignOut } from '@/features/auth/api';
 import { AuthProvider, useAuth } from '@/features/auth/auth-provider';
+import { DEFAULT_TIMEZONE } from '@/config/app';
+import { HealthProvider, useHealth } from '@/features/health/health-provider';
 import { de } from '@/i18n/de';
 import { createQueryClient } from '@/lib/query-client';
 import { colors, fontAssets } from '@/theme';
@@ -81,19 +83,49 @@ function RootNavigator() {
 
   const isSignedIn = session !== null;
   const isOnboarded = isSignedIn && profile.data?.onboarded_at != null;
+
+  return (
+    <HealthProvider
+      userId={session?.user.id ?? null}
+      timezone={profile.data?.timezone ?? DEFAULT_TIMEZONE}
+    >
+      <AppStack isSignedIn={isSignedIn} isOnboarded={isOnboarded} />
+    </HealthProvider>
+  );
+}
+
+/** After the name, the health explanation is shown once per account and phone. */
+function AppStack({ isSignedIn, isOnboarded }: { isSignedIn: boolean; isOnboarded: boolean }) {
+  const health = useHealth();
+
+  if (!health.ready) {
+    return (
+      <Screen>
+        <LoadingState />
+      </Screen>
+    );
+  }
+
+  const isSetUp = isOnboarded && health.introDone;
   // Explicit targets: without them a blocked deep link (e.g. "/" while signed out) ends on
   // the "Unmatched Route" screen.
-  const home = isOnboarded ? '/' : isSignedIn ? '/onboarding/name' : '/welcome';
+  const home = isSetUp
+    ? '/'
+    : isOnboarded
+      ? '/onboarding/health'
+      : isSignedIn
+        ? '/onboarding/name'
+        : '/welcome';
 
   return (
     <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg } }}>
       <Stack.Protected guard={!isSignedIn} redirectTo={home}>
         <Stack.Screen name="(auth)" />
       </Stack.Protected>
-      <Stack.Protected guard={isSignedIn && !isOnboarded} redirectTo={home}>
+      <Stack.Protected guard={isSignedIn && !isSetUp} redirectTo={home}>
         <Stack.Screen name="onboarding" />
       </Stack.Protected>
-      <Stack.Protected guard={isOnboarded} redirectTo={home}>
+      <Stack.Protected guard={isSetUp} redirectTo={home}>
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="challenge" />
       </Stack.Protected>

@@ -26,6 +26,7 @@ export type Database = {
       activity_daily_steps: {
         Row: {
           date: string;
+          excluded_sources: number;
           is_valid: boolean;
           platform: string | null;
           steps: number;
@@ -35,6 +36,7 @@ export type Database = {
         ComputedFields: never;
         Insert: {
           date: string;
+          excluded_sources?: number;
           is_valid: boolean;
           platform?: string | null;
           steps: number;
@@ -43,6 +45,7 @@ export type Database = {
         };
         Update: {
           date?: string;
+          excluded_sources?: number;
           is_valid?: boolean;
           platform?: string | null;
           steps?: number;
@@ -433,6 +436,13 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      get_my_progress: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          challenge_id: string;
+          progress_value: number;
+        }[];
+      };
       join_challenge: {
         Args: { p_challenge_id: string };
         Returns: {
@@ -487,6 +497,7 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      recompute_progress: { Args: { p_challenge_id: string }; Returns: undefined };
       set_display_name: {
         Args: { p_display_name: string };
         Returns: {
@@ -503,6 +514,8 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      sync_daily_steps: { Args: { p_days: Json }; Returns: number };
+      sync_workouts: { Args: { p_workouts: Json }; Returns: number };
     };
     Enums: {
       [_ in never]: never;

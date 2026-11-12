@@ -1,3 +1,4 @@
+import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
@@ -10,6 +11,7 @@ import { de } from '@/i18n/de';
 import { spacing } from '@/theme';
 
 export default function OnboardingNameScreen() {
+  const router = useRouter();
   const session = useSession();
   const setDisplayName = useSetDisplayName(session.user.id);
   const [name, setName] = useState('');
@@ -22,8 +24,8 @@ export default function OnboardingNameScreen() {
       return;
     }
     setError(null);
-    // On success the profile is onboarded and the root layout switches to the tabs.
     setDisplayName.mutate(result.value, {
+      onSuccess: () => router.replace('/onboarding/health'),
       onError: (mutationError) => setError(toUserMessage(mutationError)),
     });
   };

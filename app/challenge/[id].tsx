@@ -20,6 +20,11 @@ import {
 } from '@/features/challenges/format';
 import { JoinSheet } from '@/features/challenges/join-sheet';
 import type { Challenge, Participant } from '@/features/challenges/types';
+import { ActivityList } from '@/features/health/activity-list';
+import { useMyProgress } from '@/features/health/api';
+import { useHealth } from '@/features/health/health-provider';
+import { ProgressSummary } from '@/features/health/progress-summary';
+import { HealthBanner, useLastSyncText } from '@/features/health/sync-status';
 import { de } from '@/i18n/de';
 import { formatDayLabel } from '@/lib/dates';
 import { toUserMessage } from '@/lib/errors';
@@ -88,6 +93,9 @@ function ChallengeDetail({
 }: ChallengeDetailProps) {
   const join = useJoinChallenge();
   const leave = useLeaveChallenge();
+  const health = useHealth();
+  const progress = useMyProgress(userId);
+  const lastSync = useLastSyncText(challenge.timezone);
   const [sheet, setSheet] = useState<'join' | 'leave' | null>(null);
 
   const me = participants.find((participant) => participant.userId === userId);
@@ -109,8 +117,13 @@ function ChallengeDetail({
       contentStyle={styles.content}
       refreshControl={
         <RefreshControl
-          refreshing={refreshing}
-          onRefresh={onRefresh}
+          refreshing={refreshing || health.syncing}
+          onRefresh={() => {
+            void health.sync().then(() => {
+              onRefresh();
+              void progress.refetch();
+            });
+          }}
           tintColor={colors.accent}
           colors={[colors.onAccent]}
           progressBackgroundColor={colors.accent}
@@ -161,8 +174,26 @@ function ChallengeDetail({
           <Text variant="label" color="textSecondary" accessibilityRole="header">
             {de.challenge.yourProgress}
           </Text>
-          <Text color="textMuted">{de.challenge.progressPending}</Text>
+          {challenge.status === 'open' ? (
+            <Text color="textMuted">{de.challenge.progressPending}</Text>
+          ) : challenge.status === 'cancelled' ? (
+            <Text color="textMuted">{de.challenge.progressCancelled}</Text>
+          ) : (
+            <>
+              <HealthBanner />
+              <ProgressSummary
+                challenge={challenge}
+                value={progress.data?.[challenge.id] ?? 0}
+                now={new Date()}
+                footer={health.connected ? lastSync : null}
+              />
+            </>
+          )}
         </View>
+      ) : null}
+
+      {isParticipant && (challenge.status === 'active' || challenge.status === 'settling') ? (
+        <ActivityList challenge={challenge} userId={userId} />
       ) : null}
 
       <View style={styles.section}>

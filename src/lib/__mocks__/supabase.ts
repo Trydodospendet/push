@@ -48,7 +48,7 @@ export const mockAuth = {
 /**
  * Tiny in-memory "database" for `supabase.from(table)`. Rows are returned as stored
  * (embedded relations such as `profile` or `challenge` are stored on the row); only `eq`
- * filters are applied, everything else (select, order, limit, gt) is ignored.
+ * filters are applied, everything else (select, order, limit, gt, gte, lt, lte) is ignored.
  */
 let tables: Record<string, Row | Row[]> = {};
 
@@ -89,6 +89,9 @@ function createQuery(table: string) {
     order: () => query,
     limit: () => query,
     gt: () => query,
+    gte: () => query,
+    lt: () => query,
+    lte: () => query,
     eq: (column: string, value: unknown) => {
       filters.push([column, value]);
       return query;
