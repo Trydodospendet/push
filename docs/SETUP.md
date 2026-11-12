@@ -1,7 +1,7 @@
 # PUSH – Einrichtung Schritt für Schritt
 
 Diese Anleitung ist für Windows mit PowerShell geschrieben. Alle Befehle kannst du kopieren und im
-Projektordner ausführen. Stand: **Phase 1 (Konto)**.
+Projektordner ausführen. Stand: **Phase 2 (Challenges & Wallet)**.
 
 Projektordner öffnen:
 
@@ -95,6 +95,18 @@ falls `npm run lint` Formatierungsfehler meldet.
    ```powershell
    npm run db:reset
    ```
+
+   Danach sind die **Testdaten aus `supabase/seed.sql`** geladen:
+
+   | Testkonto (E-Mail)  | Name  | Guthaben      | dabei bei                                                         |
+   | ------------------- | ----- | ------------- | ----------------------------------------------------------------- |
+   | `anna@example.com`  | Anna  | 15,00 Credits | 5 km am Stück, Halbmarathon-Woche, Büro-Lauftreff, Großer Einsatz |
+   | `ben@example.com`   | Ben   | 80,00 Credits | 5 km am Stück, 10.000 Schritte täglich, Büro-Lauftreff            |
+   | `clara@example.com` | Clara | 80,00 Credits | Halbmarathon-Woche                                                |
+
+   Die private Challenge „Büro-Lauftreff“ hat den Einladungscode **`LAUF26`**. Außerdem gibt es
+   „Großer Einsatz“ (50,00) und „10 km am Wochenende“ (20,00, noch niemand dabei). Alle
+   Beispiel-Challenges starten 1–3 Tage nach dem Reset, man kann also noch beitreten.
 
 5. Datenbank-Tests ausführen (pgTAP, prüft Startguthaben, Zugriffsrechte usw.):
 
@@ -255,6 +267,7 @@ Nur wenn sich „native“ Teile ändern – ich sage es dir dann ausdrücklich:
 
 Bisher nötige Builds: einer in Phase 0, ein neuer in Phase 1 (wegen `expo-secure-store`, das die
 Anmeldung sicher auf dem Handy speichert). Ein älterer Build stürzt beim Öffnen von Phase-1-Code ab.
+Phase 2 braucht **keinen** neuen Build (`@expo/vector-icons` ist reines JavaScript).
 
 Für normale Code-Änderungen reicht `npx expo start`. Der kostenlose EAS-Tarif enthält derzeit bis zu
 15 Android- und 15 iOS-Builds (Stand November 2026, aktuelle Zahlen: <https://expo.dev/pricing>).
@@ -279,6 +292,34 @@ läuft, `npm run db:start`, `.env` mit der IP deines PCs, `npx expo start`.
 
 In **Studio** (<http://127.0.0.1:54323>) siehst du unter „Table Editor“ die Tabellen `profiles`,
 `wallets` und `ledger_entries` mit deinem Konto und der Buchung `signup_bonus`.
+
+### 5.7 Challenges testen (Phase 2)
+
+Voraussetzungen wie in 5.6, dazu einmal `npm run db:reset` (lädt die Testdaten aus Abschnitt 4).
+Für den Test „zwei Nutzer in derselben Challenge“ meldest du dich nacheinander mit zwei Konten an
+(Profil → Abmelden → mit der anderen E-Mail anmelden). Die Codes stehen jeweils in Mailpit.
+
+1. **Als neues Konto** (z. B. `test1@example.com`) anmelden, Namen wählen.
+2. Tab **Challenges**: Unter „Offene Challenges“ stehen die Beispiel-Challenges.
+3. „5 km am Stück“ antippen → Ziel, Zeitraum, Einsatz, Teilnehmer, Topf und Regeln prüfen.
+4. **Beitreten** → im Sheet steht „Du setzt 10,00 Credits …“ und der Testphasen-Hinweis →
+   **Jetzt beitreten**.
+5. Erwartet: „Dabei“-Markierung, Topf steigt um 10,00, die Teilnehmerliste zeigt dich, Anna und Ben
+   (jeweils „offen“). Im Tab **Wallet**: **90,00 Credits** und die Buchungen „Einsatz – 5 km am
+   Stück −10,00“ und „Startguthaben +100,00“. Auf **Home** erscheint die Challenge.
+6. **Challenge verlassen** → **Verlassen**: Guthaben wieder 100,00, Buchung „Erstattung +10,00“.
+   Erneut beitreten ist danach nicht möglich (Hinweis erscheint).
+7. **Code eingeben** → `LAUF26` → **Challenge anzeigen** → **Beitreten** → bestätigen. Jetzt siehst
+   du den privaten „Büro-Lauftreff“ mit Einladungscode und Button **Code teilen**.
+8. **Erstellen** → z. B. „Tägliche Schritte“, „10.000 Schritte“, Start „Morgen“, „7 Tage“,
+   Einsatz „5,00“, **Privat** → **Challenge erstellen**. Die neue Challenge hat einen eigenen
+   Code. Du bist als Ersteller **nicht** automatisch dabei – tritt selbst bei.
+9. **Zweites Konto:** Abmelden, mit `test2@example.com` anmelden, Namen wählen, über **Code
+   eingeben** mit dem Code aus Schritt 8 beitreten. Beide Konten haben jetzt je 5,00 weniger, und in
+   der Challenge stehen zwei Personen.
+10. **Zu wenig Guthaben:** als `anna@example.com` anmelden (15,00 Credits) und „10 km am
+    Wochenende“ (Einsatz 20,00) beitreten wollen. Erwartet: „Dein Guthaben reicht für diesen
+    Einsatz nicht aus.“, das Guthaben bleibt bei 15,00.
 
 ---
 
@@ -317,7 +358,13 @@ In **Studio** (<http://127.0.0.1:54323>) siehst du unter „Table Editor“ die 
   geprüft.
 - **Anzeigename:** Bis du einen Namen wählst, heißt dein Profil z. B. „Läufer 4821“. Die App lässt
   dich erst nach der Namenswahl weiter.
-- **Tab-Leiste ohne Symbole:** Für Icons bräuchte es eine Icon-Bibliothek (z. B.
-  `@expo/vector-icons`, nur JavaScript, kein neuer Build). Sie ist noch nicht freigegeben.
+- **Verlassen ist endgültig:** Wer eine Challenge vor dem Start verlässt, bekommt den Einsatz
+  zurück, kann aber nicht erneut beitreten. Grund: Pro Person und Challenge darf es nur eine
+  Einsatz-Buchung geben (Schutz vor Doppelbuchungen, siehe CLAUDE.md 5.1).
+- **Challenges starten immer um 0:00 Uhr** (Zeitzone Europe/Berlin) und dauern ganze Tage. So ist
+  bei „Tägliche Schritte“ jeder Tag vollständig. Frühester Start ist morgen, spätester in 30 Tagen.
+- **Testkonten löschen:** Ein Konto, das Challenges erstellt hat oder bei Challenges dabei war,
+  lässt sich in Studio nicht einfach löschen (die Buchungen hängen daran). Zum Aufräumen
+  `npm run db:reset` verwenden. Das richtige „Konto löschen“ kommt in Phase 5.
 - **Lokaler Android-Build ohne EAS** wäre möglich, braucht aber Android Studio und Java 17 (auf
   diesem PC ist Java 25 installiert, das passt nicht). EAS Build ist der einfachere Weg.
