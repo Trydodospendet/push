@@ -63,3 +63,10 @@ export function formatDateTime(instant: Date, timeZone: string): string {
   }
   return format.format(instant);
 }
+
+const weekdayShortFormat = new Intl.DateTimeFormat('de-DE', { timeZone: 'UTC', weekday: 'short' });
+
+/** Short weekday of a local date, e.g. 'Mo.'. */
+export function formatWeekdayShort(date: string): string {
+  return weekdayShortFormat.format(parseLocalDate(date));
+}

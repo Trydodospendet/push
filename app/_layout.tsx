@@ -10,6 +10,7 @@ import { useMyProfile, useSignOut } from '@/features/auth/api';
 import { AuthProvider, useAuth } from '@/features/auth/auth-provider';
 import { DEFAULT_TIMEZONE } from '@/config/app';
 import { HealthProvider, useHealth } from '@/features/health/health-provider';
+import { IntroProvider, useIntro } from '@/features/intro/intro-provider';
 import { de } from '@/i18n/de';
 import { createQueryClient } from '@/lib/query-client';
 import { colors, fontAssets } from '@/theme';
@@ -89,16 +90,22 @@ function RootNavigator() {
       userId={session?.user.id ?? null}
       timezone={profile.data?.timezone ?? DEFAULT_TIMEZONE}
     >
-      <AppStack isSignedIn={isSignedIn} isOnboarded={isOnboarded} />
+      <IntroProvider userId={session?.user.id ?? null}>
+        <AppStack isSignedIn={isSignedIn} isOnboarded={isOnboarded} />
+      </IntroProvider>
     </HealthProvider>
   );
 }
 
-/** After the name, the health explanation is shown once per account and phone. */
+/**
+ * After the login the three intro pages come first (once per account and phone, also for
+ * existing users), then the name, then the health explanation (once per account and phone).
+ */
 function AppStack({ isSignedIn, isOnboarded }: { isSignedIn: boolean; isOnboarded: boolean }) {
   const health = useHealth();
+  const intro = useIntro();
 
-  if (!health.ready) {
+  if (!health.ready || !intro.ready) {
     return (
       <Screen>
         <LoadingState />
@@ -106,16 +113,18 @@ function AppStack({ isSignedIn, isOnboarded }: { isSignedIn: boolean; isOnboarde
     );
   }
 
-  const isSetUp = isOnboarded && health.introDone;
+  const isSetUp = isOnboarded && health.introDone && intro.seen;
   // Explicit targets: without them a blocked deep link (e.g. "/" while signed out) ends on
   // the "Unmatched Route" screen.
   const home = isSetUp
     ? '/'
-    : isOnboarded
-      ? '/onboarding/health'
-      : isSignedIn
-        ? '/onboarding/name'
-        : '/welcome';
+    : !isSignedIn
+      ? '/welcome'
+      : !intro.seen
+        ? '/onboarding/intro'
+        : isOnboarded
+          ? '/onboarding/health'
+          : '/onboarding/name';
 
   return (
     <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg } }}>
@@ -128,6 +137,7 @@ function AppStack({ isSignedIn, isOnboarded }: { isSignedIn: boolean; isOnboarde
       <Stack.Protected guard={isSetUp} redirectTo={home}>
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="challenge" />
+        <Stack.Screen name="how-it-works" />
       </Stack.Protected>
       <Stack.Screen name="legal" />
     </Stack>

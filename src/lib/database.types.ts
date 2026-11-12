@@ -464,6 +464,23 @@ export type Database = {
           progress_value: number;
         }[];
       };
+      get_my_stats: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          streak_days: number;
+          total_distance_m: number;
+          total_won_cents: number;
+          wins: number;
+        }[];
+      };
+      get_my_week: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          day: string;
+          distance_m: number;
+        }[];
+      };
+      get_potential_win: { Args: { p_challenge_id: string }; Returns: number };
       join_challenge: {
         Args: { p_challenge_id: string };
         Returns: {

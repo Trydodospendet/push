@@ -1,9 +1,12 @@
+export { Avatar, type AvatarProps } from './avatar';
 export { Button, type ButtonProps } from './button';
 export { Card, type CardProps } from './card';
 export { ChipGroup, type ChipGroupProps, type ChipOption } from './chip-group';
+export { EmptyState, Illustration, type EmptyStateProps } from './empty-state';
 export { Icon, type IconName, type IconProps } from './icon';
 export { Pill, type PillProps } from './pill';
 export { ProgressBar, type ProgressBarProps } from './progress-bar';
+export { ProgressRing, type ProgressRingProps } from './progress-ring';
 export { Screen, type ScreenProps } from './screen';
 export { Sheet, type SheetProps } from './sheet';
 export { ErrorState, LoadingState, type ErrorStateProps } from './states';

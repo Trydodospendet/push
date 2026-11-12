@@ -51,7 +51,11 @@ export default function SoloScreen() {
 
       <ChallengeSection
         label={de.solo.current}
-        emptyText={de.solo.emptyCurrent}
+        empty={{
+          icon: 'flag-outline',
+          title: de.emptyStates.soloCurrentTitle,
+          text: de.emptyStates.soloCurrentText,
+        }}
         items={solo
           ?.filter((challenge) => !isFinished(challenge))
           .map((challenge) => ({ challenge, joined: true, created: true }))}
@@ -60,7 +64,11 @@ export default function SoloScreen() {
 
       <ChallengeSection
         label={de.solo.finished}
-        emptyText={de.solo.emptyFinished}
+        empty={{
+          icon: 'checkmark-done-outline',
+          title: de.emptyStates.soloFinishedTitle,
+          text: de.emptyStates.soloFinishedText,
+        }}
         items={solo
           ?.filter(isFinished)
           .reverse()

@@ -1,6 +1,7 @@
+import { useRouter } from 'expo-router';
 import { RefreshControl, StyleSheet, View } from 'react-native';
 
-import { Card, ErrorState, LoadingState, Screen, Text } from '@/components';
+import { Card, EmptyState, ErrorState, LoadingState, Screen, Text } from '@/components';
 import { useSession } from '@/features/auth/auth-provider';
 import { useLedger, useWalletBalance, type LedgerEntry } from '@/features/wallet/api';
 import { de } from '@/i18n/de';
@@ -10,6 +11,7 @@ import { formatAmount } from '@/lib/money';
 import { colors, layout, spacing } from '@/theme';
 
 export default function WalletScreen() {
+  const router = useRouter();
   const session = useSession();
   const balance = useWalletBalance(session.user.id);
   const ledger = useLedger(session.user.id);
@@ -73,7 +75,13 @@ export default function WalletScreen() {
             retrying={ledger.isFetching}
           />
         ) : ledger.data.length === 0 ? (
-          <Text color="textMuted">{de.wallet.historyEmpty}</Text>
+          <EmptyState
+            icon="receipt-outline"
+            title={de.emptyStates.walletTitle}
+            text={de.emptyStates.walletText}
+            actionLabel={de.emptyStates.walletAction}
+            onAction={() => router.navigate('/ranked')}
+          />
         ) : (
           <Card style={styles.entries}>
             {ledger.data.map((entry, index) => (

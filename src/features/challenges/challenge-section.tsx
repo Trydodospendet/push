@@ -1,6 +1,6 @@
 import { StyleSheet, View } from 'react-native';
 
-import { ErrorState, LoadingState, Text } from '@/components';
+import { EmptyState, ErrorState, LoadingState, Text, type EmptyStateProps } from '@/components';
 import { spacing } from '@/theme';
 
 import { ChallengeCard } from './challenge-card';
@@ -10,7 +10,8 @@ export type ChallengeSectionItem = { challenge: Challenge; joined: boolean; crea
 
 export type ChallengeSectionProps = {
   label: string;
-  emptyText: string;
+  /** Illustration and hint shown instead of an empty list. */
+  empty: Omit<EmptyStateProps, 'compact'>;
   errorText: string;
   /** undefined while loading or after an error. */
   items: ChallengeSectionItem[] | undefined;
@@ -23,7 +24,7 @@ export type ChallengeSectionProps = {
 /** A titled list of challenge cards with loading, error and empty state. */
 export function ChallengeSection({
   label,
-  emptyText,
+  empty,
   errorText,
   items,
   loading,
@@ -50,7 +51,7 @@ export function ChallengeSection({
           />
         ))
       ) : (
-        <Text color="textMuted">{emptyText}</Text>
+        <EmptyState compact {...empty} />
       )}
     </View>
   );

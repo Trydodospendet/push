@@ -77,7 +77,11 @@ export default function RankedScreen() {
 
       <ChallengeSection
         label={de.challenges.mine}
-        emptyText={de.challenges.emptyMine}
+        empty={{
+          icon: 'trophy-outline',
+          title: de.emptyStates.rankedMineTitle,
+          text: de.emptyStates.rankedMineText,
+        }}
         errorText={de.challenges.error}
         items={myRanked
           ?.filter((challenge) => !isFinished(challenge))
@@ -87,7 +91,11 @@ export default function RankedScreen() {
 
       <ChallengeSection
         label={de.challenges.open}
-        emptyText={de.challenges.emptyOpen}
+        empty={{
+          icon: 'search-outline',
+          title: de.emptyStates.rankedOpenTitle,
+          text: de.emptyStates.rankedOpenText,
+        }}
         errorText={de.challenges.error}
         items={open.data?.map((challenge) => ({ challenge, ...toItem(challenge) }))}
         loading={open.isPending}
@@ -98,7 +106,11 @@ export default function RankedScreen() {
 
       <ChallengeSection
         label={de.challenges.finished}
-        emptyText={de.challenges.emptyFinished}
+        empty={{
+          icon: 'checkmark-done-outline',
+          title: de.emptyStates.rankedFinishedTitle,
+          text: de.emptyStates.rankedFinishedText,
+        }}
         errorText={de.challenges.error}
         items={myRanked
           ?.filter((challenge) => challenge.isParticipant && isFinished(challenge))
