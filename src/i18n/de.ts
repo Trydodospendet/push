@@ -342,11 +342,11 @@ export const de = {
   pool: {
     title: 'Pool',
     intro:
-      'Der Überblick über die ganze App: Wer macht gerade mit und wie viele Credits sind in laufenden Zielen gebunden?',
+      'Der Überblick über die ganze App: Wie viele Personen nehmen an offenen oder laufenden Zielen teil und wie viele Credits sind dort gebunden?',
     boundLabel: 'GEBUNDENE CREDITS',
     peopleLabel: 'PERSONEN',
     goalsLabel: 'ZIELE',
-    hint: 'Gezählt werden offene und laufende Ziele und Pools. Die verfallenen Einsätze eines Zeitraums gehen an alle, die ihr Ziel in diesem Zeitraum erreichen.',
+    hint: 'Die Summen umfassen offene und laufende Ziele und Pools. Ob gerade jemand läuft, lässt sich hier nicht feststellen. Die verfallenen Einsätze eines Zeitraums gehen an alle, die ihr Ziel in diesem Zeitraum erreichen.',
     competitionsLabel: 'FESTE WETTBEWERBE',
     competitions: [
       'Meiste Kilometer und meiste Schritte',
@@ -1046,7 +1046,7 @@ export const de = {
       },
       {
         q: 'Wofür sind Pool und Ranked da?',
-        a: 'Der Pool zeigt, wie viele Personen gerade mitmachen und wie viele Credits in laufenden Zielen gebunden sind. Ranked sind feste Ranglisten ohne Einsatz (meiste Kilometer, meiste Schritte – täglich, wöchentlich, monatlich) mit Punkten und Abzeichen, dazu Freunde und Liga. Eigene Ranglisten kannst du nicht erstellen.',
+        a: 'Der Pool zeigt die Anzahl der Personen in offenen oder laufenden Zielen und die dort gebundenen Credits. Ob jemand gerade läuft, lässt sich nicht feststellen. Ranked sind feste Ranglisten ohne Einsatz (meiste Kilometer, meiste Schritte – täglich, wöchentlich, monatlich) mit Punkten und Abzeichen, dazu Freunde und Liga. Eigene Ranglisten kannst du nicht erstellen.',
       },
       {
         q: 'Kann ich meinen Gewinn spenden?',

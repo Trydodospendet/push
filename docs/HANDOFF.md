@@ -5,10 +5,11 @@
 - Phasen 6–8: Design, Community, Erinnerungen, Abzeichen und GPS-Aufzeichnung.
 - Ausbau 1–2: Sicherheitsprüfung, Pool und Ranked, Profil und Anmeldung, Laufstatistik, Einsprüche, Freunde, Trainingspläne und Vorbereitung für Server-Push.
 - Ausbau 3: Persönliche Ziele mit virtuellen Credits und Abrechnung pro Zeitraum, Tab „Aktivität“, feste Ranglisten und getrennte Registrierung/Anmeldung.
+- Pool- und FAQ-Texte präzisiert: Die Übersicht zählt Personen und Credits in offenen oder laufenden Zielen; ob jemand gerade tatsächlich läuft, wird nicht behauptet. Setup-Test prüft ausdrücklich, dass ein Einsatz nach dem Start nicht zurückziehbar ist.
 - Projektregeln gekürzt, alte MVP-Spezifikation und bisherige Übergabe unverändert gesichert, Claude-Lesesperren eingerichtet.
 - Typecheck, Lint und 538 lokale Datenbankprüfungen grün. Jest parallel meldete 30 Fehler, seriell mit `npx jest --runInBand` waren alle 283 Tests grün.
 - Zielbild erneut geprüft (13.11.2026): Home führt über „Ziel setzen“, erklärt den Ablauf beim ersten Öffnen und zeigt ein wichtigstes plus weitere Ziele. Freunde/Liga sind unter Ranked; Aktivität ist als Tab erreichbar, zeigt Health-Daten und GPS-Läufe und bietet Android-Strecken an. Ziele binden Credits ab Start; die Fensterabrechnung verteilt verfallene Einsätze anteilig, zieht `fee_bps` ab und bucht Rundungsreste ans Haus.
-- Lokale Prüfungen erneut erfolgreich: `npm run typecheck`, `npm run lint`, `npx jest` (41 Suiten, 283 Tests) und `npx supabase test db` (19 Dateien, 538 Prüfungen). Jest meldet weiterhin nur doppelte manuelle Mock-Namen für `storage`.
+- Lokale Prüfungen am 13.11.2026 erfolgreich: `npm run typecheck`, `npm run lint`, `npx jest --runInBand` (41 Suiten, 283 Tests) und `npx supabase test db` (19 Dateien, 538 Prüfungen). Jest meldet weiterhin nur doppelte manuelle Mock-Namen für `storage`.
 - Alle Details und frühere Prüfergebnisse stehen im [Archiv](HANDOFF_ARCHIV.md).
 
 ## Offen

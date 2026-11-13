@@ -560,7 +560,8 @@ Konten der lokalen Datenbank gibt es in der Cloud nicht, du registrierst dich do
    Nächste Woche / Nächster Monat), Einsatz → _Weiter_. Das Bestätigungs-Fenster nennt die Höhe des
    Einsatzes, wann er zurückkommt und dass er **ab dem Start gebunden** ist. Erst _… Credits setzen_
    bucht ab (Wallet prüfen). Im Ziel gibt es bis zum Start _Ziel zurückziehen_ (Einsatz kommt
-   zurück); **ab dem Start gibt es keinen Knopf mehr**. Zum Durchspielen bis zur Abrechnung:
+   zurück). Nach dem Start aktualisieren und prüfen, dass die Rückzieh-Option verschwunden ist:
+   **Der Einsatz lässt sich dann nicht mehr zurückholen.** Zum Durchspielen bis zur Abrechnung:
    Zeitraffer-Skript (`supabase/scripts/simulate_challenge.sql`, jetzt mit drei Zielen).
 3. **Lauf im Aktivität-Tab und Zielfortschritt:** Tab _Aktivität_ → Läufe und Schritte aus Health
    Connect erscheinen automatisch (Nach unten ziehen = Synchronisieren). Ohne Verbindung zeigt der
@@ -568,8 +569,10 @@ Konten der lokalen Datenbank gibt es in der Cloud nicht, du registrierst dich do
    _Strecke anzeigen_ (Health Connect fragt einmal pro Strecke um Erlaubnis; die Strecke bleibt auf
    dem Handy). _Lauf aufzeichnen_ startet das eigene GPS-Tracking. Auf Home steigt der Fortschritt
    des wichtigsten Ziels; weitere Ziele stehen darunter in der kleinen Übersicht.
-4. **Pool und Ranked:** _Pool_ zeigt gebundene Credits, Personen und Ziele (nur Summen) sowie eine
-   Kurzübersicht der festen Wettbewerbe – kein Erstellen. _Ranked_ zeigt die festen Ranglisten
+4. **Pool und Ranked:** _Pool_ zeigt die gebundenen Credits und die Zahl der Personen und Ziele in
+   offenen oder laufenden Pool-Zielen (nur Summen). Die App zeigt nicht an, wer gerade tatsächlich
+   läuft. Dazu gibt es eine Kurzübersicht der festen Wettbewerbe. Eigene Ranked-Challenges lassen
+   sich nicht erstellen. _Ranked_ zeigt die festen Ranglisten
    (täglich, wöchentlich, monatlich; meiste km und meiste Schritte) zum Mitmachen, **ohne**
    Erstellen-Knopf, außerdem _Freunde & Liga_. Die Ranglisten legt der Server täglich an
    (`create_ranked_cycles`).
