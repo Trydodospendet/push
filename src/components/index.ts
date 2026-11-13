@@ -9,6 +9,7 @@ export { ProgressBar, type ProgressBarProps } from './progress-bar';
 export { ProgressRing, type ProgressRingProps } from './progress-ring';
 export { Screen, type ScreenProps } from './screen';
 export { Sheet, type SheetProps } from './sheet';
+export { SettingsRow, type SettingsRowProps } from './settings-row';
 export { SwitchRow, type SwitchRowProps } from './switch-row';
 export { ErrorState, LoadingState, type ErrorStateProps } from './states';
 export { Text, type TextProps } from './text';

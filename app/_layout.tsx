@@ -14,6 +14,7 @@ import { IntroProvider, useIntro } from '@/features/intro/intro-provider';
 import { GpsProvider } from '@/features/gps/gps-provider';
 import { ReminderProvider } from '@/features/reminders/reminder-provider';
 import { de } from '@/i18n/de';
+import { loadPreferences } from '@/features/preferences/store';
 import { createQueryClient } from '@/lib/query-client';
 import { colors, fontAssets } from '@/theme';
 
@@ -24,6 +25,10 @@ export default function RootLayout() {
   const [fontsLoaded, fontError] = useFonts(fontAssets);
   // If the fonts fail to load the app still starts and falls back to the system font.
   const fontsReady = fontsLoaded || fontError !== null;
+
+  useEffect(() => {
+    void loadPreferences();
+  }, []);
 
   if (!fontsReady) {
     return null;
@@ -145,6 +150,7 @@ function AppStack({ isSignedIn, isOnboarded }: { isSignedIn: boolean; isOnboarde
         <Stack.Screen name="challenge" />
         <Stack.Screen name="how-it-works" />
         <Stack.Screen name="run" />
+        <Stack.Screen name="settings" />
       </Stack.Protected>
       <Stack.Screen name="legal" />
     </Stack>

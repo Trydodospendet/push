@@ -66,7 +66,11 @@ export default function HomeScreen() {
           actionLabel={de.home.findChallenge}
           onAction={() => router.navigate('/ranked')}
         />
-        <Button label={de.run.homeButton} variant="secondary" onPress={() => router.push('/run')} />
+        <Button
+          label={de.run.homeButton}
+          variant="secondary"
+          onPress={() => router.push('/run/index')}
+        />
         <StreakAndWeek userId={session.user.id} />
         <RecentWins userId={session.user.id} timezone={timezone} />
       </Screen>
@@ -96,7 +100,11 @@ export default function HomeScreen() {
       }
     >
       <HealthBanner />
-      <Button label={de.run.homeButton} variant="secondary" onPress={() => router.push('/run')} />
+      <Button
+        label={de.run.homeButton}
+        variant="secondary"
+        onPress={() => router.push('/run/index')}
+      />
       {primary ? (
         <>
           <Text variant="label" color="textSecondary" accessibilityRole="header">

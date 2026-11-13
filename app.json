@@ -81,6 +81,14 @@
           "image": "./assets/splash-icon.png",
           "imageWidth": 200
         }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "PUSH greift nur auf das Foto zu, das du als Profilbild auswählst. Das Bild wird verkleinert und nur für dich gespeichert.",
+          "cameraPermission": false,
+          "microphonePermission": false
+        }
       ]
     ],
     "experiments": {

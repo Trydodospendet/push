@@ -205,7 +205,7 @@ describe('app flow', () => {
         : { data: profile(true, 'Anna Lauf'), error: null },
     );
 
-    await renderRouter('./app', { initialUrl: '/profile' });
+    await renderRouter('./app', { initialUrl: '/settings/data' });
 
     await user.press(await screen.findByRole('button', { name: 'Konto löschen' }));
     expect(screen.getByText('Konto endgültig löschen?')).toBeOnTheScreen();
@@ -234,7 +234,7 @@ describe('app flow', () => {
         : { data: profile(true, 'Anna Lauf'), error: null },
     );
 
-    await renderRouter('./app', { initialUrl: '/profile' });
+    await renderRouter('./app', { initialUrl: '/settings/data' });
 
     await user.press(await screen.findByRole('button', { name: 'Konto löschen' }));
     await user.press(screen.getByRole('button', { name: 'Endgültig löschen' }));
@@ -251,7 +251,7 @@ describe('app flow', () => {
     mockAuth.setInitialSession(session);
     supabaseMock.rpc.mockResolvedValue({ data: profile(true, 'Anna Lauf'), error: null });
 
-    await renderRouter('./app', { initialUrl: '/profile' });
+    await renderRouter('./app', { initialUrl: '/settings/data' });
 
     await user.press(await screen.findByRole('button', { name: 'Datenschutz' }));
     expect(

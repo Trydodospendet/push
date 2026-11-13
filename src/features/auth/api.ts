@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
+import { removeAllAvatars } from '@/features/account/api';
 import { clearHealthState } from '@/features/health/storage';
 import { clearReminderSettings } from '@/features/reminders/storage';
 import { clearGpsStorage } from '@/features/gps/storage';
@@ -58,6 +59,8 @@ export function useSignOut() {
 export function useDeleteAccount(userId: string) {
   return useMutation({
     mutationFn: async () => {
+      // The picture is removed first: afterwards nobody could delete it any more.
+      await removeAllAvatars(userId).catch(() => undefined);
       const { error } = await supabase.rpc('delete_my_account');
       if (error) {
         throw error;
