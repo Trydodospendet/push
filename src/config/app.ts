@@ -8,24 +8,24 @@
 export const APP_NAME = 'PUSH';
 
 /**
- * Operator details for privacy policy and imprint. Everything in [brackets] is a placeholder
- * and MUST be filled in before the store release (docs/RELEASE.md). The web versions in
+ * Operator details for privacy policy and imprint. Empty strings (phone, register, vatId) are
+ * left out of the imprint. The web versions in
  * docs/legal/*.html contain the same placeholders and must be updated together.
  */
 export const LEGAL = {
-  operatorName: '[PLATZHALTER: Vor- und Nachname bzw. Firmenname mit Rechtsform]',
-  street: '[PLATZHALTER: Straße und Hausnummer]',
-  city: '[PLATZHALTER: PLZ und Ort]',
+  operatorName: 'Darab Baryalai',
+  street: 'Babenhäuser Straße 5',
+  city: '63533 Mainhausen',
   country: 'Deutschland',
-  email: '[PLATZHALTER: kontakt@deine-domain.de]',
-  phone: '[PLATZHALTER: Telefonnummer, optional]',
-  register: '[PLATZHALTER: Handelsregister und Nummer, nur bei Firma – sonst Zeile löschen]',
-  vatId: '[PLATZHALTER: USt-IdNr., nur falls vorhanden – sonst Zeile löschen]',
-  supabaseRegion: '[PLATZHALTER: Serverstandort, empfohlen „EU – Frankfurt (eu-central-1)“]',
-  emailProvider: '[PLATZHALTER: Name des E-Mail-Dienstes für die Anmeldecodes, z. B. Resend]',
-  updatedAt: '[PLATZHALTER: Datum]',
+  email: 'kontakt@puschdich.de',
+  phone: '',
+  register: '',
+  vatId: '',
+  supabaseRegion: 'EU – Frankfurt (eu-central-1)',
+  emailProvider: 'Resend (Resend, Inc.), Versand über Server in der EU (Irland)',
+  updatedAt: '13.11.2026',
   /** Public web page with deletion instructions (docs/legal/delete-account.html, hosted). */
-  deletionUrl: '[PLATZHALTER: https://…/delete-account.html]',
+  deletionUrl: 'https://puschdich.de/delete-account.html',
 } as const;
 
 /** DB: profiles.display_name */

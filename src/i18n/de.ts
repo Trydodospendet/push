@@ -102,11 +102,11 @@ const privacySections: readonly LegalSection[] = [
 const imprintSections: readonly LegalSection[] = [
   {
     title: 'Angaben gemäß § 5 DDG',
-    paragraphs: [...operatorLines, LEGAL.register, LEGAL.vatId],
+    paragraphs: [...operatorLines, LEGAL.register, LEGAL.vatId].filter((line) => line !== ''),
   },
   {
     title: 'Kontakt',
-    paragraphs: [`E-Mail: ${LEGAL.email}`, `Telefon: ${LEGAL.phone}`],
+    paragraphs: [`E-Mail: ${LEGAL.email}`, ...(LEGAL.phone ? [`Telefon: ${LEGAL.phone}`] : [])],
   },
   {
     title: 'Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV',
