@@ -707,6 +707,14 @@ export type Database = {
           kind: string;
         }[];
       };
+      get_gps_run_profile: {
+        Args: { p_run_id: string };
+        Returns: {
+          altitude_m: number;
+          distance_m: number;
+          pace_s_per_km: number;
+        }[];
+      };
       get_gps_run_route: {
         Args: { p_run_id: string };
         Returns: {
@@ -714,6 +722,16 @@ export type Database = {
           lng: number;
           segment: number;
           seq: number;
+        }[];
+      };
+      get_gps_run_splits: {
+        Args: { p_run_id: string };
+        Returns: {
+          ascent_m: number;
+          distance_m: number;
+          km: number;
+          pace_s_per_km: number;
+          seconds: number;
         }[];
       };
       get_leaderboard: {
@@ -786,6 +804,15 @@ export type Database = {
           points: number;
         }[];
       };
+      get_my_period_stats: {
+        Args: { p_count?: number; p_unit: string };
+        Returns: {
+          distance_m: number;
+          duration_s: number;
+          period_start: string;
+          runs: number;
+        }[];
+      };
       get_my_profile: {
         Args: Record<PropertyKey, never>;
         Returns: {
@@ -811,6 +838,14 @@ export type Database = {
         Returns: {
           challenge_id: string;
           progress_value: number;
+        }[];
+      };
+      get_my_records: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          achieved_at: string;
+          kind: string;
+          value: number;
         }[];
       };
       get_my_stats: {
