@@ -1,12 +1,12 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
-import { Pressable, RefreshControl, StyleSheet } from 'react-native';
+import { Pressable, RefreshControl, StyleSheet, View } from 'react-native';
 
-import { Button, Card, EmptyState, ErrorState, LoadingState, Screen, Text } from '@/components';
+import { Button, Card, ErrorState, LoadingState, Screen, Text } from '@/components';
 import { DEFAULT_TIMEZONE } from '@/config/app';
 import { useSession } from '@/features/auth/auth-provider';
 import { useMyChallenges } from '@/features/challenges/api';
-import { ChallengeCard } from '@/features/challenges/challenge-card';
+import { CompactGoal } from '@/features/challenges/compact-goal';
 import { useMyProgress } from '@/features/health/api';
 import { useHealth } from '@/features/health/health-provider';
 import { pickPrimaryChallenge } from '@/features/health/progress';
@@ -17,7 +17,10 @@ import { statsKeys } from '@/features/stats/api';
 import { de } from '@/i18n/de';
 import { colors, opacity, spacing } from '@/theme';
 
-/** The joined challenges: the most important one with its progress, the others as cards. */
+/**
+ * Home: the one thing to do is "Ziel setzen". The most important running goal is shown big,
+ * further goals in a small overview.
+ */
 export default function HomeScreen() {
   const router = useRouter();
   const queryClient = useQueryClient();
@@ -53,34 +56,30 @@ export default function HomeScreen() {
     );
   }
 
+  const setGoal = (
+    <Button label={de.home.setGoal} onPress={() => router.push('/challenge/create')} />
+  );
+
   if (!joined || joined.length === 0) {
     return (
       <Screen scroll contentStyle={styles.content}>
         <Text variant="label" color="textSecondary">
           {de.home.label}
         </Text>
-        <EmptyState
-          icon="flag-outline"
-          title={de.home.emptyTitle}
-          text={de.home.emptyText}
-          actionLabel={de.home.findChallenge}
-          onAction={() => router.navigate('/ranked')}
-        />
-        <Button
-          label={de.social.homeButton}
-          variant="secondary"
-          onPress={() => router.push('/social')}
-        />
-        <Button
-          label={de.run.homeButton}
-          variant="secondary"
-          onPress={() => router.push('/run/index')}
-        />
-        <Button
-          label={de.training.homeButton}
-          variant="secondary"
-          onPress={() => router.push('/training')}
-        />
+        <Card style={styles.how}>
+          <Text variant="title">{de.home.emptyTitle}</Text>
+          <Text color="textSecondary">{de.home.emptyText}</Text>
+          {setGoal}
+        </Card>
+        <Text variant="label" color="textSecondary" accessibilityRole="header">
+          {de.home.howLabel}
+        </Text>
+        <Card style={styles.how}>
+          {de.home.howSteps.map((step, index) => (
+            <Text key={step} color="textSecondary">{`${index + 1}. ${step}`}</Text>
+          ))}
+        </Card>
+        <HealthBanner />
         <StreakAndWeek userId={session.user.id} />
         <RecentWins userId={session.user.id} timezone={timezone} />
       </Screen>
@@ -88,6 +87,7 @@ export default function HomeScreen() {
   }
 
   const others = joined.filter((challenge) => challenge.id !== primary?.id);
+  const now = new Date();
 
   return (
     <Screen
@@ -109,22 +109,8 @@ export default function HomeScreen() {
         />
       }
     >
+      {setGoal}
       <HealthBanner />
-      <Button
-        label={de.social.homeButton}
-        variant="secondary"
-        onPress={() => router.push('/social')}
-      />
-      <Button
-        label={de.run.homeButton}
-        variant="secondary"
-        onPress={() => router.push('/run/index')}
-      />
-      <Button
-        label={de.training.homeButton}
-        variant="secondary"
-        onPress={() => router.push('/training')}
-      />
       {primary ? (
         <>
           <Text variant="label" color="textSecondary" accessibilityRole="header">
@@ -143,7 +129,7 @@ export default function HomeScreen() {
               <ProgressSummary
                 challenge={primary}
                 value={progress.data?.[primary.id] ?? 0}
-                now={new Date()}
+                now={now}
                 footer={health.connected ? lastSync : null}
                 ring
               />
@@ -151,17 +137,22 @@ export default function HomeScreen() {
           </Pressable>
         </>
       ) : null}
-      <StreakAndWeek userId={session.user.id} />
       {others.length > 0 ? (
-        <>
+        <View style={styles.others}>
           <Text variant="label" color="textSecondary" accessibilityRole="header">
             {de.home.moreLabel}
           </Text>
           {others.map((challenge) => (
-            <ChallengeCard key={challenge.id} challenge={challenge} joined />
+            <CompactGoal
+              key={challenge.id}
+              challenge={challenge}
+              value={progress.data?.[challenge.id] ?? 0}
+              now={now}
+            />
           ))}
-        </>
+        </View>
       ) : null}
+      <StreakAndWeek userId={session.user.id} />
       <RecentWins userId={session.user.id} timezone={timezone} />
     </Screen>
   );
@@ -175,6 +166,12 @@ const styles = StyleSheet.create({
   },
   primary: {
     gap: spacing.md,
+  },
+  how: {
+    gap: spacing.sm,
+  },
+  others: {
+    gap: spacing.sm,
   },
   pressed: {
     opacity: opacity.pressed,

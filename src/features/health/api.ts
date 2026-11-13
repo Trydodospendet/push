@@ -94,3 +94,37 @@ export function useMyDailySteps(
     },
   });
 }
+
+export type RecentWorkout = Workout & { sourceRecordId: string; platform: string };
+
+/** All runs of the last 45 days that the server received from the phone, newest first. */
+export function useRecentWorkouts(userId: string) {
+  return useQuery({
+    queryKey: [...activityKeys.all, 'recent-workouts', userId] as const,
+    queryFn: async (): Promise<RecentWorkout[]> => {
+      const since = new Date(Date.now() - 45 * 86_400_000).toISOString();
+      const { data, error } = await supabase
+        .from('activity_workouts')
+        .select(
+          'id, start_at, distance_m, duration_s, is_valid, invalid_reason, source_record_id, platform',
+        )
+        .eq('user_id', userId)
+        .gte('start_at', since)
+        .order('start_at', { ascending: false })
+        .limit(50);
+      if (error) {
+        throw error;
+      }
+      return data.map((row) => ({
+        id: row.id,
+        startAt: row.start_at,
+        distanceM: row.distance_m,
+        durationS: row.duration_s,
+        isValid: row.is_valid,
+        invalidReason: row.invalid_reason,
+        sourceRecordId: row.source_record_id,
+        platform: row.platform,
+      }));
+    },
+  });
+}

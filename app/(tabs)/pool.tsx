@@ -1,40 +1,30 @@
 import { useRouter } from 'expo-router';
 import { RefreshControl, StyleSheet, View } from 'react-native';
 
-import { Button, Screen, Text } from '@/components';
+import { Button, Card, ErrorState, LoadingState, Screen, Text } from '@/components';
 import { useSession } from '@/features/auth/auth-provider';
-import { useMyChallenges, useOpenChallenges } from '@/features/challenges/api';
+import { useMyChallenges, usePoolOverview } from '@/features/challenges/api';
 import { ChallengeSection } from '@/features/challenges/challenge-section';
 import { isFinished, isPool } from '@/features/challenges/format';
 import { de } from '@/i18n/de';
+import { formatAmount } from '@/lib/money';
 import { colors, spacing } from '@/theme';
 
-/** Pool: one pot, everybody pays an own stake; those who reach the goal share the pot. */
+/**
+ * Pool: the overview of the whole app – how many people take part and how many credits are
+ * bound in running goals. (Nobody can see who is running right now, so that is not shown.)
+ */
 export default function PoolScreen() {
   const router = useRouter();
   const session = useSession();
   const mine = useMyChallenges(session.user.id);
-  const open = useOpenChallenges('pool');
+  const overview = usePoolOverview();
 
-  const refreshing = mine.isRefetching || open.isRefetching;
+  const myPools = mine.data?.filter(isPool).filter((challenge) => !isFinished(challenge));
+
   const refresh = () => {
     void mine.refetch();
-    void open.refetch();
-  };
-
-  const myPools = mine.data?.filter(isPool);
-  const joinedIds = new Set(myPools?.filter((c) => c.isParticipant).map((c) => c.id));
-  const createdIds = new Set(myPools?.filter((c) => c.isCreator).map((c) => c.id));
-  const toItem = (challenge: { id: string }) => ({
-    joined: joinedIds.has(challenge.id),
-    created: createdIds.has(challenge.id),
-  });
-  const mineState = {
-    errorText: de.pool.error,
-    loading: mine.isPending,
-    error: mine.isError,
-    retrying: mine.isFetching,
-    onRetry: () => void mine.refetch(),
+    void overview.refetch();
   };
 
   return (
@@ -43,7 +33,7 @@ export default function PoolScreen() {
       contentStyle={styles.content}
       refreshControl={
         <RefreshControl
-          refreshing={refreshing}
+          refreshing={mine.isRefetching || overview.isRefetching}
           onRefresh={refresh}
           tintColor={colors.accent}
           colors={[colors.onAccent]}
@@ -57,65 +47,102 @@ export default function PoolScreen() {
         </Text>
         <Text color="textSecondary">{de.pool.intro}</Text>
       </View>
-      <View style={styles.actions}>
-        <View style={styles.action}>
+
+      {overview.isPending ? (
+        <LoadingState />
+      ) : overview.isError ? (
+        <ErrorState
+          message={de.pool.error}
+          onRetry={() => overview.refetch()}
+          retrying={overview.isFetching}
+        />
+      ) : (
+        <Card style={styles.numbers}>
+          <View
+            accessible
+            accessibilityLabel={`${de.pool.boundLabel}: ${formatAmount(overview.data.boundCents)} ${de.common.credits}`}
+          >
+            <Text variant="label" color="textSecondary">
+              {de.pool.boundLabel}
+            </Text>
+            <Text variant="display" color="accent" numberOfLines={1} adjustsFontSizeToFit>
+              {formatAmount(overview.data.boundCents)}
+            </Text>
+            <Text variant="caption" color="textSecondary">
+              {de.common.credits}
+            </Text>
+          </View>
+          <View style={styles.row}>
+            <View
+              style={styles.fact}
+              accessible
+              accessibilityLabel={`${de.pool.peopleLabel}: ${overview.data.people}`}
+            >
+              <Text variant="label" color="textSecondary">
+                {de.pool.peopleLabel}
+              </Text>
+              <Text variant="title">{overview.data.people}</Text>
+            </View>
+            <View
+              style={styles.fact}
+              accessible
+              accessibilityLabel={`${de.pool.goalsLabel}: ${overview.data.goals}`}
+            >
+              <Text variant="label" color="textSecondary">
+                {de.pool.goalsLabel}
+              </Text>
+              <Text variant="title">{overview.data.goals}</Text>
+            </View>
+          </View>
+          <Text variant="caption" color="textMuted">
+            {de.pool.hint}
+          </Text>
+        </Card>
+      )}
+
+      <View style={styles.group}>
+        <Text variant="label" color="textSecondary" accessibilityRole="header">
+          {de.pool.competitionsLabel}
+        </Text>
+        <Card style={styles.group}>
+          {de.pool.competitions.map((line) => (
+            <Text key={line} color="textSecondary">{`• ${line}`}</Text>
+          ))}
           <Button
-            label={de.pool.create}
-            onPress={() => router.push({ pathname: '/challenge/create', params: { mode: 'pool' } })}
-          />
-        </View>
-        <View style={styles.action}>
-          <Button
-            label={de.challenges.joinByCode}
+            label={de.pool.toRanked}
             variant="secondary"
-            onPress={() => router.push('/challenge/join')}
+            onPress={() => router.navigate('/ranked')}
           />
-        </View>
+        </Card>
       </View>
 
-      <ChallengeSection
-        label={de.pool.mine}
-        empty={{
-          icon: 'flag-outline',
-          title: de.emptyStates.poolMineTitle,
-          text: de.emptyStates.poolMineText,
-        }}
-        items={myPools
-          ?.filter((challenge) => !isFinished(challenge))
-          .map((challenge) => ({ challenge, ...toItem(challenge) }))}
-        {...mineState}
-      />
+      <View style={styles.group}>
+        <Button
+          label={de.challenges.joinByCode}
+          variant="secondary"
+          onPress={() => router.push('/challenge/join')}
+        />
+        <Text variant="caption" color="textMuted">
+          {de.pool.codeHint}
+        </Text>
+      </View>
 
-      <ChallengeSection
-        label={de.pool.open}
-        empty={{
-          icon: 'search-outline',
-          title: de.emptyStates.poolOpenTitle,
-          text: de.emptyStates.poolOpenText,
-        }}
-        errorText={de.pool.error}
-        items={open.data
-          ?.filter((challenge) => !joinedIds.has(challenge.id))
-          .map((challenge) => ({ challenge, ...toItem(challenge) }))}
-        loading={open.isPending}
-        error={open.isError}
-        retrying={open.isFetching}
-        onRetry={() => void open.refetch()}
-      />
-
-      <ChallengeSection
-        label={de.pool.finished}
-        empty={{
-          icon: 'checkmark-done-outline',
-          title: de.emptyStates.poolFinishedTitle,
-          text: de.emptyStates.poolFinishedText,
-        }}
-        items={myPools
-          ?.filter((challenge) => challenge.isParticipant && isFinished(challenge))
-          .reverse()
-          .map((challenge) => ({ challenge, ...toItem(challenge) }))}
-        {...mineState}
-      />
+      {myPools && myPools.length > 0 ? (
+        <ChallengeSection
+          label={de.pool.mine}
+          empty={{ icon: 'flag-outline', title: de.emptyStates.poolMineTitle, text: de.emptyStates.poolMineText }}
+          errorText={de.pool.error}
+          items={myPools.map((challenge) => ({
+            challenge,
+            joined: challenge.isParticipant,
+            created: challenge.isCreator,
+          }))}
+          loading={mine.isPending}
+          error={mine.isError}
+          retrying={mine.isFetching}
+          onRetry={() => void mine.refetch()}
+        />
+      ) : null}
     </Screen>
   );
 }
@@ -129,11 +156,17 @@ const styles = StyleSheet.create({
   header: {
     gap: spacing.xs,
   },
-  actions: {
-    flexDirection: 'row',
-    gap: spacing.sm,
+  numbers: {
+    gap: spacing.md,
   },
-  action: {
+  row: {
+    flexDirection: 'row',
+    gap: spacing.md,
+  },
+  fact: {
     flex: 1,
+  },
+  group: {
+    gap: spacing.sm,
   },
 });

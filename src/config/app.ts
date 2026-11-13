@@ -42,7 +42,7 @@ export const DEFAULT_TIMEZONE = 'Europe/Berlin';
  * DB: challenges.mode – ranked (pure leaderboard, no stake) or pool (everybody pays a stake into
  * one pot; those who reach the goal share the stakes of those who do not).
  */
-export const CHALLENGE_MODES = ['ranked', 'pool'] as const;
+export const CHALLENGE_MODES = ['ranked', 'pool', 'goal'] as const;
 export type ChallengeMode = (typeof CHALLENGE_MODES)[number];
 
 export const GOAL_TYPES = ['run_single', 'run_total', 'steps_daily', 'steps_total'] as const;
@@ -79,6 +79,13 @@ export const START_PRESET_DAYS_AHEAD = [1, 2, 3, 4, 5, 6, 7] as const;
 export const DURATION_MIN_DAYS = 1;
 export const DURATION_MAX_DAYS = 42;
 export const DURATION_PRESETS_DAYS = [1, 3, 7, 14, 28, 42] as const;
+
+/**
+ * DB: create_goal – the period of a personal goal: tomorrow, the coming week (Monday to Sunday)
+ * or the coming calendar month. All goals with the same period share one pot.
+ */
+export const GOAL_PERIODS = ['day', 'week', 'month'] as const;
+export type GoalPeriod = (typeof GOAL_PERIODS)[number];
 
 /** DB: challenges.invite_code */
 export const INVITE_CODE_LENGTH = 6;

@@ -28,7 +28,8 @@ import {
   goalRule,
   isFinished,
   isJoinable,
-  isPool,
+  hasStake,
+  isGoal,
   isRanked,
   modeLabel,
   statusLabel,
@@ -122,7 +123,8 @@ function ChallengeDetail({
   const isParticipant = me !== undefined;
   const isCreator = challenge.creator_id === userId;
   const ranked = isRanked(challenge);
-  const pool = isPool(challenge);
+  const staked = hasStake(challenge);
+  const goal = isGoal(challenge);
   const joinable = isJoinable(challenge);
   const leavable = isJoinable(challenge);
   const showRanking =
@@ -140,9 +142,19 @@ function ChallengeDetail({
     de.challenge.ruleManual,
     de.challenge.ruleGrace(challenge.sync_grace_hours),
     de.challenge.ruleMinParticipants(challenge.min_participants),
-    ...(ranked
-      ? [de.challenge.ruleRankedNoStake, de.challenge.ruleRankedPoints, de.challenge.ruleRanking]
-      : [
+    ...(goal
+      ? [
+          de.challenge.ruleGoalPayout,
+          de.challenge.ruleGoalMissed,
+          de.challenge.ruleGoalNobody,
+          ...(challenge.fee_bps > 0 ? [de.challenge.ruleFee(formatFee(challenge.fee_bps))] : []),
+          de.challenge.ruleRounding,
+          de.challenge.ruleDonation,
+          de.challenge.ruleGoalBound,
+        ]
+      : ranked
+        ? [de.challenge.ruleRankedNoStake, de.challenge.ruleRankedPoints, de.challenge.ruleRanking]
+        : [
           de.challenge.rulePayout,
           de.challenge.ruleAllWin,
           de.challenge.ruleNobody,
@@ -152,7 +164,7 @@ function ChallengeDetail({
           de.challenge.ruleDonation,
           de.challenge.ruleRanking,
         ]),
-    de.challenge.ruleLeave,
+    ...(goal ? [] : [de.challenge.ruleLeave]),
   ];
 
   const closeSheet = () => {
@@ -199,7 +211,7 @@ function ChallengeDetail({
         <ResultCard challenge={challenge} me={me} result={result.data ?? null} />
       ) : null}
 
-      {pool && isParticipant && !isFinished(challenge) ? (
+      {staked && isParticipant && !isFinished(challenge) ? (
         <ChallengeDonationCard challengeId={challenge.id} />
       ) : null}
 
@@ -207,7 +219,7 @@ function ChallengeDetail({
 
       <ChallengeFacts challenge={challenge} />
 
-      {challenge.invite_code ? (
+      {challenge.invite_code && !goal ? (
         <Card style={styles.inviteCard}>
           <Text variant="label" color="textSecondary">
             {de.challenge.inviteCode}
@@ -258,7 +270,7 @@ function ChallengeDetail({
         <ActivityList challenge={challenge} userId={userId} />
       ) : null}
 
-      {
+      {goal ? null : (
         <View style={styles.section}>
           <Text variant="label" color="textSecondary" accessibilityRole="header">
             {showRanking && isParticipant ? de.challenge.ranking : de.challenge.participantList}
@@ -281,9 +293,9 @@ function ChallengeDetail({
             </Card>
           )}
         </View>
-      }
+      )}
 
-      {!isParticipant ? null : (
+      {!isParticipant || goal ? null : (
         <View style={styles.section}>
           <Text variant="label" color="textSecondary" accessibilityRole="header">
             {de.feed.title}
@@ -322,7 +334,7 @@ function ChallengeDetail({
         ) : null}
         {isParticipant && leavable ? (
           <Button
-            label={de.challenge.leave}
+            label={goal ? de.challenge.leaveGoal : de.challenge.leave}
             variant="secondary"
             onPress={() => setSheet('leave')}
           />
@@ -351,10 +363,13 @@ function ChallengeDetail({
         closeLabel={de.leaveSheet.cancel}
       >
         <Text>
-          {ranked
+          {goal
+            ? de.leaveSheet.goalText(formatAmount(me?.stakeCents ?? challenge.stake_cents))
+            : ranked
             ? de.leaveSheet.rankedText
             : de.leaveSheet.text(formatAmount(me?.stakeCents ?? challenge.stake_cents))}
         </Text>
+        {goal ? <Text color="textSecondary">{de.leaveSheet.goalBound}</Text> : null}
         {leave.isError ? (
           <Text variant="caption" color="danger" accessibilityRole="alert">
             {toUserMessage(leave.error)}

@@ -147,6 +147,19 @@ export const de = {
     logo: `${APP_NAME}.`,
     claim: 'YOUR GOALS. YOUR STAKES.',
     start: 'Loslegen',
+    signUp: 'Registrieren',
+    signIn: 'Anmelden',
+  },
+  signUp: {
+    title: 'Registrieren',
+    intro:
+      'Lege dein Konto an: E-Mail-Adresse und ein Passwort. Danach bestätigst du die Adresse mit einem Code, den wir dir schicken.',
+    passwordLabel: 'Passwort',
+    passwordHint: (min: number) => `Mindestens ${min} Zeichen`,
+    repeatLabel: 'Passwort wiederholen',
+    passwordMismatch: 'Die beiden Passwörter stimmen nicht überein.',
+    submit: 'Code senden',
+    haveAccount: 'Ich habe schon ein Konto',
   },
   signIn: {
     title: 'Anmelden',
@@ -167,6 +180,8 @@ export const de = {
     forgotHint:
       'Kein Problem: Wir schicken dir einen Code. Nach der Anmeldung legst du in deinem Profil unter „Konto & Sicherheit“ ein neues Passwort fest.',
     invalidEmail: 'Bitte gib eine gültige E-Mail-Adresse ein.',
+    noAccountYet: 'Noch kein Konto – registrieren',
+    noAccount: 'Zu dieser E-Mail-Adresse gibt es noch kein Konto. Bitte registriere dich zuerst.',
     rateLimited: 'Zu viele Versuche. Bitte warte einen Moment und versuche es erneut.',
   },
   verify: {
@@ -181,6 +196,7 @@ export const de = {
     pasteHint: 'Tipp: Halte ein Feld gedrückt, um einen kopierten Code einzufügen.',
     resetHint:
       'Nach der Anmeldung kannst du unter Profil → Konto & Sicherheit ein neues Passwort festlegen.',
+    signupHint: 'Nach dem Code ist dein Passwort gesetzt – damit kannst du dich künftig auch anmelden.',
     changeEmail: 'Andere E-Mail-Adresse',
     invalidCode: `Der Code besteht aus ${SIGN_IN_CODE_LENGTH} Ziffern.`,
     wrongCode: 'Der Code ist falsch oder abgelaufen. Fordere bei Bedarf einen neuen an.',
@@ -281,12 +297,38 @@ export const de = {
     stepsExcluded:
       'Eine App mit manuell eingetragenen Schritten wurde an diesem Tag nicht mitgezählt.',
   },
+  activityTab: {
+    title: 'Aktivität',
+    intro: (source: string) =>
+      `Deine Läufe und Schritte werden automatisch aus ${source} übernommen. Ziehe zum Aktualisieren nach unten.`,
+    record: 'Lauf aufzeichnen',
+    runs: 'LÄUFE (LETZTE 45 TAGE)',
+    runsEmpty: 'Noch keine Läufe übernommen.',
+    steps: 'SCHRITTE (LETZTE 7 TAGE)',
+    stepsEmpty: 'Noch keine Schritte übernommen.',
+    gpsRuns: 'MIT PUSH AUFGEZEICHNET',
+    emptyTitle: 'Noch keine Aktivitäten',
+    emptyText:
+      'Sobald deine Lauf-App oder Uhr einen Lauf oder Schritte speichert, erscheinen sie hier. Ziehe nach unten, um zu synchronisieren.',
+    emptyNotConnected:
+      'Verbinde die Gesundheits-App, damit deine Läufe und Schritte automatisch übernommen werden. Ohne Lauf-App kannst du oben einen Lauf aufzeichnen.',
+    loadError: 'Deine Aktivitäten konnten nicht geladen werden.',
+    showRoute: 'Strecke anzeigen',
+    routeTitle: 'Strecke',
+    routeLocal: 'Die Strecke wird nur auf deinem Handy angezeigt und nicht hochgeladen.',
+    routeNone: 'Zu diesem Lauf liefert Health Connect keine Strecke.',
+    routeDenied:
+      'Ohne deine Erlaubnis in Health Connect kann die Strecke nicht angezeigt werden.',
+    routeUnsupported: 'Strecken aus der Gesundheits-App gibt es nur unter Android.',
+    routeError: 'Die Strecke konnte nicht geladen werden.',
+  },
   session: {
     profileError: 'Dein Profil konnte nicht geladen werden.',
     signOut: 'Abmelden',
   },
   tabs: {
     home: 'Home',
+    activity: 'Aktivität',
     pool: 'Pool',
     ranked: 'Ranked',
     wallet: 'Wallet',
@@ -295,25 +337,43 @@ export const de = {
   mode: {
     pool: 'Pool',
     ranked: 'Ranked',
+    goal: 'Ziel',
   },
   pool: {
     title: 'Pool',
     intro:
-      'Gleiches Ziel, gleicher Zeitraum, ein gemeinsamer Topf. Wer sein Ziel schafft, bekommt den eigenen Einsatz zurück und teilt sich die Einsätze derer, die es nicht schaffen. Du kannst auch allein einen Pool starten.',
-    create: 'Pool starten',
-    mine: 'MEINE POOLS',
-    open: 'OFFENE POOLS',
-    finished: 'ABGESCHLOSSEN',
-    error: 'Deine Pools konnten nicht geladen werden.',
+      'Der Überblick über die ganze App: Wer macht gerade mit und wie viele Credits sind in laufenden Zielen gebunden?',
+    boundLabel: 'GEBUNDENE CREDITS',
+    peopleLabel: 'PERSONEN',
+    goalsLabel: 'ZIELE',
+    hint: 'Gezählt werden offene und laufende Ziele und Pools. Die verfallenen Einsätze eines Zeitraums gehen an alle, die ihr Ziel in diesem Zeitraum erreichen.',
+    competitionsLabel: 'FESTE WETTBEWERBE',
+    competitions: [
+      'Meiste Kilometer und meiste Schritte',
+      'Täglich, wöchentlich und monatlich',
+      'Ohne Einsatz – nur Rang, Punkte und Abzeichen',
+    ],
+    toRanked: 'Zu Ranked',
+    codeHint: 'Hast du einen Einladungscode für eine Gruppen-Challenge? Gib ihn hier ein.',
+    mine: 'MEINE GRUPPEN-CHALLENGES',
+    error: 'Der Pool konnte nicht geladen werden.',
   },
   home: {
-    label: 'DEINE CHALLENGES',
-    primaryLabel: 'AKTUELLE CHALLENGE',
-    moreLabel: 'WEITERE CHALLENGES',
-    emptyTitle: 'Noch keine Challenge',
-    emptyText: 'Such dir eine Challenge aus und setz auf dein Ziel.',
-    findChallenge: 'Challenge finden',
-    error: 'Deine Challenges konnten nicht geladen werden.',
+    label: 'DEINE ZIELE',
+    primaryLabel: 'WICHTIGSTES ZIEL',
+    moreLabel: 'WEITERE ZIELE',
+    emptyTitle: 'Noch kein Ziel',
+    emptyText: 'Setz dir ein Lauf- oder Schrittziel und hinterlege einen Einsatz.',
+    setGoal: 'Ziel setzen',
+    notStarted: 'Startet bald',
+    error: 'Deine Ziele konnten nicht geladen werden.',
+    howLabel: "SO FUNKTIONIERT'S",
+    howSteps: [
+      'Ziel setzen: Lauf oder Schritte, Zeitraum und Einsatz festlegen.',
+      'Aktivität wird automatisch aus der Gesundheits-App übernommen.',
+      'Den Fortschritt siehst du hier auf Home und im Tab Aktivität.',
+      'Ziel erreicht: Einsatz zurück plus Anteil. Verfehlt: Einsatz verfällt.',
+    ],
   },
   intro: {
     skip: 'Überspringen',
@@ -325,7 +385,7 @@ export const de = {
         {
           art: 'target' as const,
           title: "So funktioniert's",
-          text: 'Such dir ein Lauf- oder Schrittziel aus und tritt an – allein, mit Freunden oder gegen alle.',
+          text: 'Setz dir ein Ziel, leg einen Einsatz fest, lauf oder geh los – deine Aktivität wird automatisch übernommen und am Ende siehst du das Ergebnis. Den Fortschritt findest du auf Home und im Tab Aktivität.',
         },
         {
           art: 'shield' as const,
@@ -335,12 +395,12 @@ export const de = {
         {
           art: 'pool' as const,
           title: 'So wird ausgezahlt',
-          text: 'Im Pool zahlt jeder einen Einsatz in einen Topf. Wer sein Ziel schafft, bekommt den Einsatz plus einen Anteil der Einsätze der anderen. Aktuell sind Credits virtuell und können nicht ausgezahlt werden.',
+          text: 'Ab dem Start ist dein Einsatz gebunden. Schaffst du dein Ziel, bekommst du ihn zurück plus einen Anteil an den verfallenen Einsätzen aller, die im selben Zeitraum ihr Ziel erreicht haben. Verfehlst du es, verfällt dein Einsatz in den Pool. Aktuell sind Credits virtuell und können nicht ausgezahlt werden.',
         },
         {
           art: 'podium' as const,
           title: 'Ranked: ohne Einsatz',
-          text: 'In Ranglisten gibt es keinen Einsatz. Wer im Zeitraum am meisten schafft, steht oben – für Punkte, Level und Abzeichen.',
+          text: 'Im Tab Ranked trittst du ohne Einsatz an: feste Ranglisten für meiste Kilometer und meiste Schritte – täglich, wöchentlich und monatlich. Dazu Freunde und Liga.',
         },
         {
           art: 'heart' as const,
@@ -363,18 +423,18 @@ export const de = {
       [
         {
           art: 'target' as const,
-          title: 'Ziel wählen',
-          text: 'Lauf-Ziele (ein Lauf oder insgesamt), Schritte pro Tag oder die meisten Schritte im Zeitraum. Du wählst das Ziel, den Start und die Dauer von 1 bis 42 Tagen.',
+          title: 'Ziel setzen',
+          text: 'Auf Home tippst du „Ziel setzen“: Lauf (ein Lauf oder insgesamt) oder Schritte, dazu Zielwert und Zeitraum (morgen, nächste Woche oder nächster Monat).',
         },
         {
           art: 'podium' as const,
-          title: 'Ranked oder Pool',
-          text: 'Ranked ist eine Rangliste ohne Einsatz: Wer am meisten schafft, bekommt Punkte und Abzeichen. Im Pool zahlt jeder einen Einsatz in einen gemeinsamen Topf.',
+          title: 'Pool und Ranked',
+          text: 'Der Pool zeigt, wie viele Personen gerade mitmachen und wie viele Credits gebunden sind. Ranked sind feste Ranglisten ohne Einsatz mit Punkten und Abzeichen.',
         },
         {
           art: 'calendar' as const,
-          title: 'Beitreten und starten',
-          text: 'Tritt vor dem Start bei. Im Pool legst du deinen eigenen Einsatz fest (1 bis 50 Credits). Bis zum Start kannst du jederzeit aussteigen.',
+          title: 'Einsatz festlegen',
+          text: 'Du wählst 1 bis 50 Credits und bestätigst. Bis zum Start kannst du das Ziel zurückziehen. Ab dem Start ist der Einsatz gebunden – kein Zurückziehen, kein Abbrechen mit Erstattung.',
         },
         {
           art: 'phone' as const,
@@ -388,8 +448,8 @@ export const de = {
         },
         {
           art: 'coins' as const,
-          title: 'Abrechnung im Pool',
-          text: 'Wer das Ziel schafft, bekommt den eigenen Einsatz zurück und teilt sich die Einsätze der anderen im Verhältnis zum eigenen Einsatz. Schafft es niemand, verfallen alle Einsätze. Allein im Pool: Ziel geschafft = Einsatz zurück.',
+          title: 'Abrechnung',
+          text: 'Wer sein Ziel schafft, bekommt den Einsatz zurück plus einen Anteil an den verfallenen Einsätzen aller, die im selben Zeitraum ihr Ziel erreicht haben (im Verhältnis zum Einsatz). Schafft es niemand, verfallen alle Einsätze.',
         },
         {
           art: 'heart' as const,
@@ -434,6 +494,10 @@ export const de = {
   detail: {
     potLabel: 'TOPF',
     potCaption: (count: number) => `${count === 1 ? '1 Person' : `${count} Personen`} im Spiel`,
+    windowLabel: 'TOPF DIESES ZEITRAUMS',
+    windowCaption: (goals: number) => (goals === 1 ? 'in 1 Ziel' : `in ${goals} Zielen`),
+    windowHint:
+      'Alle Einsätze von Zielen mit demselben Zeitraum. Wer sein Ziel schafft, bekommt den Einsatz zurück plus einen Anteil der verfallenen Einsätze.',
     possibleWinLabel: 'DEIN MÖGLICHER GEWINN',
     possibleWinHint: 'Höchstens: wenn alle anderen ihr Ziel verfehlen. Dein Einsatz ist inklusive.',
     possibleWinHintSolo: 'Allein im Pool bekommst du nur deinen Einsatz zurück.',
@@ -448,8 +512,8 @@ export const de = {
     walletAction: 'Challenge finden',
     rankedMineTitle: 'Noch keine Challenge',
     rankedMineText: 'Tritt einer offenen Rangliste bei – ganz ohne Einsatz.',
-    rankedOpenTitle: 'Keine offenen Ranglisten',
-    rankedOpenText: 'Erstell die erste und lade andere mit einem Code ein.',
+    rankedOpenTitle: 'Noch keine Ranglisten',
+    rankedOpenText: 'Die festen Ranglisten werden täglich neu angelegt. Schau später noch einmal vorbei.',
     rankedFinishedTitle: 'Noch nichts abgeschlossen',
     rankedFinishedText: 'Beendete Challenges mit deinem Ergebnis erscheinen hier.',
     poolMineTitle: 'Noch kein Pool',
@@ -462,7 +526,9 @@ export const de = {
   challenges: {
     title: 'Ranked',
     intro:
-      'Tritt ohne Einsatz gegen andere an. Wer im Zeitraum am meisten schafft, steht oben – dafür gibt es Punkte und Abzeichen.',
+      'Feste Ranglisten ohne Einsatz: meiste Kilometer und meiste Schritte – täglich, wöchentlich und monatlich. Mach mit und sammle Punkte und Abzeichen.',
+    cycleBadge: { day: 'Tag', week: 'Woche', month: 'Monat' },
+    cycleLabel: { day: 'TÄGLICH', week: 'WÖCHENTLICH', month: 'MONATLICH' },
     create: 'Erstellen',
     joinByCode: 'Code eingeben',
     mine: 'MEINE CHALLENGES',
@@ -543,6 +609,12 @@ export const de = {
     ruleRankedNoStake: 'In einer Rangliste gibt es keinen Einsatz und keine Credits-Bewegung.',
     ruleRankedPoints:
       'Für die Plätze gibt es Punkte (Platz 1: 30, 2: 20, 3: 10, danach 5) und Abzeichen.',
+    ruleGoalPayout:
+      'Schaffst du dein Ziel, bekommst du deinen Einsatz zurück plus einen Anteil an den verfallenen Einsätzen aller, die im selben Zeitraum ihr Ziel erreicht haben (im Verhältnis zum Einsatz).',
+    ruleGoalMissed: 'Verfehlst du dein Ziel, verfällt dein Einsatz in den Pool.',
+    ruleGoalNobody: 'Erreicht niemand sein Ziel, verfallen alle Einsätze des Zeitraums.',
+    ruleGoalBound:
+      'Bis zum Start kannst du das Ziel zurückziehen und bekommst alles zurück. Ab dem Start ist der Einsatz gebunden.',
     ruleLeave:
       'Bis zum Start kannst du jederzeit aussteigen (im Pool bekommst du deinen Einsatz zurück).',
     ranking: 'RANGLISTE',
@@ -575,6 +647,7 @@ export const de = {
     joined: 'Du bist dabei',
     notJoinable: 'Beitreten ist nur vor dem Start möglich.',
     leave: 'Challenge verlassen',
+    leaveGoal: 'Ziel zurückziehen',
     deletedAccount: 'Gelöschtes Konto',
     creatorHint: 'Du hast diese Challenge erstellt. Tritt selbst bei, um mitzumachen.',
   },
@@ -597,36 +670,40 @@ export const de = {
     text: (amount: string) =>
       `Du bekommst deinen Einsatz von ${amount} Credits zurück. Danach kannst du dieser Challenge nicht erneut beitreten.`,
     rankedText: 'Du kannst jederzeit bis zum Start aussteigen. Es wurde kein Einsatz gebucht.',
+    goalText: (amount: string) =>
+      `Du ziehst dein Ziel zurück und bekommst deinen Einsatz von ${amount} Credits sofort zurück.`,
+    goalBound: 'Nach dem Start ist das nicht mehr möglich.',
     confirm: 'Verlassen',
     cancel: 'Dabei bleiben',
   },
   create: {
-    title: 'Challenge erstellen',
-    titleRanked: 'Rangliste erstellen',
-    titlePool: 'Pool starten',
-    stakeHint: 'Der Vorschlag für alle. Jeder kann beim Beitritt seinen eigenen Einsatz wählen.',
-    rankedHint: 'Ranglisten haben keinen Einsatz. Es gewinnt, wer im Zeitraum am meisten schafft.',
+    title: 'Ziel setzen',
+    intro:
+      'Setz dir ein Lauf- oder Schrittziel und hinterlege einen Einsatz. Deine Läufe und Schritte werden automatisch übernommen.',
     goalType: 'ZIELTYP',
-    target: 'ZIEL',
-    start: 'START',
-    duration: 'DAUER',
+    target: 'ZIELWERT',
+    period: 'ZEITRAUM',
+    periodLabel: { day: 'Morgen', week: 'Nächste Woche', month: 'Nächster Monat' },
     stake: 'EINSATZ',
-    visibility: 'SICHTBARKEIT',
-    public: 'Öffentlich',
-    private: 'Privat',
-    publicHint: 'Alle können die Challenge finden und mitmachen.',
-    privateHint: 'Nur wer den Einladungscode hat, kann mitmachen.',
-    titleLabel: 'Titel',
-    titleHint: 'Wird automatisch vorgeschlagen, du kannst ihn ändern.',
-    tomorrow: 'Morgen',
-    dayAfterTomorrow: 'Übermorgen',
-    days: (count: number) => (count === 1 ? '1 Tag' : `${count} Tage`),
-    summary: (start: string, end: string) => `Vom ${start} bis einschließlich ${end}`,
-    submit: 'Challenge erstellen',
-    afterCreateHint:
-      'Der Ersteller tritt nicht automatisch bei. Danach kannst du selbst beitreten und deinen Einsatz festlegen.',
+    stakeHint:
+      'Ziel erreicht: Einsatz zurück plus Anteil an den verfallenen Einsätzen. Ziel verfehlt: Einsatz verfällt.',
+    summary: (start: string, end: string) =>
+      start === end ? `Am ${start}` : `Vom ${start} bis einschließlich ${end}`,
+    submit: 'Weiter',
+    confirmTitle: 'Einsatz bestätigen',
+    confirmGoal: (goal: string, period: string) => `Dein Ziel: ${goal} · ${period}`,
+    confirmStake: (amount: string) =>
+      `Du setzt ${amount} Credits. Der Betrag wird jetzt von deinem Guthaben abgebucht.`,
+    confirmReturn: (day: string) =>
+      `Schaffst du dein Ziel, kommt dein Einsatz am ${day} zurück – plus ein Anteil an den verfallenen Einsätzen aller, die ihr Ziel im selben Zeitraum erreichen. (Die Abrechnung folgt 24 Stunden nach Ende des Zeitraums, damit alle Daten synchronisiert werden können.)`,
+    confirmMissed: 'Verfehlst du dein Ziel, verfällt dein Einsatz in den Pool.',
+    confirmBound: (start: string) =>
+      `Bis zum Start am ${start} kannst du das Ziel zurückziehen und bekommst alles zurück. Ab dem Start ist der Einsatz gebunden: kein Zurückziehen und kein Abbrechen mit Erstattung.`,
+    confirmSubmit: (amount: string) => `${amount} Credits setzen`,
+    confirmCancel: 'Abbrechen',
     invalidTitle: 'Der Titel muss 3 bis 60 Zeichen lang sein.',
     invalidInput: 'Bitte prüfe deine Angaben.',
+    tooManyGoals: 'Du hast schon 10 offene oder laufende Ziele. Warte, bis eines abgeschlossen ist.',
   },
   joinByCode: {
     title: 'Mit Code beitreten',
@@ -796,6 +873,7 @@ export const de = {
     reminderBody: (km: string) => `Laut Plan: ${km} km. Du schaffst das.`,
   },
   social: {
+    rankedHint: 'Freunde hinzufügen, Gruppen bilden und in der Monats-Liga mitspielen.',
     title: 'Freunde & Liga',
     error: 'Das konnte nicht geladen werden.',
     inviteLabel: 'DEIN FREUNDESCODE',

@@ -991,6 +991,45 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      create_goal: {
+        Args: {
+          p_goal_type: string;
+          p_period: string;
+          p_stake_cents: number;
+          p_target_value: number;
+          p_title: string;
+        };
+        Returns: {
+          created_at: string;
+          creator_id: string | null;
+          ends_at: string;
+          fee_bps: number;
+          goal_type: string;
+          id: string;
+          invite_code: string | null;
+          max_participants: number | null;
+          min_participants: number;
+          mode: string;
+          participant_count: number;
+          pot_cents: number | null;
+          settled_at: string | null;
+          stake_cents: number;
+          starts_at: string;
+          status: string;
+          sync_grace_hours: number;
+          target_value: number;
+          timezone: string;
+          title: string;
+          visibility: string;
+          weekly_key: string | null;
+        };
+        SetofOptions: {
+          from: '*';
+          to: 'challenges';
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
       create_group: {
         Args: { p_name: string };
         Returns: {
@@ -1007,7 +1046,7 @@ export type Database = {
           isSetofReturn: false;
         };
       };
-      create_weekly_challenge: { Args: { p_now?: string }; Returns: string };
+      create_ranked_cycles: { Args: { p_now?: string }; Returns: number };
       delete_my_account: { Args: Record<PropertyKey, never>; Returns: undefined };
       delete_run_comment: { Args: { p_comment_id: string }; Returns: undefined };
       export_my_data: { Args: { p_include_routes?: boolean }; Returns: Json };
@@ -1078,6 +1117,13 @@ export type Database = {
           start_at: string;
           user_id: string;
           workout_id: string;
+        }[];
+      };
+      get_goal_window: {
+        Args: { p_challenge_id: string };
+        Returns: {
+          goals: number;
+          stakes_cents: number;
         }[];
       };
       get_gps_run_profile: {
@@ -1282,6 +1328,14 @@ export type Database = {
         Returns: {
           day: string;
           distance_m: number;
+        }[];
+      };
+      get_pool_overview: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          bound_cents: number;
+          goals: number;
+          people: number;
         }[];
       };
       get_potential_win: { Args: { p_challenge_id: string }; Returns: number };

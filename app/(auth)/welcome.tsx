@@ -25,7 +25,14 @@ export default function WelcomeScreen() {
         </FadeIn>
       </View>
       <FadeIn delayMs={500}>
-        <Button label={de.welcome.start} onPress={() => router.push('/sign-in')} />
+        <View style={styles.actions}>
+          <Button label={de.welcome.signUp} onPress={() => router.push('/sign-up')} />
+          <Button
+            label={de.welcome.signIn}
+            variant="secondary"
+            onPress={() => router.push('/sign-in')}
+          />
+        </View>
       </FadeIn>
     </Screen>
   );
@@ -34,6 +41,9 @@ export default function WelcomeScreen() {
 const styles = StyleSheet.create({
   content: {
     paddingBottom: spacing.lg,
+  },
+  actions: {
+    gap: spacing.sm,
   },
   hero: {
     flex: 1,

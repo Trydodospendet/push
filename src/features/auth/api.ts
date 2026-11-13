@@ -13,13 +13,16 @@ export type MyProfile = Database['public']['Functions']['get_my_profile']['Retur
 
 export const profileQueryKey = (userId: string) => ['profile', userId] as const;
 
-/** Sends a 6-digit sign-in code. Creates the account on first use. */
+/**
+ * Sends a 6-digit code. Only registering (`createUser`) may create an account; signing in with
+ * a code for an unknown address fails, so the two paths stay separate.
+ */
 export function useRequestSignInCode() {
   return useMutation({
-    mutationFn: async (email: string) => {
+    mutationFn: async ({ email, createUser = false }: { email: string; createUser?: boolean }) => {
       const { error } = await supabase.auth.signInWithOtp({
         email,
-        options: { shouldCreateUser: true },
+        options: { shouldCreateUser: createUser },
       });
       if (error) {
         throw error;

@@ -1,68 +1,68 @@
 import { z } from 'zod';
 
 import {
-  CHALLENGE_MODES,
   CHALLENGE_TITLE_MAX_LENGTH,
   CHALLENGE_TITLE_MIN_LENGTH,
-  DURATION_MAX_DAYS,
-  DURATION_MIN_DAYS,
+  GOAL_PERIODS,
   GOAL_TYPES,
   INVITE_CODE_LENGTH,
   STAKE_MAX_CENTS,
   STAKE_MIN_CENTS,
-  START_MAX_DAYS_AHEAD,
-  START_MIN_DAYS_AHEAD,
   TARGET_LIMITS,
+  type GoalPeriod,
 } from '@/config/app';
 import { de } from '@/i18n/de';
-import { addDays, daysBetween } from '@/lib/dates';
+import { addDays } from '@/lib/dates';
+
+/** Same limits as public.create_goal. */
+export const createGoalSchema = z
+  .object({
+    title: z
+      .string()
+      .trim()
+      .min(CHALLENGE_TITLE_MIN_LENGTH, { error: de.create.invalidTitle })
+      .max(CHALLENGE_TITLE_MAX_LENGTH, { error: de.create.invalidTitle })
+      .regex(/^\P{Cc}*$/u, { error: de.create.invalidTitle }),
+    goalType: z.enum(GOAL_TYPES),
+    targetValue: z.int(),
+    stakeCents: z.int().min(STAKE_MIN_CENTS).max(STAKE_MAX_CENTS),
+    period: z.enum(GOAL_PERIODS),
+  })
+  .refine(
+    ({ goalType, targetValue }) =>
+      targetValue >= TARGET_LIMITS[goalType].min && targetValue <= TARGET_LIMITS[goalType].max,
+    { error: de.create.invalidInput, path: ['targetValue'] },
+  );
+
+export type CreateGoalInput = z.infer<typeof createGoalSchema>;
 
 /**
- * Same limits as public.create_challenge. `today` is the current local date in the
- * challenge timezone (the server checks again with its own clock).
+ * First and last day of a goal period, counted from the local date `today` (the same rules as
+ * the server: it never starts today, so nobody can set a goal after having done the activity).
+ *   day    tomorrow
+ *   week   the coming Monday to Sunday
+ *   month  the coming calendar month
  */
-export function createChallengeSchema(today: string) {
-  return z
-    .object({
-      title: z
-        .string()
-        .trim()
-        .min(CHALLENGE_TITLE_MIN_LENGTH, { error: de.create.invalidTitle })
-        .max(CHALLENGE_TITLE_MAX_LENGTH, { error: de.create.invalidTitle })
-        .regex(/^\P{Cc}*$/u, { error: de.create.invalidTitle }),
-      goalType: z.enum(GOAL_TYPES),
-      targetValue: z.int(),
-      // Ignored (and sent as 0) for ranked challenges: they have no stake.
-      stakeCents: z.int().min(0).max(STAKE_MAX_CENTS),
-      startDate: z.iso.date(),
-      durationDays: z.int().min(DURATION_MIN_DAYS).max(DURATION_MAX_DAYS),
-      visibility: z.enum(['public', 'private']),
-      mode: z.enum(CHALLENGE_MODES),
-    })
-    .refine(
-      ({ mode, stakeCents }) =>
-        mode === 'ranked' ? stakeCents === 0 : stakeCents >= STAKE_MIN_CENTS,
-      { error: de.create.invalidInput, path: ['stakeCents'] },
-    )
-    .refine(
-      ({ goalType, targetValue }) =>
-        targetValue >= TARGET_LIMITS[goalType].min && targetValue <= TARGET_LIMITS[goalType].max,
-      { error: de.create.invalidInput, path: ['targetValue'] },
-    )
-    .refine(
-      ({ startDate }) => {
-        const ahead = daysBetween(today, startDate);
-        return ahead >= START_MIN_DAYS_AHEAD && ahead <= START_MAX_DAYS_AHEAD;
-      },
-      { error: de.create.invalidInput, path: ['startDate'] },
-    );
-}
-
-export type CreateChallengeInput = z.infer<ReturnType<typeof createChallengeSchema>>;
-
-/** Last day of a challenge that starts on `startDate` and lasts `durationDays`. */
-export function lastDayOf(startDate: string, durationDays: number): string {
-  return addDays(startDate, durationDays - 1);
+export function goalPeriodDays(today: string, period: GoalPeriod): { first: string; last: string } {
+  const [year, month, day] = today.split('-').map(Number);
+  if (period === 'day') {
+    const first = addDays(today, 1);
+    return { first, last: first };
+  }
+  if (period === 'week') {
+    // ISO weekday of today: Monday = 1 … Sunday = 7.
+    const isoWeekday = ((new Date(Date.UTC(year, month - 1, day)).getUTCDay() + 6) % 7) + 1;
+    const first = addDays(today, 8 - isoWeekday);
+    return { first, last: addDays(first, 6) };
+  }
+  const nextYear = month === 12 ? year + 1 : year;
+  const nextMonth = month === 12 ? 1 : month + 1;
+  const pad = (value: number) => String(value).padStart(2, '0');
+  const lastOfMonth = new Date(Date.UTC(nextYear, nextMonth, 0)).getUTCDate();
+  return {
+    first: `${nextYear}-${pad(nextMonth)}-01`,
+    last: `${nextYear}-${pad(nextMonth)}-${pad(lastOfMonth)}`,
+  };
 }
 
 export const inviteCodeSchema = z

@@ -1,23 +1,23 @@
-import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { Button, ChipGroup, Screen, Text, TextField, type ChipOption } from '@/components';
+import { Button, ChipGroup, Screen, Sheet, Text, type ChipOption } from '@/components';
 import {
   DEFAULT_TIMEZONE,
-  DURATION_PRESETS_DAYS,
+  GOAL_PERIODS,
   GOAL_TYPES,
   STAKE_PRESETS_CENTS,
-  START_PRESET_DAYS_AHEAD,
   TARGET_PRESETS,
-  type ChallengeMode,
+  type GoalPeriod,
   type GoalType,
 } from '@/config/app';
 import { useMyProfile } from '@/features/auth/api';
 import { useSession } from '@/features/auth/auth-provider';
-import { useCreateChallenge } from '@/features/challenges/api';
-import { formatTarget, suggestTitle } from '@/features/challenges/format';
-import { createChallengeSchema, lastDayOf } from '@/features/challenges/schemas';
+import { useCreateGoal } from '@/features/challenges/api';
+import { describeGoal, formatTarget, suggestTitle } from '@/features/challenges/format';
+import { createGoalSchema, goalPeriodDays } from '@/features/challenges/schemas';
+import { useWalletBalance } from '@/features/wallet/api';
 import { de } from '@/i18n/de';
 import { addDays, formatDayLabel, toLocalDate } from '@/lib/dates';
 import { toUserMessage } from '@/lib/errors';
@@ -31,48 +31,47 @@ const DEFAULT_TARGET: Record<GoalType, number> = {
   steps_total: 70_000,
 };
 
-function startLabel(daysAhead: number, date: string): string {
-  if (daysAhead === 1) {
-    return de.create.tomorrow;
+const monthName = new Intl.DateTimeFormat('de-DE', { month: 'long', timeZone: 'UTC' });
+
+/** e.g. 'am Sa., 14.11.' / 'Mo., 16.11. – So., 22.11.' / 'Dezember' for the title of a goal. */
+function periodLabel(period: GoalPeriod, first: string, last: string): string {
+  if (period === 'day') {
+    return formatDayLabel(first);
   }
-  if (daysAhead === 2) {
-    return de.create.dayAfterTomorrow;
+  if (period === 'week') {
+    return `${formatDayLabel(first)} – ${formatDayLabel(last)}`;
   }
-  return formatDayLabel(date);
+  return monthName.format(new Date(`${first}T00:00:00Z`));
 }
 
-export default function CreateChallengeScreen() {
+/**
+ * "Ziel setzen": goal type, target, period and stake. Nothing is booked before the
+ * confirmation sheet states the stake, when it comes back and that it is bound from the start.
+ */
+export default function SetGoalScreen() {
   const router = useRouter();
-  const params = useLocalSearchParams<{ mode?: string }>();
-  const mode: ChallengeMode = params.mode === 'ranked' ? 'ranked' : 'pool';
-  const ranked = mode === 'ranked';
   const session = useSession();
   const profile = useMyProfile(session.user.id);
-  const create = useCreateChallenge();
+  const balance = useWalletBalance(session.user.id);
+  const create = useCreateGoal();
 
   const timezone = profile.data?.timezone ?? DEFAULT_TIMEZONE;
   const today = toLocalDate(new Date(), timezone);
 
-  const [goalType, setGoalType] = useState<GoalType>(ranked ? 'run_total' : 'run_single');
-  const [targetValue, setTargetValue] = useState(
-    DEFAULT_TARGET[ranked ? 'run_total' : 'run_single'],
-  );
-  const [daysAhead, setDaysAhead] = useState<number>(START_PRESET_DAYS_AHEAD[0]);
-  const [durationDays, setDurationDays] = useState<number>(7);
+  const [goalType, setGoalType] = useState<GoalType>('run_total');
+  const [targetValue, setTargetValue] = useState(DEFAULT_TARGET.run_total);
+  const [period, setPeriod] = useState<GoalPeriod>('week');
   const [stakeCents, setStakeCents] = useState<number>(1_000);
-  const [visibility, setVisibility] = useState<'public' | 'private'>('public');
-  // null = use the suggested title, which follows the chosen goal.
-  const [customTitle, setCustomTitle] = useState<string | null>(null);
+  const [confirming, setConfirming] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const startDate = addDays(today, daysAhead);
-  const title = customTitle ?? suggestTitle(goalType, targetValue);
+  const { first, last } = goalPeriodDays(today, period);
+  const label = periodLabel(period, first, last);
+  const title = `${suggestTitle(goalType, targetValue)} · ${label}`;
+  // The settlement follows 24 hours after the period ended (time to synchronise).
+  const settlementDay = addDays(last, 2);
 
-  // A leaderboard ranks by the most kilometres or the most steps; daily goals and single runs
-  // are for pools.
-  const goalOptions: ChipOption<GoalType>[] = GOAL_TYPES.filter(
-    (type) => !ranked || type === 'run_total' || type === 'steps_total',
-  ).map((type) => ({
+  const goalOptions: ChipOption<GoalType>[] = GOAL_TYPES.map((type) => ({
     value: type,
     label: de.goal.typeLabel[type],
   }));
@@ -80,61 +79,56 @@ export default function CreateChallengeScreen() {
     value,
     label: formatTarget(goalType, value),
   }));
-  const startOptions: ChipOption<number>[] = START_PRESET_DAYS_AHEAD.map((days) => {
-    const date = addDays(today, days);
-    return { value: days, label: startLabel(days, date), accessibilityLabel: formatDayLabel(date) };
-  });
-  const durationOptions: ChipOption<number>[] = DURATION_PRESETS_DAYS.map((days) => ({
-    value: days,
-    label: de.create.days(days),
+  const periodOptions: ChipOption<GoalPeriod>[] = GOAL_PERIODS.map((value) => ({
+    value,
+    label: de.create.periodLabel[value],
   }));
   const stakeOptions: ChipOption<number>[] = STAKE_PRESETS_CENTS.map((cents) => ({
     value: cents,
     label: formatAmount(cents),
     accessibilityLabel: `${formatAmount(cents)} ${de.common.credits}`,
   }));
-  const visibilityOptions: ChipOption<'public' | 'private'>[] = [
-    { value: 'public', label: de.create.public },
-    { value: 'private', label: de.create.private },
-  ];
 
-  const handleGoalType = (type: GoalType) => {
-    setGoalType(type);
-    setTargetValue(DEFAULT_TARGET[type]);
-  };
-
-  const handleSubmit = () => {
-    const result = createChallengeSchema(today).safeParse({
-      title,
-      goalType,
-      targetValue,
-      stakeCents: ranked ? 0 : stakeCents,
-      startDate,
-      durationDays,
-      visibility,
-      mode,
-    });
+  const openConfirmation = () => {
+    const result = createGoalSchema.safeParse({ title, goalType, targetValue, stakeCents, period });
     if (!result.success) {
       setError(result.error.issues[0]?.message ?? de.create.invalidInput);
       return;
     }
     setError(null);
+    setConfirming(true);
+  };
+
+  const confirm = () => {
+    const result = createGoalSchema.safeParse({ title, goalType, targetValue, stakeCents, period });
+    if (!result.success) {
+      setError(de.create.invalidInput);
+      return;
+    }
+    setError(null);
     create.mutate(result.data, {
       onSuccess: (challenge) => {
+        setConfirming(false);
         router.replace({ pathname: '/challenge/[id]', params: { id: challenge.id } });
       },
       onError: (mutationError) => setError(toUserMessage(mutationError)),
     });
   };
 
+  const stake = formatAmount(stakeCents);
+
   return (
     <Screen scroll edges={['bottom', 'left', 'right']} contentStyle={styles.content}>
-      <Stack.Screen options={{ title: ranked ? de.create.titleRanked : de.create.titlePool }} />
+      <Stack.Screen options={{ title: de.create.title }} />
+      <Text color="textSecondary">{de.create.intro}</Text>
       <ChipGroup
         label={de.create.goalType}
         options={goalOptions}
         value={goalType}
-        onChange={handleGoalType}
+        onChange={(type: GoalType) => {
+          setGoalType(type);
+          setTargetValue(DEFAULT_TARGET[type]);
+        }}
       />
       <ChipGroup
         label={de.create.target}
@@ -143,70 +137,73 @@ export default function CreateChallengeScreen() {
         onChange={setTargetValue}
       />
       <ChipGroup
-        label={de.create.start}
-        options={startOptions}
-        value={daysAhead}
-        onChange={setDaysAhead}
+        label={de.create.period}
+        options={periodOptions}
+        value={period}
+        onChange={setPeriod}
       />
-      <ChipGroup
-        label={de.create.duration}
-        options={durationOptions}
-        value={durationDays}
-        onChange={setDurationDays}
-      />
-      <Text color="textSecondary">
-        {de.create.summary(
-          formatDayLabel(startDate),
-          formatDayLabel(lastDayOf(startDate, durationDays)),
-        )}
-      </Text>
-      {ranked ? (
-        <Text variant="caption" color="textMuted">
-          {de.create.rankedHint}
-        </Text>
-      ) : (
-        <View style={styles.group}>
-          <ChipGroup
-            label={de.create.stake}
-            options={stakeOptions}
-            value={stakeCents}
-            onChange={setStakeCents}
-          />
-          <Text variant="caption" color="textMuted">
-            {de.create.stakeHint}
-          </Text>
-        </View>
-      )}
+      <Text color="textSecondary">{de.create.summary(formatDayLabel(first), formatDayLabel(last))}</Text>
       <View style={styles.group}>
         <ChipGroup
-          label={de.create.visibility}
-          options={visibilityOptions}
-          value={visibility}
-          onChange={setVisibility}
+          label={de.create.stake}
+          options={stakeOptions}
+          value={stakeCents}
+          onChange={setStakeCents}
         />
         <Text variant="caption" color="textMuted">
-          {visibility === 'public' ? de.create.publicHint : de.create.privateHint}
+          {de.create.stakeHint}
         </Text>
       </View>
-      <TextField
-        label={de.create.titleLabel}
-        hint={de.create.titleHint}
-        value={title}
-        onChangeText={setCustomTitle}
-        maxLength={80}
-        returnKeyType="done"
-      />
       <View style={styles.group}>
+        {error && !confirming ? (
+          <Text variant="caption" color="danger" accessibilityRole="alert">
+            {error}
+          </Text>
+        ) : null}
+        <Button label={de.create.submit} onPress={openConfirmation} />
+      </View>
+
+      <Sheet
+        visible={confirming}
+        title={de.create.confirmTitle}
+        onClose={() => {
+          setConfirming(false);
+          create.reset();
+          setError(null);
+        }}
+        closeLabel={de.create.confirmCancel}
+      >
+        <Text>{de.create.confirmGoal(describeGoal(goalType, targetValue), label)}</Text>
+        <Text>{de.create.confirmStake(stake)}</Text>
+        <Text color="textSecondary">{de.create.confirmReturn(formatDayLabel(settlementDay))}</Text>
+        <Text color="textSecondary">{de.create.confirmMissed}</Text>
+        <Text color="accent">{de.create.confirmBound(formatDayLabel(first))}</Text>
+        {balance.data !== undefined ? (
+          <Text variant="caption" color="textSecondary">
+            {de.joinSheet.balance(formatAmount(balance.data))}
+          </Text>
+        ) : null}
+        <Text variant="caption" color="textMuted">
+          {de.common.virtualCreditsNotice}
+        </Text>
         {error ? (
           <Text variant="caption" color="danger" accessibilityRole="alert">
             {error}
           </Text>
         ) : null}
-        <Text variant="caption" color="textMuted">
-          {de.create.afterCreateHint}
-        </Text>
-        <Button label={de.create.submit} onPress={handleSubmit} loading={create.isPending} />
-      </View>
+        <View style={styles.group}>
+          <Button label={de.create.confirmSubmit(stake)} onPress={confirm} loading={create.isPending} />
+          <Button
+            label={de.create.confirmCancel}
+            variant="secondary"
+            onPress={() => {
+              setConfirming(false);
+              create.reset();
+              setError(null);
+            }}
+          />
+        </View>
+      </Sheet>
     </Screen>
   );
 }
@@ -218,6 +215,6 @@ const styles = StyleSheet.create({
     gap: spacing.lg,
   },
   group: {
-    gap: spacing.xs,
+    gap: spacing.sm,
   },
 });

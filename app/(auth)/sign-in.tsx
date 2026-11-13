@@ -18,7 +18,7 @@ export default function SignInScreen() {
   const router = useRouter();
   const requestCode = useRequestSignInCode();
   const signInWithPassword = useSignInWithPassword();
-  const [mode, setMode] = useState<Mode>('code');
+  const [mode, setMode] = useState<Mode>('password');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -38,14 +38,17 @@ export default function SignInScreen() {
     }
     setError(null);
     hapticTap();
-    requestCode.mutate(result.value, {
+    requestCode.mutate(
+      { email: result.value },
+      {
       onSuccess: () =>
         router.push({
           pathname: '/verify',
           params: reset ? { email: result.value, reset: '1' } : { email: result.value },
         }),
       onError: (mutationError) => fail(toUserMessage(mutationError)),
-    });
+      },
+    );
   };
 
   const submitPassword = () => {
@@ -135,6 +138,11 @@ export default function SignInScreen() {
           label={mode === 'code' ? de.signIn.submit : de.signIn.submitPassword}
           onPress={handleSubmit}
           loading={requestCode.isPending || signInWithPassword.isPending}
+        />
+        <Button
+          label={de.signIn.noAccountYet}
+          variant="secondary"
+          onPress={() => router.replace('/sign-up')}
         />
         {mode === 'password' ? (
           <View style={styles.forgot}>

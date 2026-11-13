@@ -1,23 +1,17 @@
-import { createChallengeSchema, inviteCodeSchema, lastDayOf } from './schemas';
-
-const today = '2026-11-13';
-const schema = createChallengeSchema(today);
+import { createGoalSchema, goalPeriodDays, inviteCodeSchema } from './schemas';
 
 const valid = {
-  title: '5 km am Stück',
-  goalType: 'run_single',
+  title: '5 km diese Woche',
+  goalType: 'run_total',
   targetValue: 5000,
   stakeCents: 1000,
-  startDate: '2026-11-14',
-  durationDays: 7,
-  visibility: 'public',
-  mode: 'pool',
+  period: 'week',
 } as const;
 
-describe('createChallengeSchema (same limits as public.create_challenge)', () => {
-  it('accepts a valid challenge and trims the title', () => {
-    const result = schema.safeParse({ ...valid, title: '  5 km am Stück ' });
-    expect(result.success && result.data.title).toBe('5 km am Stück');
+describe('createGoalSchema (same limits as public.create_goal)', () => {
+  it('accepts a valid goal and trims the title', () => {
+    const result = createGoalSchema.safeParse({ ...valid, title: '  5 km diese Woche ' });
+    expect(result.success && result.data.title).toBe('5 km diese Woche');
   });
 
   it.each([
@@ -25,40 +19,66 @@ describe('createChallengeSchema (same limits as public.create_challenge)', () =>
     ['title too long', { title: 'x'.repeat(61) }],
     ['unknown goal type', { goalType: 'swim' }],
     ['run below 1 km', { targetValue: 999 }],
-    ['single run above 100 km', { targetValue: 100_001 }],
+    ['single run above 100 km', { goalType: 'run_single', targetValue: 100_001 }],
     ['steps above 50,000', { goalType: 'steps_daily', targetValue: 50_001 }],
-    ['pool stake below 1.00', { mode: 'pool', stakeCents: 99 }],
-    ['ranked with a stake', { mode: 'ranked', stakeCents: 500 }],
+    ['stake below 1.00', { stakeCents: 99 }],
     ['stake above 50.00', { stakeCents: 5001 }],
     ['stake with fractions', { stakeCents: 100.5 }],
-    ['start today', { startDate: today }],
-    ['start in 31 days', { startDate: '2026-12-14' }],
-    ['duration 0 days', { durationDays: 0 }],
-    ['duration 43 days', { durationDays: 43 }],
-    ['unknown visibility', { visibility: 'secret' }],
-    ['unknown mode', { mode: 'duel' }],
+    ['unknown period', { period: 'year' }],
   ])('rejects %s', (_reason, override) => {
-    expect(schema.safeParse({ ...valid, ...override }).success).toBe(false);
+    expect(createGoalSchema.safeParse({ ...valid, ...override }).success).toBe(false);
   });
 
   it('accepts the boundaries', () => {
-    expect(schema.safeParse({ ...valid, stakeCents: 100, durationDays: 1 }).success).toBe(true);
+    expect(createGoalSchema.safeParse({ ...valid, stakeCents: 100, period: 'day' }).success).toBe(
+      true,
+    );
     expect(
-      schema.safeParse({ ...valid, stakeCents: 5000, durationDays: 42, startDate: '2026-12-13' })
-        .success,
+      createGoalSchema.safeParse({ ...valid, stakeCents: 5000, period: 'month' }).success,
     ).toBe(true);
-    expect(
-      schema.safeParse({ ...valid, goalType: 'run_total', targetValue: 500_000 }).success,
-    ).toBe(true);
-    expect(schema.safeParse({ ...valid, mode: 'pool', visibility: 'private' }).success).toBe(true);
-    expect(schema.safeParse({ ...valid, mode: 'ranked', stakeCents: 0 }).success).toBe(true);
+    expect(createGoalSchema.safeParse({ ...valid, targetValue: 500_000 }).success).toBe(true);
   });
 });
 
-describe('lastDayOf', () => {
-  it('returns the last day included in the challenge', () => {
-    expect(lastDayOf('2026-11-14', 1)).toBe('2026-11-14');
-    expect(lastDayOf('2026-11-14', 7)).toBe('2026-11-20');
+describe('goalPeriodDays (same rules as the server)', () => {
+  it('starts a day goal tomorrow', () => {
+    expect(goalPeriodDays('2026-11-13', 'day')).toEqual({
+      first: '2026-11-14',
+      last: '2026-11-14',
+    });
+  });
+
+  it('starts a week goal on the coming Monday, also from a Monday or a Sunday', () => {
+    // 2026-11-13 is a Friday.
+    expect(goalPeriodDays('2026-11-13', 'week')).toEqual({
+      first: '2026-11-16',
+      last: '2026-11-22',
+    });
+    // Monday 2026-11-16 → the Monday after.
+    expect(goalPeriodDays('2026-11-16', 'week')).toEqual({
+      first: '2026-11-23',
+      last: '2026-11-29',
+    });
+    // Sunday 2026-11-15 → tomorrow.
+    expect(goalPeriodDays('2026-11-15', 'week')).toEqual({
+      first: '2026-11-16',
+      last: '2026-11-22',
+    });
+  });
+
+  it('uses the next calendar month, also at the end of the year and in leap years', () => {
+    expect(goalPeriodDays('2026-11-13', 'month')).toEqual({
+      first: '2026-12-01',
+      last: '2026-12-31',
+    });
+    expect(goalPeriodDays('2026-12-31', 'month')).toEqual({
+      first: '2027-01-01',
+      last: '2027-01-31',
+    });
+    expect(goalPeriodDays('2028-01-20', 'month')).toEqual({
+      first: '2028-02-01',
+      last: '2028-02-29',
+    });
   });
 });
 

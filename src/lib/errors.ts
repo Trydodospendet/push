@@ -15,11 +15,14 @@ const databaseErrorMessages: Record<string, string> = {
   invalid_duration: de.create.invalidInput,
   invalid_visibility: de.create.invalidInput,
   invalid_max_participants: de.create.invalidInput,
+  invalid_period: de.create.invalidInput,
+  too_many_goals: de.create.tooManyGoals,
 };
 
 /** Supabase Auth error codes, see https://supabase.com/docs/guides/auth/debugging/error-codes */
 const authErrorMessages: Record<string, string> = {
   otp_expired: de.verify.wrongCode,
+  otp_disabled: de.signIn.noAccount,
   invalid_credentials: de.signIn.wrongPassword,
   over_email_send_rate_limit: de.signIn.rateLimited,
   over_request_rate_limit: de.signIn.rateLimited,

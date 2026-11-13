@@ -4,7 +4,9 @@ import { StyleSheet, View } from 'react-native';
 
 import { Button, ErrorState, FadeIn, GlowBackdrop, Screen, Text } from '@/components';
 import { SIGN_IN_CODE_LENGTH } from '@/config/app';
+import { useSetPassword } from '@/features/account/api';
 import { useRequestSignInCode, useVerifySignInCode } from '@/features/auth/api';
+import { takeSignupPassword } from '@/features/auth/signup-draft';
 import { CodeInput, type CodeInputState } from '@/features/auth/code-input';
 import { signInCodeSchema, validate } from '@/features/auth/schemas';
 import { useCountdown } from '@/features/auth/use-countdown';
@@ -17,7 +19,12 @@ const RESEND_SECONDS = 30;
 
 export default function VerifyScreen() {
   const router = useRouter();
-  const { email, reset } = useLocalSearchParams<{ email?: string; reset?: string }>();
+  const { email, reset, signup } = useLocalSearchParams<{
+    email?: string;
+    reset?: string;
+    signup?: string;
+  }>();
+  const setPassword = useSetPassword();
   const verifyCode = useVerifySignInCode();
   const resendCode = useRequestSignInCode();
   const countdown = useCountdown(RESEND_SECONDS);
@@ -63,6 +70,11 @@ export default function VerifyScreen() {
         onSuccess: () => {
           setState('success');
           hapticSuccess();
+          // Registering: the first password is set right after the e-mail is confirmed.
+          const password = signup ? takeSignupPassword(email) : null;
+          if (password) {
+            setPassword.mutate(password);
+          }
         },
         onError: (mutationError) => wrong(toUserMessage(mutationError)),
       },
@@ -83,13 +95,16 @@ export default function VerifyScreen() {
   const handleResend = () => {
     setError(null);
     setNotice(null);
-    resendCode.mutate(email, {
+    resendCode.mutate(
+      { email, createUser: Boolean(signup) },
+      {
       onSuccess: () => {
         setNotice(de.verify.resent);
         countdown.restart();
       },
       onError: (mutationError) => wrong(toUserMessage(mutationError)),
-    });
+      },
+    );
   };
 
   return (
@@ -101,6 +116,7 @@ export default function VerifyScreen() {
         </Text>
         <Text color="textSecondary">{de.verify.intro(email)}</Text>
         {reset ? <Text color="accent">{de.verify.resetHint}</Text> : null}
+        {signup ? <Text color="accent">{de.verify.signupHint}</Text> : null}
       </FadeIn>
       <FadeIn delayMs={100} style={styles.code}>
         <CodeInput

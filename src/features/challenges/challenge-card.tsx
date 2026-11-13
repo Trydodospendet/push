@@ -6,7 +6,7 @@ import { de } from '@/i18n/de';
 import { formatAmount } from '@/lib/money';
 import { colors, layout, opacity, radius, spacing } from '@/theme';
 
-import { describeGoal, formatPeriod, isRanked, isWeekly, modeLabel, statusLabel } from './format';
+import { describeGoal, formatPeriod, isRanked, modeLabel, rankedCycle, statusLabel } from './format';
 import type { Challenge } from './types';
 
 export type ChallengeCardProps = {
@@ -31,6 +31,7 @@ export function ChallengeCard({
   const period = formatPeriod(challenge);
   const stake = `${formatAmount(challenge.stake_cents)} ${de.common.credits}`;
   const ranked = isRanked(challenge);
+  const cycle = rankedCycle(challenge);
   const people = de.challenge.participantCount(challenge.participant_count);
   const details = ranked ? [period, people] : [period, stake, people];
 
@@ -43,7 +44,7 @@ export function ChallengeCard({
     >
       <View style={styles.body}>
         <View style={styles.badges}>
-          {isWeekly(challenge) ? <Pill label={de.challenges.weeklyBadge} tone="accent" /> : null}
+          {cycle ? <Pill label={de.challenges.cycleBadge[cycle.cycle]} tone="accent" /> : null}
           <Pill label={modeLabel(challenge.mode)} />
           <Pill label={statusLabel(challenge.status)} />
           {joined ? <Pill label={de.challenges.joinedBadge} tone="accent" /> : null}

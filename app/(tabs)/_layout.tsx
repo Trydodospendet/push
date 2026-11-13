@@ -38,6 +38,14 @@ export default function TabsLayout() {
           }}
         />
         <Tabs.Screen
+          name="activity"
+          options={{
+            title: de.tabs.activity,
+            tabBarAccessibilityLabel: de.tabs.activity,
+            tabBarIcon: tabIcon('walk-outline', 'walk'),
+          }}
+        />
+        <Tabs.Screen
           name="pool"
           options={{
             title: de.tabs.pool,

@@ -50,11 +50,11 @@ export function suggestTitle(goalType: GoalType, value: number): string {
     case 'run_single':
       return `${target} am Stück`;
     case 'run_total':
-      return `${target} insgesamt`;
+      return `${target} laufen`;
     case 'steps_daily':
       return `${target} täglich`;
     case 'steps_total':
-      return `Meiste Schritte (Ziel ${target})`;
+      return `${target} gehen`;
   }
 }
 
@@ -89,9 +89,34 @@ export function isRanked(challenge: Pick<Challenge, 'mode'>): boolean {
   return challenge.mode === 'ranked';
 }
 
-/** Everybody pays a stake into one pot. */
+/** Everybody pays a stake into one pot (a challenge with an invite code). */
 export function isPool(challenge: Pick<Challenge, 'mode'>): boolean {
   return challenge.mode === 'pool';
+}
+
+/** A personal goal with a stake; the forfeited stakes of its period go to those who reached theirs. */
+export function isGoal(challenge: Pick<Challenge, 'mode'>): boolean {
+  return challenge.mode === 'goal';
+}
+
+/** Pool or goal: a stake is bound. */
+export function hasStake(challenge: Pick<Challenge, 'mode'>): boolean {
+  return challenge.mode !== 'ranked';
+}
+
+export type RankedCycle = 'day' | 'week' | 'month';
+export type RankedMetric = 'km' | 'steps';
+
+/** The cycle and metric of a fixed ranked challenge, from its key (e.g. 'W2026-W47-km'). */
+export function rankedCycle(
+  challenge: Pick<Challenge, 'weekly_key'>,
+): { cycle: RankedCycle; metric: RankedMetric } | null {
+  const match = /^([DWM])[0-9-]+(?:-W[0-9]{2})?-(km|steps)$/.exec(challenge.weekly_key ?? '');
+  if (!match) {
+    return null;
+  }
+  const cycle: RankedCycle = match[1] === 'D' ? 'day' : match[1] === 'W' ? 'week' : 'month';
+  return { cycle, metric: match[2] === 'km' ? 'km' : 'steps' };
 }
 
 /** The platform's weekly challenge (created every Sunday by the server). */
@@ -100,7 +125,7 @@ export function isWeekly(challenge: Pick<Challenge, 'weekly_key'>): boolean {
 }
 
 export function modeLabel(mode: string): string {
-  return mode === 'pool' ? de.mode.pool : de.mode.ranked;
+  return mode === 'pool' ? de.mode.pool : mode === 'goal' ? de.mode.goal : de.mode.ranked;
 }
 
 /** Settled or cancelled: nothing changes anymore. */

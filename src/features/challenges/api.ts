@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient, type QueryClient } from '@tansta
 import { de } from '@/i18n/de';
 import { supabase } from '@/lib/supabase';
 
-import type { CreateChallengeInput } from './schemas';
+import type { CreateGoalInput } from './schemas';
 import type { Challenge, LeaderboardEntry, MyChallenge, Participant } from './types';
 
 export const challengeKeys = {
@@ -169,19 +169,17 @@ export function useChallengeByCode(code: string | null) {
   });
 }
 
-export function useCreateChallenge() {
+/** Creates a personal goal; the stake is bound at once (refundable until the start). */
+export function useCreateGoal() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (input: CreateChallengeInput): Promise<Challenge> => {
-      const { data, error } = await supabase.rpc('create_challenge', {
+    mutationFn: async (input: CreateGoalInput): Promise<Challenge> => {
+      const { data, error } = await supabase.rpc('create_goal', {
         p_title: input.title,
         p_goal_type: input.goalType,
         p_target_value: input.targetValue,
         p_stake_cents: input.stakeCents,
-        p_start_date: input.startDate,
-        p_duration_days: input.durationDays,
-        p_visibility: input.visibility,
-        p_mode: input.mode,
+        p_period: input.period,
       });
       if (error) {
         throw error;
@@ -189,6 +187,47 @@ export function useCreateChallenge() {
       return data;
     },
     onSuccess: () => invalidateAfterBooking(queryClient),
+  });
+}
+
+export type PoolOverview = { people: number; goals: number; boundCents: number };
+
+/** App-wide numbers for the pool screen: people and bound credits (aggregates only). */
+export function usePoolOverview() {
+  return useQuery({
+    queryKey: [...challengeKeys.all, 'pool-overview'] as const,
+    queryFn: async (): Promise<PoolOverview> => {
+      const { data, error } = await supabase.rpc('get_pool_overview');
+      if (error) {
+        throw error;
+      }
+      const row = data[0];
+      return {
+        people: row?.people ?? 0,
+        goals: row?.goals ?? 0,
+        boundCents: Number(row?.bound_cents ?? 0),
+      };
+    },
+  });
+}
+
+export type GoalWindow = { goals: number; stakesCents: number };
+
+/** How many goals and how many credits are in the period of one of my goals. */
+export function useGoalWindow(challengeId: string, enabled: boolean) {
+  return useQuery({
+    queryKey: [...challengeKeys.all, 'goal-window', challengeId] as const,
+    enabled,
+    queryFn: async (): Promise<GoalWindow> => {
+      const { data, error } = await supabase.rpc('get_goal_window', {
+        p_challenge_id: challengeId,
+      });
+      if (error) {
+        throw error;
+      }
+      const row = data[0];
+      return { goals: row?.goals ?? 0, stakesCents: Number(row?.stakes_cents ?? 0) };
+    },
   });
 }
 

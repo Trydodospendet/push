@@ -166,6 +166,7 @@ function AppStack({ isSignedIn, isOnboarded }: { isSignedIn: boolean; isOnboarde
         <Stack.Screen name="challenge" />
         <Stack.Screen name="how-it-works" />
         <Stack.Screen name="run" />
+        <Stack.Screen name="activity" />
         <Stack.Screen name="settings" />
         <Stack.Screen
           name="social"

@@ -5,7 +5,7 @@ import { de } from '@/i18n/de';
 import { formatAmount } from '@/lib/money';
 import { spacing } from '@/theme';
 
-import { formatPeriod, isRanked } from './format';
+import { formatPeriod, isGoal, isRanked } from './format';
 import type { Challenge } from './types';
 
 function Fact({ label, value }: { label: string; value: string }) {
@@ -23,6 +23,7 @@ function Fact({ label, value }: { label: string; value: string }) {
 export function ChallengeFacts({ challenge }: { challenge: Challenge }) {
   const participants = de.challenge.participantCount(challenge.participant_count);
   const ranked = isRanked(challenge);
+  const goal = isGoal(challenge);
   return (
     <Card style={styles.card}>
       <Fact label={de.challenge.period} value={formatPeriod(challenge)} />
@@ -32,14 +33,16 @@ export function ChallengeFacts({ challenge }: { challenge: Challenge }) {
           value={`${formatAmount(challenge.stake_cents)} ${de.common.credits}`}
         />
       )}
-      <Fact
-        label={de.challenge.participants}
-        value={
-          challenge.max_participants === null
-            ? participants
-            : `${participants} (${de.challenge.maxParticipants(challenge.max_participants)})`
-        }
-      />
+      {goal ? null : (
+        <Fact
+          label={de.challenge.participants}
+          value={
+            challenge.max_participants === null
+              ? participants
+              : `${participants} (${de.challenge.maxParticipants(challenge.max_participants)})`
+          }
+        />
+      )}
     </Card>
   );
 }

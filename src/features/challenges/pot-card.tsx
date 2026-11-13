@@ -7,7 +7,8 @@ import { de } from '@/i18n/de';
 import { formatAmount } from '@/lib/money';
 import { colors, layout, radius, spacing } from '@/theme';
 
-import { isFinished, isPool, isRanked } from './format';
+import { useGoalWindow } from './api';
+import { isFinished, isGoal, isPool, isRanked } from './format';
 import type { Challenge } from './types';
 
 /** Big pot (pool), the most the user can win, and the "automatically checked" badge. */
@@ -15,7 +16,9 @@ export function PotCard({ challenge }: { challenge: Challenge }) {
   const pool = isPool(challenge);
   const alone = pool && challenge.participant_count <= 1;
   const over = isFinished(challenge) || challenge.status === 'settling';
-  const potential = usePotentialWin(challenge.id, !over);
+  const goal = isGoal(challenge);
+  const potential = usePotentialWin(challenge.id, !over && !goal);
+  const window = useGoalWindow(challenge.id, goal);
 
   return (
     <Card style={styles.card}>
@@ -37,7 +40,28 @@ export function PotCard({ challenge }: { challenge: Challenge }) {
         </View>
       ) : null}
 
-      {over || isRanked(challenge) ? null : (
+      {goal ? (
+        <View
+          style={styles.pot}
+          accessible
+          accessibilityLabel={`${de.detail.windowLabel}: ${formatAmount(window.data?.stakesCents ?? 0)} ${de.common.credits}`}
+        >
+          <Text variant="label" color="textSecondary">
+            {de.detail.windowLabel}
+          </Text>
+          <Text variant="display" color="accent" numberOfLines={1} adjustsFontSizeToFit>
+            {formatAmount(window.data?.stakesCents ?? challenge.stake_cents)}
+          </Text>
+          <Text variant="caption" color="textSecondary">
+            {`${de.common.credits} · ${de.detail.windowCaption(window.data?.goals ?? 1)}`}
+          </Text>
+          <Text variant="caption" color="textMuted">
+            {de.detail.windowHint}
+          </Text>
+        </View>
+      ) : null}
+
+      {over || isRanked(challenge) || goal ? null : (
         <View
           style={styles.win}
           accessible
