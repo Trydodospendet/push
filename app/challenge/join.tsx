@@ -1,4 +1,4 @@
-import { useRouter } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
@@ -15,10 +15,13 @@ import { spacing } from '@/theme';
 
 export default function JoinByCodeScreen() {
   const router = useRouter();
-  const [input, setInput] = useState('');
+  // A link like push://join/ABC123 opens this screen with the code already filled in.
+  const params = useLocalSearchParams<{ code?: string }>();
+  const fromLink = inviteCodeSchema.safeParse(params.code ?? '');
+  const [input, setInput] = useState(fromLink.success ? fromLink.data : '');
   const [inputError, setInputError] = useState<string | null>(null);
   // The code that is being previewed; null until the user submitted a valid code.
-  const [code, setCode] = useState<string | null>(null);
+  const [code, setCode] = useState<string | null>(fromLink.success ? fromLink.data : null);
   const [sheetVisible, setSheetVisible] = useState(false);
   const preview = useChallengeByCode(code);
   const join = useJoinChallenge();

@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>PUSH – Einladung</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main>
+      <h1>PUSH.</h1>
+      <p id="text">Du wurdest zu PUSH eingeladen.</p>
+      <p><a id="open" href="#">In der App öffnen</a></p>
+      <p>
+        Du hast die App noch nicht? Suche im Play Store nach „PUSH“ und öffne diesen Link danach
+        erneut.
+      </p>
+    </main>
+    <script>
+      // ?c=<friend code> opens the friend request, ?j=<challenge code> joins a challenge.
+      var q = new URLSearchParams(location.search);
+      var friend = (q.get('c') || '').replace(/[^A-Za-z0-9]/g, '').slice(0, 8);
+      var join = (q.get('j') || '').replace(/[^A-Za-z0-9]/g, '').slice(0, 6);
+      var link = friend ? 'push://invite/' + friend : join ? 'push://join/' + join : 'push://';
+      document.getElementById('open').setAttribute('href', link);
+      if (join)
+        document.getElementById('text').textContent = 'Du wurdest zu einer Challenge eingeladen.';
+      if (friend || join)
+        setTimeout(function () {
+          location.href = link;
+        }, 400);
+    </script>
+  </body>
+</html>

@@ -2,6 +2,7 @@ import { StyleSheet } from 'react-native';
 
 import { Card, ErrorState, LoadingState, Screen, SwitchRow, Text } from '@/components';
 import { useSetRankingVisibility } from '@/features/account/api';
+import { useSetShareRuns } from '@/features/social/api';
 import { useMyProfile } from '@/features/auth/api';
 import { useSession } from '@/features/auth/auth-provider';
 import { hapticSelect } from '@/features/preferences/haptics';
@@ -15,6 +16,7 @@ export default function PrivacySettingsScreen() {
   const session = useSession();
   const profile = useMyProfile(session.user.id);
   const save = useSetRankingVisibility(session.user.id);
+  const shareRuns = useSetShareRuns(session.user.id);
 
   if (profile.isPending) {
     return (
@@ -56,6 +58,18 @@ export default function PrivacySettingsScreen() {
             {de.privacySettings.error}
           </Text>
         ) : null}
+      </Card>
+      <Card style={styles.card}>
+        <SwitchRow
+          label={de.social.shareRuns}
+          hint={de.social.shareRunsHint}
+          value={profile.data.share_runs_with_friends}
+          disabled={shareRuns.isPending}
+          onChange={(value) => {
+            hapticSelect();
+            shareRuns.mutate(value);
+          }}
+        />
       </Card>
       <Text variant="caption" color="textMuted">
         {de.privacySettings.other}

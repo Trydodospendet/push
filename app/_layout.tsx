@@ -168,6 +168,18 @@ function AppStack({ isSignedIn, isOnboarded }: { isSignedIn: boolean; isOnboarde
         <Stack.Screen name="run" />
         <Stack.Screen name="settings" />
         <Stack.Screen
+          name="social"
+          options={{
+            headerShown: true,
+            headerStyle: { backgroundColor: colors.bg },
+            headerTintColor: colors.text,
+            headerShadowVisible: false,
+            headerBackButtonDisplayMode: 'minimal',
+          }}
+        />
+        <Stack.Screen name="invite" />
+        <Stack.Screen name="join" />
+        <Stack.Screen
           name="battery"
           options={{
             headerShown: true,

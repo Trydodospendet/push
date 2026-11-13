@@ -67,6 +67,11 @@ export default function HomeScreen() {
           onAction={() => router.navigate('/ranked')}
         />
         <Button
+          label={de.social.homeButton}
+          variant="secondary"
+          onPress={() => router.push('/social')}
+        />
+        <Button
           label={de.run.homeButton}
           variant="secondary"
           onPress={() => router.push('/run/index')}
@@ -100,6 +105,11 @@ export default function HomeScreen() {
       }
     >
       <HealthBanner />
+      <Button
+        label={de.social.homeButton}
+        variant="secondary"
+        onPress={() => router.push('/social')}
+      />
       <Button
         label={de.run.homeButton}
         variant="secondary"
