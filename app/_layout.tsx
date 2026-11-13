@@ -15,6 +15,7 @@ import { GpsProvider } from '@/features/gps/gps-provider';
 import { ReminderProvider } from '@/features/reminders/reminder-provider';
 import { de } from '@/i18n/de';
 import { loadPreferences } from '@/features/preferences/store';
+import { noteFirstUse } from '@/features/review/review';
 import { initMonitoring, reportError } from '@/lib/monitoring';
 import { createQueryClient } from '@/lib/query-client';
 import { colors, fontAssets } from '@/theme';
@@ -30,6 +31,7 @@ export default function RootLayout() {
   useEffect(() => {
     void loadPreferences();
     initMonitoring();
+    void noteFirstUse();
   }, []);
 
   if (!fontsReady) {

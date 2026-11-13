@@ -7,7 +7,9 @@ import { Button, Card, DraggablePanel, FadeIn, Sheet, Text } from '@/components'
 import { DEFAULT_TIMEZONE } from '@/config/app';
 import { useMyProfile } from '@/features/auth/api';
 import { useSession } from '@/features/auth/auth-provider';
+import { useMyRecords } from '@/features/gps/analytics-api';
 import { useGpsRunRoute, useMyGpsRuns } from '@/features/gps/api';
+import { maybeAskForReview } from '@/features/review/review';
 import { formatClock, formatKm, formatPace } from '@/features/gps/format';
 import { liveSplits, paceSecondsPerKm } from '@/features/gps/geo';
 import { useGps, type StartOutcome } from '@/features/gps/gps-provider';
@@ -323,16 +325,33 @@ function Stat({ label, value }: { label: string; value: string }) {
 function ResultSheet() {
   const gps = useGps();
   const result = gps.lastResult;
+  const session = useSession();
+  const records = useMyRecords(session.user.id);
   const reason =
     result && !result.isValid && result.invalidReason
       ? (de.activities.reason as Record<string, string>)[result.invalidReason]
       : undefined;
 
+  const dismiss = () => {
+    // A record that was set by the run that has just been saved (it started in the last 12 hours).
+    const newRecord =
+      result?.isValid === true &&
+      (records.data ?? []).some(
+        (record) =>
+          record.kind !== 'best_week' &&
+          Date.now() - Date.parse(record.achievedAt) < 12 * 60 * 60 * 1000,
+      );
+    gps.dismissResult();
+    if (newRecord) {
+      void maybeAskForReview('record');
+    }
+  };
+
   return (
     <Sheet
       visible={result !== null}
       title={de.run.resultTitle}
-      onClose={gps.dismissResult}
+      onClose={dismiss}
       closeLabel={de.run.done}
     >
       {result ? (
@@ -348,7 +367,7 @@ function ResultSheet() {
           {reason ? <Text color="textSecondary">{reason}</Text> : null}
         </>
       ) : null}
-      <Button label={de.run.done} onPress={gps.dismissResult} />
+      <Button label={de.run.done} onPress={dismiss} />
     </Sheet>
   );
 }

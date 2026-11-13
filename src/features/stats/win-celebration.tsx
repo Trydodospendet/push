@@ -13,6 +13,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, Confetti, Icon, Text } from '@/components';
 import { BadgeCelebration } from '@/features/badges/badge-celebration';
 import { useSession } from '@/features/auth/auth-provider';
+import { maybeAskForReview } from '@/features/review/review';
 import { hapticSuccess } from '@/features/preferences/haptics';
 import { de } from '@/i18n/de';
 import { formatAmount } from '@/lib/money';
@@ -60,6 +61,8 @@ export function WinCelebration() {
     const next = { ...state, seen: [...state.seen, win.challengeId] };
     setState(next);
     void saveCelebrationState(userId, next).catch(() => undefined);
+    // A good moment, and only if the rules allow it (rare, never in the first days).
+    void maybeAskForReview('win');
   }, [state, userId, win]);
 
   if (!win) {
