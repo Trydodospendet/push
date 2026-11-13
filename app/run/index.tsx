@@ -1,3 +1,4 @@
+import { router } from 'expo-router';
 import { useState } from 'react';
 import { Linking, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -150,6 +151,13 @@ function IdleRun({ timezone }: { timezone: string }) {
               onPress={() => void Linking.openSettings()}
             />
           ) : null}
+        </FadeIn>
+        <FadeIn delayMs={60}>
+          <Button
+            label={de.battery.link}
+            variant="secondary"
+            onPress={() => router.push('/battery')}
+          />
         </FadeIn>
         <FadeIn delayMs={100}>
           <PeriodCard userId={session.user.id} />

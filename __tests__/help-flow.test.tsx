@@ -50,7 +50,7 @@ beforeEach(() => {
 describe('help', () => {
   it('opens an answer of the FAQ and shows the support contact', async () => {
     const user = userEvent.setup();
-    const openURL = jest.spyOn(Linking, 'openURL').mockResolvedValue(true);
+    const openURL = jest.spyOn(Linking, 'openURL').mockResolvedValue(undefined);
     await renderRouter('./app', { initialUrl: '/help' });
 
     await user.press(await screen.findByRole('button', { name: 'Was sind Credits?' }));

@@ -15,6 +15,7 @@ import { GpsProvider } from '@/features/gps/gps-provider';
 import { ReminderProvider } from '@/features/reminders/reminder-provider';
 import { de } from '@/i18n/de';
 import { loadPreferences } from '@/features/preferences/store';
+import { initMonitoring, reportError } from '@/lib/monitoring';
 import { createQueryClient } from '@/lib/query-client';
 import { colors, fontAssets } from '@/theme';
 
@@ -28,6 +29,7 @@ export default function RootLayout() {
 
   useEffect(() => {
     void loadPreferences();
+    initMonitoring();
   }, []);
 
   if (!fontsReady) {
@@ -35,7 +37,7 @@ export default function RootLayout() {
   }
 
   return (
-    <ErrorBoundary>
+    <ErrorBoundary onError={reportError}>
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
           <StatusBar style="light" />
@@ -153,6 +155,16 @@ function AppStack({ isSignedIn, isOnboarded }: { isSignedIn: boolean; isOnboarde
         <Stack.Screen name="how-it-works" />
         <Stack.Screen name="run" />
         <Stack.Screen name="settings" />
+        <Stack.Screen
+          name="battery"
+          options={{
+            headerShown: true,
+            headerStyle: { backgroundColor: colors.bg },
+            headerTintColor: colors.text,
+            headerShadowVisible: false,
+            headerBackButtonDisplayMode: 'minimal',
+          }}
+        />
         <Stack.Screen
           name="help"
           options={{

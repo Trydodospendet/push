@@ -38,6 +38,7 @@ const privacySections: readonly LegalSection[] = [
       'Profil und Sichtbarkeit: optional ein Profilbild (auf 256 × 256 Pixel verkleinert, in einem privaten Speicher; nur du kannst es sehen) und die Einstellung, in Ranglisten anonym zu bleiben – dann sehen andere „Anonym“ statt deines Namens.',
       'Spenden: Entscheidest du dich, deinen Gewinnanteil zu spenden, wird das als Buchung (Betrag, Challenge, gewählte Organisation) gespeichert. Die Organisation erhält Summen ohne die Namen der Spender. Aktuell sind Credits virtuell.',
       'Auskunft: In der App unter Profil → Daten & Datenschutz kannst du alle über dich gespeicherten Daten als Datei herunterladen.',
+      'Absturzberichte (nur wenn der Betreiber sie aktiviert): Bei einem Absturz kann ein technischer Fehlerbericht (Fehlermeldung, Gerätetyp, App-Version) an den Dienst Sentry gesendet werden. Er enthält keine E-Mail-Adresse, keine Nutzer-ID, keine IP-Adresse, keine Strecken und keine Gesundheitsdaten. Standardmäßig ist die Funktion ausgeschaltet.',
     ],
   },
   {
@@ -736,6 +737,53 @@ export const de = {
     mapAttribution: 'Karte: OpenFreeMap, © OpenMapTiles, Daten von OpenStreetMap',
     runLine: (km: string, clock: string) => `${km} km · ${clock}`,
     mapLabel: 'Karte mit deiner Strecke',
+  },
+  battery: {
+    title: 'Akku-Optimierung',
+    intro:
+      'Manche Handys beenden Apps im Hintergrund, um Akku zu sparen. Dann bricht ein GPS-Lauf ab, sobald der Bildschirm gesperrt ist. Mit diesen Einstellungen läuft PUSH weiter.',
+    makers: [
+      {
+        name: 'Samsung',
+        steps: [
+          'Einstellungen → Apps → PUSH → Akku.',
+          '„Nicht eingeschränkt“ auswählen (nicht „Optimiert“ oder „Eingeschränkt“).',
+          'Einstellungen → Gerätewartung → Akku → Hintergrundnutzungsgrenzen: PUSH aus der Liste „Schlafende Apps“ entfernen.',
+        ],
+      },
+      {
+        name: 'Xiaomi / Redmi / POCO',
+        steps: [
+          'Einstellungen → Apps → Apps verwalten → PUSH → Akku-Sparmodus → „Keine Einschränkungen“.',
+          'Dort auch „Autostart“ aktivieren.',
+          'In der App-Übersicht PUSH antippen und festhalten und „Sperren“ wählen.',
+        ],
+      },
+      {
+        name: 'Huawei / Honor',
+        steps: [
+          'Einstellungen → Akku → App-Start → PUSH → „Manuell verwalten“.',
+          '„Autostart“, „Sekundärer Start“ und „Im Hintergrund ausführen“ einschalten.',
+        ],
+      },
+      {
+        name: 'OnePlus / Oppo / Realme',
+        steps: [
+          'Einstellungen → Akku → Akku-Optimierung → PUSH → „Nicht optimieren“.',
+          'In der App-Übersicht PUSH sperren.',
+        ],
+      },
+      {
+        name: 'Google Pixel und andere',
+        steps: [
+          'Einstellungen → Apps → PUSH → Akku → „Nicht eingeschränkt“.',
+          'Der Standort muss „Beim Verwenden der App zulassen“ sein.',
+        ],
+      },
+    ],
+    hint: 'Die Namen der Menüs unterscheiden sich je nach Android-Version. Such notfalls in den Einstellungen nach „Akku“ und „PUSH“.',
+    openSettings: 'App-Einstellungen öffnen',
+    link: 'Läuft der GPS-Lauf bei gesperrtem Bildschirm nicht weiter?',
   },
   appeals: {
     title: 'Einspruch einlegen',
