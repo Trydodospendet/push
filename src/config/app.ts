@@ -81,7 +81,7 @@ export const DURATION_MAX_DAYS = 42;
 export const DURATION_PRESETS_DAYS = [1, 3, 7, 14, 28, 42] as const;
 
 /**
- * DB: create_goal – the period of a personal goal: tomorrow, the coming week (Monday to Sunday)
+ * DB: create_goal – the period of a personal goal: today, the coming week (Monday to Sunday)
  * or the coming calendar month. All goals with the same period share one pot.
  */
 export const GOAL_PERIODS = ['day', 'week', 'month'] as const;

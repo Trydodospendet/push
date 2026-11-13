@@ -541,6 +541,12 @@ export const de = {
     weekly: 'WOCHEN-CHALLENGE',
     weeklyBadge: 'Diese Woche',
     weeklyHint: 'Jede Woche neu: gleiche Regeln für alle, ohne Einsatz.',
+    demoTitle: 'Ranglisten-Vorschau',
+    demoSubtitle: '20 fiktive Teilnehmende mit Beispielbildern und Beispielständen.',
+    demoLabel: 'NUR DEMO',
+    demoNoStake: 'Ranked bleibt ohne Einsatz. Die 400 Credits sind nur Beispiel-Guthaben.',
+    demoDistance: (distance: string) => `${distance} km`,
+    demoBalance: '400 Credits Guthaben',
   },
   goal: {
     typeLabel: {
@@ -684,7 +690,9 @@ export const de = {
     goalType: 'ZIELTYP',
     target: 'ZIELWERT',
     period: 'ZEITRAUM',
-    periodLabel: { day: 'Morgen', week: 'Nächste Woche', month: 'Nächster Monat' },
+    periodLabel: { day: 'Heute bis Mitternacht', week: 'Nächste Woche', month: 'Nächster Monat' },
+    todayHint:
+      'Das Tagesziel läuft ab jetzt bis Mitternacht. Bereits heute erfasste Schritte zählen mit.',
     stake: 'EINSATZ',
     stakeHint:
       'Ziel erreicht: Einsatz zurück plus Anteil an den verfallenen Einsätzen. Ziel verfehlt: Einsatz verfällt.',
@@ -698,8 +706,10 @@ export const de = {
     confirmReturn: (day: string) =>
       `Schaffst du dein Ziel, kommt dein Einsatz am ${day} zurück – plus ein Anteil an den verfallenen Einsätzen aller, die ihr Ziel im selben Zeitraum erreichen. (Die Abrechnung folgt 24 Stunden nach Ende des Zeitraums, damit alle Daten synchronisiert werden können.)`,
     confirmMissed: 'Verfehlst du dein Ziel, verfällt dein Einsatz in den Pool.',
-    confirmBound: (start: string) =>
-      `Bis zum Start am ${start} kannst du das Ziel zurückziehen und bekommst alles zurück. Ab dem Start ist der Einsatz gebunden: kein Zurückziehen und kein Abbrechen mit Erstattung.`,
+    confirmBound: (start: string, startsToday: boolean) =>
+      startsToday
+        ? 'Dein Einsatz ist ab der Bestätigung sofort gebunden. Das Ziel kann danach nicht zurückgezogen oder mit Erstattung abgebrochen werden.'
+        : `Bis zum Start am ${start} kannst du das Ziel zurückziehen und bekommst alles zurück. Ab dem Start ist der Einsatz gebunden: kein Zurückziehen und kein Abbrechen mit Erstattung.`,
     confirmSubmit: (amount: string) => `${amount} Credits setzen`,
     confirmCancel: 'Abbrechen',
     invalidTitle: 'Der Titel muss 3 bis 60 Zeichen lang sein.',
@@ -1022,7 +1032,7 @@ export const de = {
     faq: [
       {
         q: 'Wie funktioniert PUSH?',
-        a: 'Auf Home tippst du „Ziel setzen“: Lauf oder Schritte, Zielwert, Zeitraum und Einsatz. Deine Läufe und Schritte werden automatisch aus Health Connect bzw. Apple Health übernommen (oder du zeichnest einen Lauf im Tab Aktivität auf). Den Fortschritt siehst du auf Home, das Ergebnis nach der Abrechnung.',
+        a: 'Auf Home tippst du „Ziel setzen“: Lauf oder Schritte, Zielwert, Zeitraum und Einsatz. Ein Tagesziel kannst du heute bis Mitternacht setzen; bereits erfasste Schritte von heute zählen mit. Deine Läufe und Schritte werden automatisch aus Health Connect bzw. Apple Health übernommen (oder du zeichnest einen Lauf im Tab Aktivität auf). Den Fortschritt siehst du auf Home, das Ergebnis nach der Abrechnung.',
       },
       {
         q: 'Was sind Credits?',

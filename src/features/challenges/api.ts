@@ -179,7 +179,9 @@ export function useCreateGoal() {
         p_goal_type: input.goalType,
         p_target_value: input.targetValue,
         p_stake_cents: input.stakeCents,
-        p_period: input.period,
+        // `today` makes an outdated cloud function fail clearly instead of silently creating
+        // tomorrow's goal while the app says it starts today.
+        p_period: input.period === 'day' ? 'today' : input.period,
       });
       if (error) {
         throw error;

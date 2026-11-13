@@ -178,8 +178,8 @@ function AppStack({ isSignedIn, isOnboarded }: { isSignedIn: boolean; isOnboarde
             headerBackButtonDisplayMode: 'minimal',
           }}
         />
-        <Stack.Screen name="invite" />
-        <Stack.Screen name="join" />
+        <Stack.Screen name="invite/[code]" />
+        <Stack.Screen name="join/[code]" />
         <Stack.Screen
           name="battery"
           options={{

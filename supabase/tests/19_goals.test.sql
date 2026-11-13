@@ -2,7 +2,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 
-select plan(22);
+select plan(24);
 
 create function pg_temp.login(p_user_id uuid)
 returns void
@@ -99,6 +99,21 @@ select results_eq(
   $$ values (1, interval '7 days') $$,
   'a week goal starts on a Monday and lasts seven days'
 );
+select pg_temp.login(pg_temp.u(6));
+select is(
+  (select starts_at = now()
+     from public.create_goal('Heutiges Tagesziel', 'run_total', 5000, 500, 'today')),
+  true,
+  'a daily goal starts immediately when it is created'
+);
+select is(
+  (select (ends_at at time zone timezone)::date = (now() at time zone timezone)::date + 1
+     from public.challenges where creator_id = pg_temp.u(6) and mode = 'goal'),
+  true,
+  'a daily goal ends at the next local midnight'
+);
+select pg_temp.logout();
+select pg_temp.login(pg_temp.u(1));
 select throws_ok($$ select public.create_goal('Zu wenig', 'run_total', 10000, 50, 'week') $$,
   'P0001', 'invalid_stake', 'the stake is limited to 1 to 50');
 select throws_ok($$ select public.create_goal('Kein Zeitraum', 'run_total', 10000, 500, 'year') $$,

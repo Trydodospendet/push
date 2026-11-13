@@ -138,10 +138,14 @@ Voraussetzung: neuer Development Build (siehe SETUP 5.11) und `supabase db reset
 Die Schritt-für-Schritt-Anleitung steht in `docs/SETUP.md` 5.12 (Registrieren mit Passwort,
 Ziel mit Einsatz, Aktivität-Tab, Pool/Ranked). Zusätzlich prüfen:
 
-1. **Abrechnung eines Zeitraums:** Mehrere Ziele mit gleichem Zeitraum: Wer sein Ziel schafft,
+1. **Tagesziel heute:** _Ziel setzen_ → _Heute bis Mitternacht_. Prüfen, dass das Ziel ab sofort
+   läuft, bereits erfasste heutige Schritte mitzählen und der Einsatz sofort gebunden ist.
+2. **Abrechnung eines Zeitraums:** Mehrere Ziele mit gleichem Zeitraum: Wer sein Ziel schafft,
    bekommt den Einsatz plus einen Anteil der verfallenen Einsätze (im Verhältnis zum Einsatz), kein
    Mindestziel. Jedes Ziel summiert sich im Ledger auf 0 (`19_goals`).
-2. **FAQ:** Profil → _Hilfe & Kontakt_ erklärt Ziel setzen, Einsatz-Bindung und Pool/Ranked.
+3. **Ranked-Demovorschau:** Development Build → Tab _Ranked_ → unten stehen 20 fiktive Profile
+   mit Beispielbildern und je 400 Credits Guthaben. Keine davon ist ein echtes Konto oder ein Einsatz.
+4. **FAQ:** Profil → _Hilfe & Kontakt_ erklärt Ziel setzen, Einsatz-Bindung und Pool/Ranked.
 
 ## Automatische Tests
 

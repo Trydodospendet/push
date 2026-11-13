@@ -41,10 +41,10 @@ describe('createGoalSchema (same limits as public.create_goal)', () => {
 });
 
 describe('goalPeriodDays (same rules as the server)', () => {
-  it('starts a day goal tomorrow', () => {
+  it('starts a day goal today and ends it today', () => {
     expect(goalPeriodDays('2026-11-13', 'day')).toEqual({
-      first: '2026-11-14',
-      last: '2026-11-14',
+      first: '2026-11-13',
+      last: '2026-11-13',
     });
   });
 

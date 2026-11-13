@@ -37,17 +37,16 @@ export const createGoalSchema = z
 export type CreateGoalInput = z.infer<typeof createGoalSchema>;
 
 /**
- * First and last day of a goal period, counted from the local date `today` (the same rules as
- * the server: it never starts today, so nobody can set a goal after having done the activity).
- *   day    tomorrow
+ * First and last day of a goal period, counted from the user's local date `today`, matching the
+ * server-side goal creation rules.
+ *   day    today, through local midnight
  *   week   the coming Monday to Sunday
  *   month  the coming calendar month
  */
 export function goalPeriodDays(today: string, period: GoalPeriod): { first: string; last: string } {
   const [year, month, day] = today.split('-').map(Number);
   if (period === 'day') {
-    const first = addDays(today, 1);
-    return { first, last: first };
+    return { first: today, last: today };
   }
   if (period === 'week') {
     // ISO weekday of today: Monday = 1 … Sunday = 7.

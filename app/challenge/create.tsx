@@ -142,6 +142,7 @@ export default function SetGoalScreen() {
         value={period}
         onChange={setPeriod}
       />
+      {period === 'day' ? <Text color="textSecondary">{de.create.todayHint}</Text> : null}
       <Text color="textSecondary">
         {de.create.summary(formatDayLabel(first), formatDayLabel(last))}
       </Text>
@@ -179,7 +180,9 @@ export default function SetGoalScreen() {
         <Text>{de.create.confirmStake(stake)}</Text>
         <Text color="textSecondary">{de.create.confirmReturn(formatDayLabel(settlementDay))}</Text>
         <Text color="textSecondary">{de.create.confirmMissed}</Text>
-        <Text color="accent">{de.create.confirmBound(formatDayLabel(first))}</Text>
+        <Text color="accent">
+          {de.create.confirmBound(formatDayLabel(first), period === 'day')}
+        </Text>
         {balance.data !== undefined ? (
           <Text variant="caption" color="textSecondary">
             {de.joinSheet.balance(formatAmount(balance.data))}

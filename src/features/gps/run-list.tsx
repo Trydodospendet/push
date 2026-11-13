@@ -12,6 +12,13 @@ import { useMyGpsRuns, type GpsRun } from './api';
 import { formatClock, formatKm } from './format';
 import { MiniRoute } from './mini-route';
 
+function diagnostic(error: unknown): string | null {
+  if (typeof error !== 'object' || error === null || !('message' in error)) {
+    return null;
+  }
+  return typeof error.message === 'string' ? error.message : null;
+}
+
 /** The user's own GPS runs, newest first, each with a mini map; tapping one opens its map. */
 export function RunList({ timezone }: { timezone: string }) {
   const userId = useSession().user.id;
@@ -27,9 +34,10 @@ export function RunList({ timezone }: { timezone: string }) {
     );
   }
   if (runs.isError) {
+    const detail = diagnostic(runs.error);
     return (
       <ErrorState
-        message={de.run.historyError}
+        message={__DEV__ && detail ? `${de.run.historyError}\n${detail}` : de.run.historyError}
         onRetry={() => runs.refetch()}
         retrying={runs.isFetching}
       />

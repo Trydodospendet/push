@@ -556,11 +556,14 @@ Konten der lokalen Datenbank gibt es in der Cloud nicht, du registrierst dich do
    bei `start:cloud`) eingeben → Name und Health-Verbindung. Danach abmelden → _Anmelden_ → mit
    **E-Mail und Passwort** anmelden. Außerdem funktioniert _Anmelden_ → Chip „Code“. Eine E-Mail
    ohne Konto bekommt beim Anmelden per Code die Meldung, dass man sich zuerst registrieren muss.
-2. **Ziel mit Einsatz setzen:** Home → _Ziel setzen_ → Zieltyp, Zielwert, Zeitraum (Morgen /
-   Nächste Woche / Nächster Monat), Einsatz → _Weiter_. Das Bestätigungs-Fenster nennt die Höhe des
+2. **Ziel mit Einsatz setzen:** Home → _Ziel setzen_ → Zieltyp, Zielwert, Zeitraum (Heute bis
+   Mitternacht / Nächste Woche / Nächster Monat), Einsatz → _Weiter_. Ein Tagesziel startet sofort,
+   bereits erfasste Schritte von heute zählen mit und der Einsatz ist unmittelbar gebunden. Das
+   Bestätigungs-Fenster nennt die Höhe des
    Einsatzes, wann er zurückkommt und dass er **ab dem Start gebunden** ist. Erst _… Credits setzen_
-   bucht ab (Wallet prüfen). Im Ziel gibt es bis zum Start _Ziel zurückziehen_ (Einsatz kommt
-   zurück). Nach dem Start aktualisieren und prüfen, dass die Rückzieh-Option verschwunden ist:
+   bucht ab (Wallet prüfen). Beim Tagesziel ist der Einsatz sofort gebunden. Bei Zielen mit einem
+   späteren Start gibt es bis dahin _Ziel zurückziehen_ (Einsatz kommt zurück). Nach dem Start
+   aktualisieren und prüfen, dass die Rückzieh-Option verschwunden ist:
    **Der Einsatz lässt sich dann nicht mehr zurückholen.** Zum Durchspielen bis zur Abrechnung:
    Zeitraffer-Skript (`supabase/scripts/simulate_challenge.sql`, jetzt mit drei Zielen).
 3. **Lauf im Aktivität-Tab und Zielfortschritt:** Tab _Aktivität_ → Läufe und Schritte aus Health
@@ -576,6 +579,8 @@ Konten der lokalen Datenbank gibt es in der Cloud nicht, du registrierst dich do
    (täglich, wöchentlich, monatlich; meiste km und meiste Schritte) zum Mitmachen, **ohne**
    Erstellen-Knopf, außerdem _Freunde & Liga_. Die Ranglisten legt der Server täglich an
    (`create_ranked_cycles`).
+   Im Development Build erscheint unter Ranked zusätzlich eine rein lokale Vorschau mit 20 fiktiven
+   Profilen. Sie schreibt keine Nutzer, Guthaben oder Einsätze in die Datenbank.
 
 ## 6. Befehle im Überblick
 
