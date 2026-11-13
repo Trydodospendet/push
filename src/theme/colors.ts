@@ -15,5 +15,11 @@ export const colors = {
 
 export type ColorToken = keyof typeof colors;
 
+/** Soft lime glow (accent at low opacity): focus halos and success effects. */
+export const glow = {
+  soft: 'rgba(198, 255, 0, 0.10)',
+  strong: 'rgba(198, 255, 0, 0.35)',
+} as const;
+
 /** Dimmed backdrop behind sheets (the background color with 70 % opacity). */
 export const scrim = 'rgba(10, 10, 10, 0.7)';

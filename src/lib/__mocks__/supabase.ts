@@ -112,6 +112,8 @@ export const supabase = {
     }),
     signInWithOtp: jest.fn(async (): Promise<AuthResult> => ({ data: {}, error: null })),
     verifyOtp: jest.fn(async (): Promise<AuthResult> => ({ data: {}, error: null })),
+    signInWithPassword: jest.fn(async (): Promise<AuthResult> => ({ data: {}, error: null })),
+    updateUser: jest.fn(async (): Promise<AuthResult> => ({ data: {}, error: null })),
     signOut: jest.fn(async () => {
       currentSession = null;
       listeners.forEach((listener) => listener('SIGNED_OUT', null));

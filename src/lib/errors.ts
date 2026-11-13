@@ -20,6 +20,7 @@ const databaseErrorMessages: Record<string, string> = {
 /** Supabase Auth error codes, see https://supabase.com/docs/guides/auth/debugging/error-codes */
 const authErrorMessages: Record<string, string> = {
   otp_expired: de.verify.wrongCode,
+  invalid_credentials: de.signIn.wrongPassword,
   over_email_send_rate_limit: de.signIn.rateLimited,
   over_request_rate_limit: de.signIn.rateLimited,
   email_address_invalid: de.signIn.invalidEmail,

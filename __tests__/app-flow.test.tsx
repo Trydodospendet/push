@@ -260,6 +260,39 @@ describe('app flow', () => {
     expect(screen.getByText(/Limited Use/)).toBeOnTheScreen();
   });
 
+  it('signs in with a password as an alternative to the code', async () => {
+    const user = userEvent.setup();
+    await renderRouter('./app', { initialUrl: '/sign-in' });
+
+    await user.press(await screen.findByRole('radio', { name: 'Passwort' }));
+    await user.type(screen.getByLabelText('E-Mail-Adresse'), 'anna@example.com');
+    await user.press(screen.getByRole('button', { name: 'Anmelden' }));
+    expect(screen.getByText('Bitte gib dein Passwort ein.')).toBeOnTheScreen();
+    expect(supabaseMock.auth.signInWithPassword).not.toHaveBeenCalled();
+
+    await user.type(screen.getByLabelText('Passwort'), 'geheim123');
+    await user.press(screen.getByRole('button', { name: 'Anmelden' }));
+    expect(supabaseMock.auth.signInWithPassword).toHaveBeenCalledWith({
+      email: 'anna@example.com',
+      password: 'geheim123',
+    });
+  });
+
+  it('sends a code when the password was forgotten', async () => {
+    const user = userEvent.setup();
+    await renderRouter('./app', { initialUrl: '/sign-in' });
+
+    await user.press(await screen.findByRole('radio', { name: 'Passwort' }));
+    await user.type(screen.getByLabelText('E-Mail-Adresse'), 'anna@example.com');
+    await user.press(screen.getByRole('button', { name: 'Passwort vergessen – Code senden' }));
+
+    expect(supabaseMock.auth.signInWithOtp).toHaveBeenCalledWith({
+      email: 'anna@example.com',
+      options: { shouldCreateUser: true },
+    });
+    expect(await screen.findByText(/Nach der Anmeldung kannst du unter Profil/)).toBeOnTheScreen();
+  });
+
   it('shows the legal pages without an account', async () => {
     await renderRouter('./app', { initialUrl: '/legal/imprint' });
 

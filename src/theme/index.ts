@@ -1,4 +1,4 @@
-export { colors, scrim, type ColorToken } from './colors';
+export { colors, glow, scrim, type ColorToken } from './colors';
 export { fontAssets, fontFamily } from './fonts';
 export { layout, motion, opacity } from './layout';
 export { radius } from './radius';
