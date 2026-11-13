@@ -94,3 +94,45 @@ Teilnehmer (wer weiter ist), aber keine Werte. Das ist bewusst so gewollt (Auftr
 - Lokal auf dem Handy werden die Sitzung und der Health-Status gelöscht. Die
   Health-Connect-Berechtigung selbst entzieht die App nicht automatisch; der Nutzer wird darauf
   hingewiesen.
+
+## 8. GPS-Läufe (Phase 8)
+
+**Was der Server prüft** (`public.sync_gps_run`, Migration `20261121090000_gps_runs.sql`):
+
+- Distanz und Zeit werden **aus den Rohpunkten neu berechnet**; Zahlen vom Handy werden nicht benutzt.
+- Punkte mit Genauigkeit über 50 m werden ignoriert. Ein Schritt schneller als 12 m/s (unter
+  2:19 min/km) ist ein „Sprung“ und wird nicht gezählt; drei oder mehr Sprünge machen den Lauf
+  ungültig (`gps_jump`). Ein Punkt, den das Handy als „mocked“ meldet, macht ihn ungültig
+  (`mock_location`).
+- Dieselben Tempogrenzen wie bei Health-Läufen (schneller als 2:30 oder langsamer als 15:00 min/km)
+  plus: mehr als 10 % der Strecke schneller als 2:05 min/km ist `too_fast` (Fahrrad).
+- Höchstens 20.000 Punkte pro Lauf und 30 Läufe pro 24 Stunden. Ein Lauf kann nicht nachträglich
+  geändert werden (feste `client_run_id`).
+- **Keine doppelte Zählung:** Überlappt ein gültiger Health-Lauf einen GPS-Lauf um mindestens die
+  Hälfte des kürzeren, zählt nur der Health-Lauf (der GPS-Lauf wird `duplicate`). Das wird nach jedem
+  Sync neu entschieden.
+
+**Datenschutz:** Die Rohstrecke (`gps_runs.route`) hat keinen direkten Client-Zugriff (RLS ohne
+Policy, keine Grants). Nur der Besitzer bekommt sie über `get_gps_run_route`, und dort **ohne die
+ersten und letzten 200 m**; unter 400 m gibt es keine Karte. Andere Teilnehmer sehen nur die Distanz.
+
+**Bekannte Grenzen (nicht gelöst):**
+
+- Die Mock-Erkennung nutzt das Flag `mocked` von Android. **iOS liefert dieses Flag über
+  `expo-location` nicht**; dort bleiben nur die Plausibilitätsregeln.
+- Ein manipulierter Client kann eine **erfundene, aber glaubwürdige Strecke** hochladen (gleichmäßiges
+  Tempo, echte Koordinaten). Die Regeln begrenzen das, beweisen aber nichts. Für virtuelle Credits
+  akzeptiert. **Vor echtem Geld:** App Attest (iOS) / Play Integrity (Android), Abgleich mit
+  Bewegungssensoren, höhere Hürden für Wiederholungen derselben Strecke.
+- Ein Lauf wird erst nach Ende hochgeladen. Stürzt die App ab, bleibt ein Zwischenstand (alle 30 s)
+  verschlüsselt auf dem Handy und wird beim nächsten Start zur Fortsetzung angeboten.
+
+## 9. Feed, Wochen-Challenge, Abzeichen (Phase 7)
+
+- Der Feed (`challenge_feed`) wird nur von Triggern geschrieben und ist nur für Teilnehmer lesbar;
+  Einträge enthalten Name, Art, bei Läufen die Distanz. Anfeuern: einmal pro Person und Eintrag
+  (Primärschlüssel), nicht bei eigenen Einträgen.
+- Wochen-Challenges legt nur `pg_cron` an (`create_weekly_challenge`, für Clients gesperrt); der
+  eindeutige `weekly_key` verhindert Doppelte.
+- Abzeichen und Level werden ausschließlich im Server vergeben; Clients können nur lesen und ein
+  Abzeichen als „gesehen“ markieren.

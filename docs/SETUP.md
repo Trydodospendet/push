@@ -481,6 +481,32 @@ Voraussetzungen wie in 5.7 (`npm run db:reset`). **Kein neuer Build nötig.**
 
 ---
 
+### 5.9 Neu seit Phase 7 und 8: neuer Development Build nötig
+
+Seit Phase 7 und 8 braucht die App vier weitere native Bausteine: `expo-notifications`
+(Erinnerungen), `expo-location` und `expo-task-manager` (GPS-Lauf) sowie
+`@maplibre/maplibre-react-native` (Karte). Ein **alter Development Build** kennt sie nicht – die App
+startet dann mit einem Fehler. Einmal neu bauen:
+
+```powershell
+npm install
+```
+
+```powershell
+eas build --profile development --platform android
+```
+
+Danach funktioniert alles wie bisher; Code-Änderungen brauchen weiterhin keinen neuen Build.
+
+**GPS-Lauf ausprobieren:** Home → „GPS-Lauf starten“ → Standort erlauben → ein paar hundert Meter
+gehen oder laufen (mindestens 400 m, sonst gibt es keine Karte) → „Stopp“ → „Speichern“. Der Lauf
+erscheint unter „Letzte Läufe“; ein Tippen öffnet die Karte (ohne die ersten und letzten 200 m).
+Zu langsames Gehen (langsamer als 15:00 min/km) zählt absichtlich nicht – für einen Test also zügig
+laufen. Mit einer Fake-GPS-App aufgezeichnet, muss der Lauf als „zählt nicht“ erscheinen.
+
+**Datenbank:** Nach `git pull` einmal `supabase db reset` (lokal) bzw. – erst wenn du es bewusst
+willst – die neuen Migrationen `20261118…` bis `20261121…` in die Cloud (Abschnitt 8).
+
 ## 6. Befehle im Überblick
 
 | Befehl              | Was er tut                                        |

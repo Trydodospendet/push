@@ -33,6 +33,8 @@ const privacySections: readonly LegalSection[] = [
       'Technische Daten: Bei jeder Verbindung zum Server werden IP-Adresse, Zeitpunkt und Art der Anfrage in Server-Protokollen des Hosting-Anbieters erfasst.',
       'Auf deinem Gerät: deine Anmeldung, der Verbindungsstatus zu den Gesundheitsdaten und deine Erinnerungs-Einstellungen (an/aus, Uhrzeit), gespeichert im verschlüsselten Gerätespeicher.',
       'Benachrichtigungen: Erinnerungen („Noch 2,3 km bis zum Ziel“, „Deine Challenge startet morgen“, „Dein Ergebnis ist da“) werden ausschließlich lokal auf deinem Handy geplant und angezeigt. Dafür wird kein Push-Server genutzt und es werden keine Daten an Dritte übermittelt. Du kannst sie im Profil oder in den Systemeinstellungen jederzeit ausschalten.',
+      'GPS-Läufe (nur wenn du einen Lauf in der App aufzeichnest): Während der Aufzeichnung speichert die App deine Position (Breiten- und Längengrad), den Zeitpunkt, die Genauigkeit und ob das Handy die Position als gefälscht meldet. Sie läuft bei gesperrtem Bildschirm weiter, bis du den Lauf beendest; Android zeigt dafür eine dauerhafte Benachrichtigung. Außerhalb eines Laufs wird dein Standort nicht erfasst. Nach dem Lauf wird die Strecke auf den Server übertragen; dort werden Distanz und Zeit neu berechnet und auf Fälschungen geprüft.',
+      'Die Strecke eines GPS-Laufs siehst ausschließlich du. Andere Teilnehmer sehen höchstens die Distanz. Auf der Karte in der App werden die ersten und letzten 200 Meter deiner Strecke ausgeblendet; diese Teile verlassen den Server nicht.',
     ],
   },
   {
@@ -59,13 +61,15 @@ const privacySections: readonly LegalSection[] = [
     paragraphs: [
       `Supabase Inc. (Datenbank, Anmeldung, Hosting). Serverstandort: ${LEGAL.supabaseRegion}. Mit Supabase besteht ein Vertrag zur Auftragsverarbeitung; für mögliche Zugriffe aus den USA gelten die EU-Standardvertragsklauseln.`,
       `${LEGAL.emailProvider} (Versand der Anmeldecodes per E-Mail; verarbeitet nur deine E-Mail-Adresse).`,
+      'OpenFreeMap (Kartenkacheln für die Streckenkarte, ohne Konto und ohne Werbung). Wenn du eine Karte öffnest, lädt dein Handy die Kartenausschnitte direkt von tiles.openfreemap.org; dabei sieht der Anbieter deine IP-Adresse und welcher Kartenausschnitt angezeigt wird, aber nicht, wer du bist. Deine Strecke wird dorthin nicht übertragen. Kartendaten: © OpenStreetMap-Mitwirkende, © OpenMapTiles.',
       'Google (Play Store) bzw. Apple (App Store) stellen die App bereit und verarbeiten dabei Daten in eigener Verantwortung.',
     ],
   },
   {
     title: '7. Speicherdauer',
     paragraphs: [
-      'Konto- und Gesundheitsdaten speichern wir, bis du dein Konto löschst.',
+      'Konto-, Gesundheits- und Streckendaten (GPS-Läufe) speichern wir, bis du dein Konto löschst; dann werden sie gelöscht.',
+      'Ein laufender oder noch nicht übertragener GPS-Lauf liegt verschlüsselt auf deinem Handy und wird nach der Übertragung dort gelöscht.',
       'Teilnahmen und Credit-Buchungen werden bei der Löschung anonymisiert: Der Bezug zu dir wird entfernt, die Beträge bleiben ohne Personenbezug erhalten, damit die Abrechnung der anderen Teilnehmer korrekt bleibt.',
       'Server-Protokolle werden vom Hosting-Anbieter nach kurzer Zeit automatisch gelöscht.',
       'Die Daten auf deinem Gerät werden beim Abmelden bzw. beim Löschen der App entfernt.',

@@ -140,10 +140,11 @@ Google nicht als „Teilen“.)
 | Personenbezogene Daten → **Name** (Anzeigename)                                   | Pflicht                                           | App-Funktionen, Kontoverwaltung |
 | Personenbezogene Daten → **Nutzer-IDs**                                           | Pflicht                                           | App-Funktionen, Kontoverwaltung |
 | Gesundheit und Fitness → **Fitnessinformationen** (Läufe, Distanz, Schritte)      | **Optional** (Verbinden kann übersprungen werden) | App-Funktionen                  |
+| Standort → **Genauer Standort** (nur während eines aufgezeichneten GPS-Laufs)     | **Optional** (nur für GPS-Läufe)                  | App-Funktionen                  |
 | App-Aktivitäten → **Sonstige nutzergenerierte Inhalte** (Challenge-Titel)         | Pflicht                                           | App-Funktionen                  |
 | App-Aktivitäten → **Sonstige Aktionen** (Teilnahmen, Einsätze virtueller Credits) | Pflicht                                           | App-Funktionen                  |
 
-**Nicht** angeben: Standort, Finanzinformationen (virtuelle Credits sind keine Finanzdaten), Fotos,
+**Nicht** angeben: Ungefährer Standort, Finanzinformationen (virtuelle Credits sind keine Finanzdaten), Fotos,
 Kontakte, Nachrichten, Geräte-IDs, Absturzberichte, Werbe-/Analysezwecke.
 
 ### 2.7 Gesundheits-Apps (Health apps declaration)
@@ -191,6 +192,39 @@ Challenge → Profil → Datenschutz. Link im Formular eintragen.
 
 Im Formular außerdem bestätigen, dass die Datenschutzerklärung die Health-Connect-Daten beschreibt
 und die „Limited Use“-Anforderungen erfüllt (Abschnitt 5 der Datenschutzerklärung).
+
+### 2.8a Standort, Vordergrunddienst und „Standort im Hintergrund“ (GPS-Läufe, Phase 8)
+
+Die App zeichnet auf Wunsch einen Lauf per GPS auf (`expo-location`), auch bei gesperrtem
+Bildschirm. Wichtig für die Play Console:
+
+- **Angefordert werden:** `ACCESS_FINE_LOCATION`, `ACCESS_COARSE_LOCATION` (Standort, solange die
+  App benutzt wird), `FOREGROUND_SERVICE` und `FOREGROUND_SERVICE_LOCATION` (Vordergrunddienst
+  mit sichtbarer Benachrichtigung).
+- **Nicht angefordert wird `ACCESS_BACKGROUND_LOCATION`** („Standort immer“). Der Lauf wird
+  immer in der geöffneten App gestartet und läuft dann als Vordergrunddienst weiter; dafür
+  braucht Android keine Hintergrund-Standortberechtigung. Deshalb ist die **Erklärung
+  „Standortzugriff im Hintergrund“ nicht nötig** (Formular: „Berechtigungen für den Standortzugriff
+  → Nein, die App greift nicht im Hintergrund auf den Standort zu“). Prüfe nach dem Hochladen des
+  Builds, dass die Play Console diese Berechtigung nicht im Manifest findet.
+- **Formular „Vordergrunddienste“** (Richtlinien → App-Inhalte): Aufgabe **Standort** (Foreground
+  service type `location`) auswählen. Beschreibung:
+
+```
+Nutzer zeichnen in der App einen Lauf mit GPS auf (Start, Pause, Stopp). Der Vordergrunddienst vom Typ "Standort" hält die Aufzeichnung am Laufen, während das Handy in der Tasche steckt und der Bildschirm gesperrt ist. Er wird nur durch den Nutzer in der geöffneten App gestartet, zeigt während des Laufs eine dauerhafte Benachrichtigung und endet, sobald der Nutzer den Lauf beendet. Ohne den Dienst bricht Android die Standortaufzeichnung ab, sobald die App nicht mehr sichtbar ist, und die Strecke wäre unvollständig.
+```
+
+- **Video** (verlangt Google für Vordergrunddienste): kurze, nicht gelistete Aufnahme: GPS-Lauf
+  öffnen → Erklärtext → „Lauf starten“ → Standort-Dialog → Bildschirm sperren → Benachrichtigung
+  sichtbar → Bildschirm entsperren → „Stopp“ → „Speichern“.
+- **Falls du später doch `ACCESS_BACKGROUND_LOCATION` ergänzt** (z. B. um Läufe ohne geöffnete App zu
+  starten): dann ist die Erklärung „Standortzugriff im Hintergrund“ Pflicht, mit Video und diesem
+  Text: _„Die Hintergrundposition wird nur während eines vom Nutzer gestarteten Laufs genutzt, um die
+  Strecke bei gesperrtem Bildschirm aufzuzeichnen. Es gibt keine Aufzeichnung außerhalb eines
+  Laufs.“_ Auch die Datenschutzerklärung müsste dann angepasst werden.
+- **Standort in der Datensicherheit:** siehe 2.6 (genauer Standort, optional, nicht geteilt).
+- **Karten:** Die Streckenkarte lädt Kacheln von `tiles.openfreemap.org` (kein Schlüssel, kein Konto).
+  Das steht in der Datenschutzerklärung (Abschnitt 6).
 
 ### 2.9 Weitere Erklärungen
 
@@ -360,8 +394,8 @@ Das Restguthaben im Wallet verfällt mit dem Konto (virtuelle Credits).
   Inhaltseinstufung, die Richtlinie zu Echtgeld-Glücksspiel und die Rechtstexte neu bewertet werden.
 - **iPhone / App Store:** braucht das Apple Developer Program (99 USD/Jahr); der Apple-Health-Code ist
   noch nicht auf einem Gerät getestet.
-- **Erinnerungen per Benachrichtigung** (`expo-notifications`): wäre eine neue native Bibliothek und
-  ist deshalb in dieser Phase nicht enthalten.
+- **Erinnerungen per Benachrichtigung** (`expo-notifications`) gibt es seit Phase 7, nur lokal auf dem
+  Handy (kein Push-Server). Android 13+ fragt beim Einschalten in der App nach der Erlaubnis.
 
 ---
 
