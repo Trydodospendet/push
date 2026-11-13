@@ -135,6 +135,29 @@ const imprintSections: readonly LegalSection[] = [
 
 /** All user-facing texts of the app. Screens and components never hard-code strings. */
 export const de = {
+  improvements: {
+    startDate: 'Startdatum (JJJJ-MM-TT)',
+    endDate: 'Letzter Tag (JJJJ-MM-TT)',
+    datesHint:
+      'Heute bis maximal 30 Tage im Voraus starten; bis zu 31 Tage Laufzeit. Für Freunde einen Start ab morgen wählen.',
+    together: 'Mit Freunden',
+    alone: 'Für mich',
+    invalidDates: 'Bitte gültige Daten wählen. Mit Freunden muss der Start frühestens morgen sein.',
+    running: 'Laufen',
+    wallet: 'Wallet',
+    pool: 'Community-Übersicht',
+    km: 'Eigene Kilometer (z. B. 7,5)',
+    steps: 'Eigene Schrittzahl',
+    trainingTitle: 'Dein erster Schritt zu etwas Großem!',
+    trainingQuote: 'Du musst nicht perfekt starten. Du musst nur anfangen.',
+    slides: [
+      'Ein Trainingsplan führt dich Schritt für Schritt zu deinem Laufziel.',
+      'Drei Einheiten pro Woche steigern deine Ausdauer. Erholung gehört genauso dazu.',
+      'Deine erfassten Läufe zeigen deinen Fortschritt. Deinen aktiven Plan findest du jederzeit auf Home.',
+    ],
+    next: 'Weiter',
+    choose: 'Plan auswählen',
+  },
   common: {
     loading: 'Wird geladen',
     retry: 'Erneut versuchen',
@@ -1045,7 +1068,7 @@ export const de = {
     faq: [
       {
         q: 'Wie funktioniert PUSH?',
-        a: 'Auf Home tippst du „Ziel setzen“: Lauf oder Schritte, Zielwert, Zeitraum und Einsatz. Ein Tagesziel kannst du heute bis Mitternacht setzen; bereits erfasste Schritte von heute zählen mit. Deine Läufe und Schritte werden automatisch aus Health Connect bzw. Apple Health übernommen (oder du zeichnest einen Lauf im Tab Aktivität auf). Den Fortschritt siehst du auf Home, das Ergebnis nach der Abrechnung.',
+        a: 'Auf Home tippst du „Ziel setzen“: Lauf oder Schritte, Zielwert, Zeitraum und Einsatz. Du kannst eigene Kilometer- oder Schrittwerte und Start- sowie Enddatum eingeben. Für ein Ziel mit Freunden wählst du einen Start ab morgen und teilst anschließend den Einladungscode. Ein Tagesziel kannst du heute bis Mitternacht setzen; bereits erfasste Schritte von heute zählen mit. Deine Läufe und Schritte werden automatisch aus Health Connect bzw. Apple Health übernommen (oder du zeichnest einen Lauf im Tab Laufen auf). Den Fortschritt siehst du auf Home, das Ergebnis nach der Abrechnung.',
       },
       {
         q: 'Was sind Credits?',
@@ -1069,7 +1092,7 @@ export const de = {
       },
       {
         q: 'Wofür sind Pool und Ranked da?',
-        a: 'Der Pool zeigt die Anzahl der Personen in offenen oder laufenden Zielen und die dort gebundenen Credits. Ob jemand gerade läuft, lässt sich nicht feststellen. Ranked sind feste Ranglisten ohne Einsatz (meiste Kilometer, meiste Schritte – täglich, wöchentlich, monatlich) mit Punkten und Abzeichen, dazu Freunde und Liga. Eigene Ranglisten kannst du nicht erstellen.',
+        a: 'Wallet und Community-Übersicht findest du im Profil. Der Pool zeigt die Anzahl der Personen in offenen oder laufenden Zielen und die dort gebundenen Credits. Ob jemand gerade läuft, lässt sich nicht feststellen. Ranked sind feste Ranglisten ohne Einsatz (meiste Kilometer, meiste Schritte – täglich, wöchentlich, monatlich) mit Punkten und Abzeichen, dazu Freunde und Liga. Eigene Ranglisten kannst du nicht erstellen.',
       },
       {
         q: 'Kann ich meinen Gewinn spenden?',

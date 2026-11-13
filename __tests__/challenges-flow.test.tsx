@@ -92,7 +92,8 @@ async function openChallenge(id: string) {
 
 async function openPoolTab(user: ReturnType<typeof userEvent.setup>) {
   await renderRouter('./app', { initialUrl: '/' });
-  await user.press(await screen.findByRole('button', { name: 'Pool' }));
+  await user.press(await screen.findByRole('button', { name: 'Profil' }));
+  await user.press(await screen.findByRole('button', { name: /^Community-Übersicht\./ }));
 }
 
 beforeEach(() => {
@@ -193,7 +194,9 @@ describe('challenges', () => {
 
     expect(await screen.findByText('Ein Lauf über mindestens 5 km')).toBeOnTheScreen();
     expect(
-      screen.getByText('• Manuelle Einträge zählen nicht – nur automatisch aufgezeichnete Daten.'),
+      screen.getByText(
+        '• Manuelle Einträge zählen nicht – nur automatisch aufgezeichnete Daten.',
+      ),
     ).toBeOnTheScreen();
     expect(
       screen.getByText('Die Teilnehmerliste siehst du, sobald du dabei bist.'),
@@ -331,7 +334,8 @@ describe('challenges', () => {
     mockRpc();
 
     await renderRouter('./app', { initialUrl: '/' });
-    await user.press(await screen.findByRole('button', { name: 'Wallet' }));
+    await user.press(await screen.findByRole('button', { name: 'Profil' }));
+    await user.press(await screen.findByRole('button', { name: /^Wallet\./ }));
 
     expect(await screen.findByLabelText('Guthaben: 90,00 Credits')).toBeOnTheScreen();
     await waitFor(() =>

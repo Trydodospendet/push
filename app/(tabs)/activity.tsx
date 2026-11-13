@@ -16,6 +16,7 @@ import { DEFAULT_TIMEZONE } from '@/config/app';
 import { useMyProfile } from '@/features/auth/api';
 import { useSession } from '@/features/auth/auth-provider';
 import { formatSteps } from '@/features/challenges/format';
+import { HistoryMap } from '@/features/gps/history-map';
 import { RunList } from '@/features/gps/run-list';
 import { activityKeys, useRecentWorkouts, type RecentWorkout } from '@/features/health/api';
 import { reasonText } from '@/features/health/activity-list';
@@ -190,6 +191,7 @@ export default function ActivityScreen() {
         <Text variant="label" color="textSecondary" accessibilityRole="header">
           {de.activityTab.gpsRuns}
         </Text>
+        <HistoryMap />
         <RunList timezone={timezone} />
       </View>
     </Screen>

@@ -1,5 +1,17 @@
 # Übergabe – Branch `ausbau`
 
+## Aktueller Ausbau: freie Ziele und Navigation
+
+- Cloud-Schema read-only geprüft: `create_goal` in der Cloud setzt bei heute `starts_at = now()` und ruft danach `private.join` auf. Das erklärt `challenge_not_open`; die bisherige Migrationsliste hatte diese Funktionsabweichung nicht erkannt.
+- Neue Migration `20261130120000_flexible_goals.sql`: Eigentümer-Buchung atomar bei Erstellung, neue RPC für Start-/Enddatum und private Freundesziele. Beispiel 3 km / heute / 20 Credits lokal geprüft. Cloud-Anwendung steht aus; Dry-run listet genau diese eine Migration.
+- Eigene Kilometer (auch Kommazahlen) und Schritte, Datumseingaben, Freundesziele per Einladungscode. Start innerhalb 30 Tagen, Dauer bis 31 Tage; Freundesziele starten frühestens morgen, damit Freunde vor Start beitreten können.
+- Vier Tabs: Home, Laufen, Ranked, Profil. Wallet und Community sind separate Unterseiten im Profil. Laufen zeigt letzte GPS-Strecke plus Verlauf und Detailkarten.
+- Demo mit 20 Personen in den Ranked-Details, nach Zeitraum und km/Schritten angepasst; weiterhin nur Development und keine echten Konten/Buchungen.
+- Trainingsplan: drei Einstiegsseiten, Konfetti/Motivation nach erfolgreichem Speichern, aktiver Plan auf Home.
+- GPS-Fehler auf dem Gerät weiterhin nicht reproduziert/behoben bestätigt. Cloud-Funktion und Grants vorhanden, lokale GPS-Tests grün. Nutzer meldete keinen technischen Zusatztext. Fehlertext wird jetzt auch ohne `__DEV__` angezeigt; nach Cache-Neustart genaue Meldung erheben. Keine fremden Strecken auslesen.
+- Prüfungen: Typecheck und Lint erfolgreich; 283 Jest-Tests erfolgreich (40 Suites im Gesamtlauf, letzte betroffene App-Flow-Suite separat erneut grün), 547 pgTAP-Prüfungen in 20 Dateien erfolgreich.
+- Weitere Vorschläge stehen in [IDEEN.md](IDEEN.md), nicht ohne Nutzerentscheidung umsetzen.
+
 ## Fertig
 
 - Phasen 6–8: Design, Community, Erinnerungen, Abzeichen und GPS-Aufzeichnung.

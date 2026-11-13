@@ -23,6 +23,7 @@ import {
 import { ChallengeFacts } from '@/features/challenges/challenge-facts';
 import { ChallengeStartCelebration } from '@/features/challenges/challenge-start-celebration';
 import {
+  rankedCycle,
   challengeDays,
   describeGoal,
   formatFee,
@@ -40,6 +41,7 @@ import { JoinSheet } from '@/features/challenges/join-sheet';
 import { ChallengeDonationCard } from '@/features/donations/donation-cards';
 import { useMyChallengeResult, type ChallengeResult } from '@/features/donations/api';
 import { ChallengeFeed } from '@/features/feed/challenge-feed';
+import { RankedDemoPreview } from '@/features/challenges/ranked-demo-preview';
 import { Leaderboard } from '@/features/challenges/leaderboard';
 import type { Challenge, Participant } from '@/features/challenges/types';
 import { ActivityList } from '@/features/health/activity-list';
@@ -228,6 +230,12 @@ function ChallengeDetail({
 
       <ChallengeFacts challenge={challenge} />
 
+      {ranked ? (
+        <RankedDemoPreview
+          metric={rankedCycle(challenge)?.metric}
+          cycle={rankedCycle(challenge)?.cycle}
+        />
+      ) : null}
       {challenge.invite_code && !goal ? (
         <Card style={styles.inviteCard}>
           <Text variant="label" color="textSecondary">

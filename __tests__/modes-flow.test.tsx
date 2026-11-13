@@ -245,7 +245,8 @@ describe('ranked', () => {
     expect(await screen.findAllByRole('button', { name: /^Team-Lauf, / })).toHaveLength(1);
     expect(screen.queryByRole('button', { name: /^Nur für mich, / })).toBeNull();
 
-    await user.press(screen.getByRole('button', { name: 'Pool' }));
+    await user.press(await screen.findByRole('button', { name: 'Profil' }));
+    await user.press(await screen.findByRole('button', { name: /^Community-Übersicht\./ }));
     expect(await screen.findByRole('button', { name: /^Nur für mich, / })).toBeOnTheScreen();
   });
 });

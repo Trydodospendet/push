@@ -13,6 +13,7 @@ import {
   Sheet,
   Text,
 } from '@/components';
+import { ChallengeStartCelebration } from '@/features/challenges/challenge-start-celebration';
 import { DEFAULT_TIMEZONE } from '@/config/app';
 import { useSession } from '@/features/auth/auth-provider';
 import { formatKm } from '@/features/gps/format';
@@ -31,11 +32,16 @@ export default function TrainingScreen() {
   const active = useActivePlan(userId);
   const setPlan = useSetActivePlan(userId);
   const sessions = useTrainingSessions(userId, active.data);
+  const [slide, setSlide] = useState(0);
+  const [celebrate, setCelebrate] = useState(false);
   const [confirmStop, setConfirmStop] = useState(false);
 
   const start = (planId: PlanId) => {
     const today = toLocalDate(new Date(), DEFAULT_TIMEZONE);
-    setPlan.mutate({ planId, startMonday: nextMonday(today) });
+    setPlan.mutate(
+      { planId, startMonday: nextMonday(today) },
+      { onSuccess: () => setCelebrate(true) },
+    );
   };
 
   return (
@@ -52,6 +58,19 @@ export default function TrainingScreen() {
           sessions={sessions}
           onStop={() => setConfirmStop(true)}
         />
+      ) : slide < de.improvements.slides.length ? (
+        <Card style={styles.card}>
+          <Text variant="heading">{`${slide + 1} / ${de.improvements.slides.length}`}</Text>
+          <Text>{de.improvements.slides[slide]}</Text>
+          <Button
+            label={
+              slide === de.improvements.slides.length - 1
+                ? de.improvements.choose
+                : de.improvements.next
+            }
+            onPress={() => setSlide(slide + 1)}
+          />
+        </Card>
       ) : (
         <FadeIn style={styles.section}>
           <Text color="textSecondary">{de.training.intro}</Text>
@@ -78,6 +97,13 @@ export default function TrainingScreen() {
         </FadeIn>
       )}
 
+      <ChallengeStartCelebration
+        visible={celebrate}
+        onClose={() => setCelebrate(false)}
+        title={de.improvements.trainingTitle}
+        message={de.improvements.trainingQuote}
+      />
+      {setPlan.isError ? <ErrorState message={de.training.error} /> : null}
       <Sheet
         visible={confirmStop}
         title={de.training.stopTitle}

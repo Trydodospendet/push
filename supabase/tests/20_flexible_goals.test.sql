@@ -1,0 +1,15 @@
+begin;
+create extension if not exists pgtap with schema extensions;
+select plan(7);
+insert into auth.users (id,email,aud,role) values ('00000000-0000-4000-8000-000000000021','flexible@pgtap.test','authenticated','authenticated');
+set local role authenticated;
+select set_config('request.jwt.claims','{"sub":"00000000-0000-4000-8000-000000000021","role":"authenticated"}',true);
+select lives_ok($$select public.create_scheduled_goal('Heute drei Kilometer','run_total',3000,2000,(now() at time zone 'Europe/Berlin')::date,(now() at time zone 'Europe/Berlin')::date,false)$$,'today goal can book 20 credits');
+select is((select balance_cents from public.wallets where user_id=auth.uid()),8000::bigint,'exactly one stake deducted');
+select is((select starts_at from public.challenges where creator_id=auth.uid()),now(),'today starts immediately');
+select throws_ok($$select public.leave_challenge((select id from public.challenges where creator_id=auth.uid()))$$,'P0001','challenge_not_open','immediate goal stake cannot be withdrawn');
+select lives_ok($$select public.create_scheduled_goal('Eigene Strecke','run_total',7500,100,current_date+2,current_date+9,false)$$,'custom target and dates accepted');
+select lives_ok($$select public.create_scheduled_goal('Mit Freunden','run_total',7500,100,current_date+2,current_date+9,true)$$,'private friend goal accepted');
+select throws_ok($$select public.create_scheduled_goal('Falscher Zeitraum','run_total',7500,100,current_date+3,current_date+2,false)$$,'P0001','invalid_start_date','reversed interval rejected');
+select * from finish();
+rollback;

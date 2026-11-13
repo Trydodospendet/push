@@ -27,6 +27,9 @@ export const createGoalSchema = z
     targetValue: z.int(),
     stakeCents: z.int().min(STAKE_MIN_CENTS).max(STAKE_MAX_CENTS),
     period: z.enum(GOAL_PERIODS),
+    startDate: z.string().optional(),
+    endDate: z.string().optional(),
+    withFriends: z.boolean().optional(),
   })
   .refine(
     ({ goalType, targetValue }) =>

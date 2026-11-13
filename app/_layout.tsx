@@ -163,6 +163,24 @@ function AppStack({ isSignedIn, isOnboarded }: { isSignedIn: boolean; isOnboarde
       </Stack.Protected>
       <Stack.Protected guard={isSetUp} redirectTo={home}>
         <Stack.Screen name="(tabs)" />
+        <Stack.Screen
+          name="wallet"
+          options={{
+            headerShown: true,
+            title: de.tabs.wallet,
+            headerStyle: { backgroundColor: colors.bg },
+            headerTintColor: colors.text,
+          }}
+        />
+        <Stack.Screen
+          name="pool"
+          options={{
+            headerShown: true,
+            title: de.improvements.pool,
+            headerStyle: { backgroundColor: colors.bg },
+            headerTintColor: colors.text,
+          }}
+        />
         <Stack.Screen name="challenge" />
         <Stack.Screen name="how-it-works" />
         <Stack.Screen name="run" />

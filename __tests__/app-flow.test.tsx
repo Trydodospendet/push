@@ -1,4 +1,5 @@
-import { userEvent } from '@testing-library/react-native';
+import { router } from 'expo-router';
+import { act, userEvent } from '@testing-library/react-native';
 import { renderRouter, screen, waitFor } from 'expo-router/testing-library';
 
 jest.mock('@/lib/supabase');
@@ -196,14 +197,15 @@ describe('app flow', () => {
 
     expect(await screen.findByText('Noch kein Ziel')).toBeOnTheScreen();
 
-    await user.press(screen.getByRole('button', { name: 'Wallet' }));
+    await user.press(await screen.findByRole('button', { name: 'Profil' }));
+    await user.press(await screen.findByRole('button', { name: /^Wallet\./ }));
     expect(await screen.findByLabelText('Guthaben: 100,00 Credits')).toBeOnTheScreen();
     expect(supabaseMock.from).toHaveBeenCalledWith('wallets');
     expect(
       screen.getByText('Testphase: Credits sind virtuell und können nicht ausgezahlt werden.'),
     ).toBeOnTheScreen();
 
-    await user.press(screen.getByRole('button', { name: 'Profil' }));
+    await act(async () => router.back());
     expect(await screen.findByText('Anna Lauf')).toBeOnTheScreen();
     expect(screen.getByText('anna@example.com')).toBeOnTheScreen();
 

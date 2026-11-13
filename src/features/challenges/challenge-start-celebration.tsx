@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Button, Icon, Text } from '@/components';
+import { Button, Confetti, Icon, Text } from '@/components';
 import { hapticSuccess } from '@/features/preferences/haptics';
 import { de } from '@/i18n/de';
 import { colors, motion, radius, spacing } from '@/theme';
@@ -18,7 +18,11 @@ import { colors, motion, radius, spacing } from '@/theme';
 export function ChallengeStartCelebration({
   visible,
   onClose,
+  title = de.challengeStart.title,
+  message,
 }: {
+  title?: string;
+  message?: string;
   visible: boolean;
   onClose: () => void;
 }) {
@@ -78,22 +82,23 @@ export function ChallengeStartCelebration({
         accessibilityViewIsModal
       >
         <View style={styles.center}>
+          <Confetti />
           <Animated.View style={[styles.badge, { transform: [{ scale: badgeScale }] }]}>
             <Icon name="rocket" color="onAccent" size={48} />
           </Animated.View>
           <Animated.View
             style={[styles.copy, { opacity: textOpacity, transform: [{ translateY: textShift }] }]}
             accessible
-            accessibilityLabel={`${de.challengeStart.title}. ${quote}`}
+            accessibilityLabel={`${title}. ${message ?? quote}`}
           >
             <Text variant="title" align="center" accessibilityRole="header">
-              {de.challengeStart.title}
+              {title}
             </Text>
             <Text color="textSecondary" align="center">
               {de.challengeStart.subtitle}
             </Text>
             <Text variant="heading" color="accent" align="center">
-              {`„${quote}“`}
+              {`„${message ?? quote}“`}
             </Text>
           </Animated.View>
         </View>

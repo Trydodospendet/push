@@ -14,6 +14,7 @@ import { ProgressSummary } from '@/features/health/progress-summary';
 import { HealthBanner, useLastSyncText } from '@/features/health/sync-status';
 import { RecentWins, StreakAndWeek } from '@/features/stats/home-sections';
 import { statsKeys } from '@/features/stats/api';
+import { useActivePlan } from '@/features/training/api';
 import { de } from '@/i18n/de';
 import { colors, opacity, spacing } from '@/theme';
 
@@ -25,6 +26,7 @@ export default function HomeScreen() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const session = useSession();
+  const activePlan = useActivePlan(session.user.id);
   const health = useHealth();
   const mine = useMyChallenges(session.user.id);
   const progress = useMyProgress(session.user.id);
@@ -56,6 +58,12 @@ export default function HomeScreen() {
     );
   }
 
+  const trainingCard = activePlan.data ? (
+    <Card>
+      <Text variant="heading">{de.training.plans[activePlan.data.planId].name}</Text>
+      <Button label={de.training.homeButton} onPress={() => router.push('/training')} />
+    </Card>
+  ) : null;
   const setGoal = (
     <Button label={de.home.setGoal} onPress={() => router.push('/challenge/create')} />
   );
@@ -81,6 +89,7 @@ export default function HomeScreen() {
         </Card>
         <HealthBanner />
         <StreakAndWeek userId={session.user.id} />
+        {trainingCard}
         <RecentWins userId={session.user.id} timezone={timezone} />
       </Screen>
     );
@@ -153,6 +162,7 @@ export default function HomeScreen() {
         </View>
       ) : null}
       <StreakAndWeek userId={session.user.id} />
+      {trainingCard}
       <RecentWins userId={session.user.id} timezone={timezone} />
     </Screen>
   );

@@ -2,7 +2,7 @@ import { Stack, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { Button, ChipGroup, Screen, Sheet, Text, type ChipOption } from '@/components';
+import { Button, ChipGroup, Screen, Sheet, Text, TextField, type ChipOption } from '@/components';
 import {
   DEFAULT_TIMEZONE,
   GOAL_PERIODS,
@@ -60,16 +60,23 @@ export default function SetGoalScreen() {
 
   const [goalType, setGoalType] = useState<GoalType>('run_total');
   const [targetValue, setTargetValue] = useState(DEFAULT_TARGET.run_total);
+  const [customTarget, setCustomTarget] = useState('');
   const [period, setPeriod] = useState<GoalPeriod>('week');
   const [stakeCents, setStakeCents] = useState<number>(1_000);
   const [confirming, setConfirming] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const { first, last } = goalPeriodDays(today, period);
-  const label = periodLabel(period, first, last);
+  const presetDates = goalPeriodDays(today, period);
+  const [startDate, setStartDate] = useState('');
+  const [endDate, setEndDate] = useState('');
+  const [withFriends, setWithFriends] = useState(false);
+  const first = startDate || presetDates.first;
+  const last = endDate || presetDates.last;
+  const label = startDate || endDate ? `${first} – ${last}` : periodLabel(period, first, last);
   const title = `${suggestTitle(goalType, targetValue)} · ${label}`;
   // The settlement follows 24 hours after the period ended (time to synchronise).
-  const settlementDay = addDays(last, 2);
+  const settlementDay =
+    /^\d{4}-\d{2}-\d{2}$/.test(last) && !Number.isNaN(Date.parse(last)) ? addDays(last, 2) : today;
 
   const goalOptions: ChipOption<GoalType>[] = GOAL_TYPES.map((type) => ({
     value: type,
@@ -90,7 +97,33 @@ export default function SetGoalScreen() {
   }));
 
   const openConfirmation = () => {
-    const result = createGoalSchema.safeParse({ title, goalType, targetValue, stakeCents, period });
+    const validDate = (value: string) =>
+      /^\d{4}-\d{2}-\d{2}$/.test(value) &&
+      !Number.isNaN(Date.parse(value)) &&
+      new Date(value).toISOString().slice(0, 10) === value;
+    if (
+      !validDate(first) ||
+      !validDate(last) ||
+      first < today ||
+      first > addDays(today, 30) ||
+      last < first ||
+      last > addDays(first, 30) ||
+      (withFriends && first <= today)
+    ) {
+      setError(de.improvements.invalidDates);
+      return;
+    }
+
+    const result = createGoalSchema.safeParse({
+      title,
+      goalType,
+      targetValue,
+      stakeCents,
+      period,
+      startDate: first,
+      endDate: last,
+      withFriends,
+    });
     if (!result.success) {
       setError(result.error.issues[0]?.message ?? de.create.invalidInput);
       return;
@@ -100,7 +133,16 @@ export default function SetGoalScreen() {
   };
 
   const confirm = () => {
-    const result = createGoalSchema.safeParse({ title, goalType, targetValue, stakeCents, period });
+    const result = createGoalSchema.safeParse({
+      title,
+      goalType,
+      targetValue,
+      stakeCents,
+      period,
+      startDate: first,
+      endDate: last,
+      withFriends,
+    });
     if (!result.success) {
       setError(de.create.invalidInput);
       return;
@@ -128,24 +170,55 @@ export default function SetGoalScreen() {
         onChange={(type: GoalType) => {
           setGoalType(type);
           setTargetValue(DEFAULT_TARGET[type]);
+          setCustomTarget('');
         }}
       />
       <ChipGroup
         label={de.create.target}
         options={targetOptions}
         value={targetValue}
-        onChange={setTargetValue}
+        onChange={(value) => {
+          setTargetValue(value);
+          setCustomTarget('');
+        }}
+      />
+      <TextField
+        label={goalType.startsWith('run') ? de.improvements.km : de.improvements.steps}
+        keyboardType="decimal-pad"
+        value={customTarget}
+        onChangeText={(value) => {
+          setCustomTarget(value);
+          setTargetValue(
+            Math.round(Number(value.replace(',', '.')) * (goalType.startsWith('run') ? 1000 : 1)),
+          );
+        }}
       />
       <ChipGroup
         label={de.create.period}
         options={periodOptions}
         value={period}
-        onChange={setPeriod}
+        onChange={(value) => {
+          setPeriod(value);
+          setStartDate('');
+          setEndDate('');
+        }}
       />
-      {period === 'day' ? <Text color="textSecondary">{de.create.todayHint}</Text> : null}
-      <Text color="textSecondary">
-        {de.create.summary(formatDayLabel(first), formatDayLabel(last))}
-      </Text>
+      <TextField label={de.improvements.startDate} value={first} onChangeText={setStartDate} />
+      <TextField label={de.improvements.endDate} value={last} onChangeText={setEndDate} />
+      <Text color="textMuted">{de.improvements.datesHint}</Text>
+      <ChipGroup
+        label={de.improvements.together}
+        value={withFriends ? 'friends' : 'alone'}
+        options={[
+          { value: 'alone', label: de.improvements.alone },
+          { value: 'friends', label: de.improvements.together },
+        ]}
+        onChange={(value) => setWithFriends(value === 'friends')}
+      />
+      {period === 'day' && first === today ? (
+        <Text color="textSecondary">{de.create.todayHint}</Text>
+      ) : null}
+      <Text color="textSecondary">{de.create.summary(first, last)}</Text>
       <View style={styles.group}>
         <ChipGroup
           label={de.create.stake}
@@ -180,9 +253,7 @@ export default function SetGoalScreen() {
         <Text>{de.create.confirmStake(stake)}</Text>
         <Text color="textSecondary">{de.create.confirmReturn(formatDayLabel(settlementDay))}</Text>
         <Text color="textSecondary">{de.create.confirmMissed}</Text>
-        <Text color="accent">
-          {de.create.confirmBound(formatDayLabel(first), period === 'day')}
-        </Text>
+        <Text color="accent">{de.create.confirmBound(first, first === today)}</Text>
         {balance.data !== undefined ? (
           <Text variant="caption" color="textSecondary">
             {de.joinSheet.balance(formatAmount(balance.data))}

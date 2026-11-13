@@ -22,6 +22,8 @@ import { toUserMessage } from '@/lib/errors';
 import { spacing } from '@/theme';
 
 type Target =
+  | '/wallet'
+  | '/pool'
   | '/settings/account'
   | '/settings/privacy'
   | '/settings/notifications'
@@ -36,6 +38,16 @@ const GROUPS: readonly {
   icon: Parameters<typeof SettingsRow>[0]['icon'];
   text: { label: string; detail: string };
 }[] = [
+  {
+    target: '/wallet',
+    icon: 'wallet-outline',
+    text: { label: de.improvements.wallet, detail: de.common.virtualCreditsNotice },
+  },
+  {
+    target: '/pool',
+    icon: 'flag-outline',
+    text: { label: de.improvements.pool, detail: de.tabs.pool },
+  },
   { target: '/settings/account', icon: 'person-circle-outline', text: de.settings.account },
   { target: '/settings/privacy', icon: 'eye-off-outline', text: de.settings.privacy },
   {

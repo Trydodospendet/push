@@ -40,17 +40,9 @@ export default function TabsLayout() {
         <Tabs.Screen
           name="activity"
           options={{
-            title: de.tabs.activity,
+            title: de.improvements.running,
             tabBarAccessibilityLabel: de.tabs.activity,
             tabBarIcon: tabIcon('walk-outline', 'walk'),
-          }}
-        />
-        <Tabs.Screen
-          name="pool"
-          options={{
-            title: de.tabs.pool,
-            tabBarAccessibilityLabel: de.tabs.pool,
-            tabBarIcon: tabIcon('flag-outline', 'flag'),
           }}
         />
         <Tabs.Screen
@@ -59,14 +51,6 @@ export default function TabsLayout() {
             title: de.tabs.ranked,
             tabBarAccessibilityLabel: de.tabs.ranked,
             tabBarIcon: tabIcon('trophy-outline', 'trophy'),
-          }}
-        />
-        <Tabs.Screen
-          name="wallet"
-          options={{
-            title: de.tabs.wallet,
-            tabBarAccessibilityLabel: de.tabs.wallet,
-            tabBarIcon: tabIcon('wallet-outline', 'wallet'),
           }}
         />
         <Tabs.Screen

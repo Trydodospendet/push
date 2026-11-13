@@ -802,3 +802,24 @@ eas build --platform android --profile production
 
 Alles, was danach in der Play Console auszufüllen ist (inkl. fertiger Texte), steht in
 **`docs/RELEASE.md`**.
+
+
+## Freie Ziele und neue Navigation
+
+Nach diesem Ausbau ist `20261130120000_flexible_goals.sql` in der Cloud nötig. Kein neues natives Modul, kein neuer Development Build. Der Agent darf gemäß CLAUDE.md die Cloud-Migration nicht ausführen.
+
+PowerShell öffnen: `Win + R`, `powershell`, Enter. Nach Prüfung des Dry-runs und des Backups führt der Nutzer die Migration aus:
+
+```powershell
+cd "$HOME\Desktop\PUSH"
+npx supabase db push --remote --dry-run
+npx supabase db push --remote
+```
+
+Erwartet wird nur `20261130120000_flexible_goals.sql`. Den laufenden Expo-Server mit Strg+C beenden und im sichtbaren PowerShell-Fenster neu starten:
+
+```powershell
+npm run start:cloud -- --clear
+```
+
+QR-Code scannen. Heute 3 km mit 20 Credits prüfen, eigene Werte/Datumsbereiche ausprobieren, Freundesziel ab morgen erstellen und Code teilen. Wallet/Community im Profil, Ranglisten-Beispiele innerhalb der Ranked-Details. Beim Trainingsplan zunächst Einführung durchgehen, Plan starten und Home ansehen. Falls GPS-Liste fehlschlägt: den nun sichtbaren technischen Fehlertext mitteilen; dieser Fehler ist noch nicht als behoben bestätigt.

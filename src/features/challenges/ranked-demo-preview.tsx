@@ -30,11 +30,24 @@ const participants = [
 ] as const;
 
 /** Local-only sample leaderboard; never uses or inserts backend accounts or credits. */
-export function RankedDemoPreview() {
+export function RankedDemoPreview({
+  metric = 'km',
+  cycle = 'day',
+}: {
+  metric?: 'km' | 'steps';
+  cycle?: 'day' | 'week' | 'month';
+}) {
   if (!__DEV__) {
     return null;
   }
 
+  const valueLabel = (distance: string) => {
+    const value =
+      Number(distance.replace(',', '.')) * (cycle === 'month' ? 10 : cycle === 'week' ? 3 : 1);
+    return metric === 'steps'
+      ? `${Math.round(value * 1000).toLocaleString('de-DE')} ${de.improvements.steps}`
+      : de.challenges.demoDistance(value.toLocaleString('de-DE', { maximumFractionDigits: 1 }));
+  };
   return (
     <View style={styles.section}>
       <View style={styles.heading}>
@@ -55,7 +68,7 @@ export function RankedDemoPreview() {
             accessible
             accessibilityLabel={[
               `${index + 1}. ${name}`,
-              de.challenges.demoDistance(distance),
+              valueLabel(distance),
               de.challenges.demoBalance,
             ].join(', ')}
           >
@@ -70,7 +83,7 @@ export function RankedDemoPreview() {
               </Text>
             </View>
             <Text variant="label" style={styles.distance}>
-              {de.challenges.demoDistance(distance)}
+              {valueLabel(distance)}
             </Text>
           </View>
         ))}

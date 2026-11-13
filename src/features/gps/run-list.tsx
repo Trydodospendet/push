@@ -13,6 +13,7 @@ import { formatClock, formatKm } from './format';
 import { MiniRoute } from './mini-route';
 
 function diagnostic(error: unknown): string | null {
+  if (typeof error === 'string') return error;
   if (typeof error !== 'object' || error === null || !('message' in error)) {
     return null;
   }
@@ -37,7 +38,7 @@ export function RunList({ timezone }: { timezone: string }) {
     const detail = diagnostic(runs.error);
     return (
       <ErrorState
-        message={__DEV__ && detail ? `${de.run.historyError}\n${detail}` : de.run.historyError}
+        message={detail ? `${de.run.historyError}\n${detail}` : de.run.historyError}
         onRetry={() => runs.refetch()}
         retrying={runs.isFetching}
       />

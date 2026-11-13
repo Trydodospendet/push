@@ -174,15 +174,24 @@ export function useCreateGoal() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (input: CreateGoalInput): Promise<Challenge> => {
-      const { data, error } = await supabase.rpc('create_goal', {
-        p_title: input.title,
-        p_goal_type: input.goalType,
-        p_target_value: input.targetValue,
-        p_stake_cents: input.stakeCents,
-        // `today` makes an outdated cloud function fail clearly instead of silently creating
-        // tomorrow's goal while the app says it starts today.
-        p_period: input.period === 'day' ? 'today' : input.period,
-      });
+      const { data, error } =
+        input.startDate && input.endDate
+          ? await supabase.rpc('create_scheduled_goal', {
+              p_title: input.title,
+              p_goal_type: input.goalType,
+              p_target_value: input.targetValue,
+              p_stake_cents: input.stakeCents,
+              p_start_date: input.startDate,
+              p_end_date: input.endDate,
+              p_with_friends: input.withFriends ?? false,
+            })
+          : await supabase.rpc('create_goal', {
+              p_title: input.title,
+              p_goal_type: input.goalType,
+              p_target_value: input.targetValue,
+              p_stake_cents: input.stakeCents,
+              p_period: input.period === 'day' ? 'today' : input.period,
+            });
       if (error) {
         throw error;
       }
