@@ -41,3 +41,6 @@ yarn-error.*
 # generated native folders
 /ios
 /android
+
+# Firebase config for push (see docs/PUSH.md)
+google-services.json

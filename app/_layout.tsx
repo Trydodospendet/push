@@ -1,6 +1,7 @@
 import { QueryClientProvider } from '@tanstack/react-query';
 import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
+import { router, Stack } from 'expo-router';
+import * as Notifications from 'expo-notifications';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
@@ -16,6 +17,7 @@ import { ReminderProvider } from '@/features/reminders/reminder-provider';
 import { de } from '@/i18n/de';
 import { loadPreferences } from '@/features/preferences/store';
 import { noteFirstUse } from '@/features/review/review';
+import { targetOfNotification } from '@/features/push/api';
 import { initMonitoring, reportError } from '@/lib/monitoring';
 import { createQueryClient } from '@/lib/query-client';
 import { colors, fontAssets } from '@/theme';
@@ -32,6 +34,14 @@ export default function RootLayout() {
     void loadPreferences();
     initMonitoring();
     void noteFirstUse();
+    // A tap on a notification opens the challenge it is about (only app-internal links).
+    const subscription = Notifications.addNotificationResponseReceivedListener((response) => {
+      const target = targetOfNotification(response.notification.request.content.data);
+      if (target) {
+        router.push({ pathname: '/challenge/[id]', params: { id: target.split('/')[2] } });
+      }
+    });
+    return () => subscription.remove();
   }, []);
 
   if (!fontsReady) {

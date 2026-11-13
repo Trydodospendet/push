@@ -567,6 +567,9 @@ export type Database = {
           donate_default: boolean;
           id: string;
           onboarded_at: string | null;
+          push_cheers: boolean;
+          push_friends: boolean;
+          push_results: boolean;
           timezone: string;
         };
         ComputedFields: never;
@@ -579,6 +582,9 @@ export type Database = {
           donate_default?: boolean;
           id: string;
           onboarded_at?: string | null;
+          push_cheers?: boolean;
+          push_friends?: boolean;
+          push_results?: boolean;
           timezone?: string;
         };
         Update: {
@@ -590,6 +596,9 @@ export type Database = {
           donate_default?: boolean;
           id?: string;
           onboarded_at?: string | null;
+          push_cheers?: boolean;
+          push_friends?: boolean;
+          push_results?: boolean;
           timezone?: string;
         };
         Relationships: [
@@ -598,6 +607,87 @@ export type Database = {
             columns: ['default_ngo_id'];
             isOneToOne: false;
             referencedRelation: 'ngos';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      push_outbox: {
+        Row: {
+          body: string;
+          created_at: string;
+          data: NonNullable<Json>;
+          error: string | null;
+          id: string;
+          kind: string;
+          sent_at: string | null;
+          title: string;
+          user_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          body: string;
+          created_at?: string;
+          data?: NonNullable<Json>;
+          error?: string | null;
+          id?: string;
+          kind: string;
+          sent_at?: string | null;
+          title: string;
+          user_id: string;
+        };
+        Update: {
+          body?: string;
+          created_at?: string;
+          data?: NonNullable<Json>;
+          error?: string | null;
+          id?: string;
+          kind?: string;
+          sent_at?: string | null;
+          title?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'push_outbox_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      push_tokens: {
+        Row: {
+          created_at: string;
+          id: string;
+          last_seen_at: string;
+          platform: string;
+          token: string;
+          user_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          created_at?: string;
+          id?: string;
+          last_seen_at?: string;
+          platform: string;
+          token: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          last_seen_at?: string;
+          platform?: string;
+          token?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'push_tokens_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
             referencedColumns: ['id'];
           },
         ];
@@ -884,6 +974,9 @@ export type Database = {
           donate_default: boolean;
           id: string;
           onboarded_at: string | null;
+          push_cheers: boolean;
+          push_friends: boolean;
+          push_results: boolean;
           timezone: string;
         };
         SetofOptions: {
@@ -983,6 +1076,7 @@ export type Database = {
       leave_challenge: { Args: { p_challenge_id: string }; Returns: number };
       mark_badge_seen: { Args: { p_badge: string }; Returns: undefined };
       recompute_progress: { Args: { p_challenge_id: string }; Returns: undefined };
+      register_push_token: { Args: { p_platform: string; p_token: string }; Returns: undefined };
       set_avatar_path: { Args: { p_path?: string }; Returns: undefined };
       set_challenge_donation: {
         Args: { p_challenge_id: string; p_donate?: boolean; p_ngo_id?: string };
@@ -999,6 +1093,9 @@ export type Database = {
           donate_default: boolean;
           id: string;
           onboarded_at: string | null;
+          push_cheers: boolean;
+          push_friends: boolean;
+          push_results: boolean;
           timezone: string;
         };
         SetofOptions: {
@@ -1009,6 +1106,10 @@ export type Database = {
         };
       };
       set_donation_defaults: { Args: { p_donate: boolean; p_ngo_id?: string }; Returns: undefined };
+      set_push_preferences: {
+        Args: { p_cheers: boolean; p_friends: boolean; p_results: boolean };
+        Returns: undefined;
+      };
       set_ranking_visibility: { Args: { p_anonymous: boolean }; Returns: undefined };
       settle_challenge: { Args: { p_challenge_id: string }; Returns: boolean };
       submit_appeal: {
@@ -1061,6 +1162,7 @@ export type Database = {
         }[];
       };
       sync_workouts: { Args: { p_workouts: Json }; Returns: number };
+      unregister_push_token: { Args: { p_token: string }; Returns: undefined };
     };
     Enums: {
       [_ in never]: never;

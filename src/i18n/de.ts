@@ -738,6 +738,19 @@ export const de = {
     runLine: (km: string, clock: string) => `${km} km · ${clock}`,
     mapLabel: 'Karte mit deiner Strecke',
   },
+  push: {
+    label: 'NACHRICHTEN VOM SERVER',
+    toggle: 'Push-Nachrichten',
+    toggleHint:
+      'Dein Ergebnis, Anfeuern und Freundschaftsanfragen – auch wenn die App geschlossen ist.',
+    results: 'Ergebnis ist da',
+    cheers: 'Jemand feuert dich an',
+    friends: 'Freundschaftsanfragen',
+    unavailable:
+      'Push-Nachrichten sind in dieser Version noch nicht eingerichtet. Die Erinnerungen oben funktionieren trotzdem.',
+    privacy:
+      'Eine Nachricht enthält nur einen kurzen Text und einen Link in die App. Dein Handy wird dafür bei Expo und Google registriert.',
+  },
   battery: {
     title: 'Akku-Optimierung',
     intro:

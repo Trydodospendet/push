@@ -23,3 +23,5 @@ export const requestPermissionsAsync = jest.fn(async () => ({
 }));
 export const cancelAllScheduledNotificationsAsync = jest.fn(async () => undefined);
 export const scheduleNotificationAsync = jest.fn(async () => 'id');
+export const addNotificationResponseReceivedListener = jest.fn(() => ({ remove: jest.fn() }));
+export const getExpoPushTokenAsync = jest.fn(async () => ({ data: 'ExponentPushToken[test]' }));
