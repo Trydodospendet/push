@@ -34,6 +34,7 @@ import {
 } from '@/features/challenges/format';
 import { PotCard } from '@/features/challenges/pot-card';
 import { JoinSheet } from '@/features/challenges/join-sheet';
+import { ChallengeFeed } from '@/features/feed/challenge-feed';
 import { Leaderboard } from '@/features/challenges/leaderboard';
 import type { Challenge, Participant } from '@/features/challenges/types';
 import { ActivityList } from '@/features/health/activity-list';
@@ -269,6 +270,18 @@ function ChallengeDetail({
               ))}
             </Card>
           )}
+        </View>
+      )}
+
+      {solo || !isParticipant ? null : (
+        <View style={styles.section}>
+          <Text variant="label" color="textSecondary" accessibilityRole="header">
+            {de.feed.title}
+          </Text>
+          <ChallengeFeed challengeId={challenge.id} timezone={challenge.timezone} />
+          <Text variant="caption" color="textMuted">
+            {de.feed.visibilityHint}
+          </Text>
         </View>
       )}
 

@@ -51,6 +51,7 @@ const privacySections: readonly LegalSection[] = [
       'Die Nutzung von Daten, die über Health Connect empfangen werden, erfolgt gemäß der Health-Connect-Berechtigungsrichtlinie einschließlich der Anforderungen zur eingeschränkten Nutzung („Limited Use“).',
       'Gesundheitsdaten werden nicht für Werbung verwendet, nicht verkauft und nicht an Dritte weitergegeben – außer an den unten genannten Hosting-Anbieter, der sie nur in unserem Auftrag speichert.',
       'Andere Teilnehmer deiner Challenges sehen nur deinen Anzeigenamen, ob du das Ziel erreicht hast und deinen Platz in der Rangliste – nie deine Gesundheitsdaten.',
+      'Aktivitäts-Feed: In Ranked-Challenges sehen ausschließlich die Teilnehmer dieser Challenge eine Liste mit Ereignissen („Anna ist 5,2 km gelaufen“, „Ben ist beigetreten“, „Clara hat das Ziel erreicht“). Sie enthält nur deinen Anzeigenamen, bei Läufen die Distanz und den Zeitpunkt – keine Zeiten, Strecken oder weiteren Gesundheitsdaten. Teilnehmer können einen Eintrag einmalig anfeuern; du siehst nur, wie oft dein Eintrag angefeuert wurde. Mit der Löschung deines Kontos werden deine Feed-Einträge gelöscht.',
     ],
   },
   {
@@ -545,6 +546,9 @@ export const de = {
     invalid_invite_code: 'Zu diesem Code gibt es keine Challenge.',
     not_joined: 'Du bist bei dieser Challenge nicht dabei.',
     invalid_mode: 'Diese Art von Challenge gibt es nicht.',
+    already_cheered: 'Du hast diesen Eintrag schon angefeuert.',
+    cannot_cheer_self: 'Du kannst dich nicht selbst anfeuern.',
+    feed_entry_not_found: 'Diesen Eintrag gibt es nicht oder du bist nicht dabei.',
   },
   profile: {
     label: 'PROFIL',
@@ -558,6 +562,25 @@ export const de = {
     howItWorks: "So funktioniert's",
     accountLabel: 'KONTO',
     deleteAccount: 'Konto löschen',
+  },
+  feed: {
+    title: 'AKTIVITÄT',
+    you: 'Du',
+    joined: (name: string, mine: boolean) =>
+      mine ? `${name} bist beigetreten` : `${name} ist beigetreten`,
+    ran: (name: string, km: string, mine: boolean) =>
+      mine ? `${name} bist ${km} km gelaufen` : `${name} ist ${km} km gelaufen`,
+    goalReached: (name: string, mine: boolean) =>
+      mine ? `${name} hast das Ziel erreicht` : `${name} hat das Ziel erreicht`,
+    cheer: 'Anfeuern',
+    cheerLabel: (sentence: string) => `Anfeuern: ${sentence}`,
+    cheeredLabel: (sentence: string) => `Angefeuert: ${sentence}`,
+    cheersReceived: (count: number) =>
+      count === 1 ? '1 Mal angefeuert' : `${count} Mal angefeuert`,
+    empty: 'Noch nichts passiert. Sobald jemand läuft, siehst du es hier.',
+    error: 'Die Aktivität konnte nicht geladen werden.',
+    visibilityHint:
+      'Nur Teilnehmer sehen diese Liste. Es werden nur Name, Distanz und Erfolge gezeigt.',
   },
   reminders: {
     label: 'ERINNERUNGEN',

@@ -122,6 +122,52 @@ export type Database = {
           },
         ];
       };
+      challenge_feed: {
+        Row: {
+          challenge_id: string;
+          created_at: string;
+          distance_m: number | null;
+          id: string;
+          kind: string;
+          ref_id: string | null;
+          user_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          challenge_id: string;
+          created_at?: string;
+          distance_m?: number | null;
+          id?: string;
+          kind: string;
+          ref_id?: string | null;
+          user_id: string;
+        };
+        Update: {
+          challenge_id?: string;
+          created_at?: string;
+          distance_m?: number | null;
+          id?: string;
+          kind?: string;
+          ref_id?: string | null;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'challenge_feed_challenge_id_fkey';
+            columns: ['challenge_id'];
+            isOneToOne: false;
+            referencedRelation: 'challenges';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'challenge_feed_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       challenge_participants: {
         Row: {
           challenge_id: string;
@@ -255,6 +301,40 @@ export type Database = {
           },
         ];
       };
+      feed_cheers: {
+        Row: {
+          created_at: string;
+          feed_id: string;
+          user_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          created_at?: string;
+          feed_id: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          feed_id?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'feed_cheers_feed_id_fkey';
+            columns: ['feed_id'];
+            isOneToOne: false;
+            referencedRelation: 'challenge_feed';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'feed_cheers_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       ledger_entries: {
         Row: {
           account: string;
@@ -359,6 +439,7 @@ export type Database = {
     };
     Functions: {
       advance_challenges: { Args: Record<PropertyKey, never>; Returns: number };
+      cheer_feed_entry: { Args: { p_feed_id: string }; Returns: number };
       create_challenge: {
         Args: {
           p_duration_days: number;
@@ -436,6 +517,19 @@ export type Database = {
           isOneToOne: true;
           isSetofReturn: false;
         };
+      };
+      get_challenge_feed: {
+        Args: { p_challenge_id: string; p_limit?: number };
+        Returns: {
+          cheer_count: number;
+          cheered_by_me: boolean;
+          created_at: string;
+          display_name: string;
+          distance_m: number;
+          id: string;
+          is_mine: boolean;
+          kind: string;
+        }[];
       };
       get_leaderboard: {
         Args: { p_challenge_id: string };
