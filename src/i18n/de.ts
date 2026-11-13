@@ -563,6 +563,37 @@ export const de = {
     accountLabel: 'KONTO',
     deleteAccount: 'Konto löschen',
   },
+  badges: {
+    label: 'LEVEL & ABZEICHEN',
+    error: 'Level und Abzeichen konnten nicht geladen werden.',
+    level: (level: number) => `Level ${level}`,
+    levelProgress: 'Fortschritt bis zum nächsten Level',
+    levelSpoken: (level: number, missing: string) =>
+      `Level ${level}, noch ${missing} Punkte bis zum nächsten Level`,
+    points: (points: string, next: string) => `${points} / ${next} Punkte`,
+    pointsHint: '1 Punkt pro Kilometer, 1 Punkt pro 1.000 Schritte, 50 Punkte pro Sieg.',
+    earned: 'Erreicht',
+    locked: 'Noch nicht erreicht',
+    newBadge: 'NEUES ABZEICHEN',
+    close: 'Weiter',
+    accessibility: (title: string, description: string) =>
+      `Neues Abzeichen: ${title}. ${description}`,
+    items: {
+      first_challenge: {
+        title: 'Erster Schritt',
+        description: 'Du bist deiner ersten Challenge beigetreten.',
+      },
+      first_win: { title: 'Erster Sieg', description: 'Du hast deine erste Challenge gewonnen.' },
+      streak_7: { title: '7 Tage Serie', description: '7 Tage in Folge aktiv.' },
+      streak_30: { title: '30 Tage Serie', description: '30 Tage in Folge aktiv.' },
+      km_50: { title: '50 km', description: 'Insgesamt 50 Kilometer gelaufen.' },
+      km_100: { title: '100 km', description: 'Insgesamt 100 Kilometer gelaufen.' },
+      challenges_10: {
+        title: '10 Challenges',
+        description: 'Du hast an 10 Challenges teilgenommen.',
+      },
+    },
+  },
   feed: {
     title: 'AKTIVITÄT',
     you: 'Du',

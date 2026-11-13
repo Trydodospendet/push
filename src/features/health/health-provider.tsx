@@ -12,6 +12,7 @@ import {
 import { AppState } from 'react-native';
 
 import { challengeKeys } from '@/features/challenges/api';
+import { badgeKeys } from '@/features/badges/api';
 import { feedKeys } from '@/features/feed/api';
 import { statsKeys } from '@/features/stats/api';
 import { toUserMessage } from '@/lib/errors';
@@ -133,6 +134,7 @@ export function HealthProvider({ userId, timezone, children }: HealthProviderPro
             queryClient.invalidateQueries({ queryKey: activityKeys.all }),
             queryClient.invalidateQueries({ queryKey: statsKeys.all }),
             queryClient.invalidateQueries({ queryKey: feedKeys.all }),
+            queryClient.invalidateQueries({ queryKey: badgeKeys.all }),
           ]);
         } catch (syncError) {
           setError(toUserMessage(syncError));

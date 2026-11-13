@@ -6,6 +6,7 @@ import { Avatar, Button, Card, ErrorState, LoadingState, Screen, Sheet, Text } f
 import { DEFAULT_TIMEZONE } from '@/config/app';
 import { useDeleteAccount, useMyProfile, useSignOut } from '@/features/auth/api';
 import { useSession } from '@/features/auth/auth-provider';
+import { BadgesCard } from '@/features/badges/badges-card';
 import { useHealth } from '@/features/health/health-provider';
 import { healthSourceName } from '@/features/health/platform';
 import { useLastSyncText } from '@/features/health/sync-status';
@@ -45,6 +46,7 @@ export default function ProfileScreen() {
             </Text>
           </View>
           <StatsCard userId={session.user.id} />
+          <BadgesCard userId={session.user.id} />
           <Card style={styles.card}>
             <Text variant="label" color="textSecondary">
               {de.profile.emailLabel}

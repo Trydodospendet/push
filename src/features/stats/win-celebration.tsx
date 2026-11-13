@@ -11,6 +11,7 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Button, Icon, Text } from '@/components';
+import { BadgeCelebration } from '@/features/badges/badge-celebration';
 import { useSession } from '@/features/auth/auth-provider';
 import { de } from '@/i18n/de';
 import { formatAmount } from '@/lib/money';
@@ -61,7 +62,8 @@ export function WinCelebration() {
   }, [state, userId, win]);
 
   if (!win) {
-    return null;
+    // Badges wait until no win celebration is on screen.
+    return <BadgeCelebration />;
   }
   return <CelebrationModal key={win.challengeId} win={win} onClose={dismiss} />;
 }

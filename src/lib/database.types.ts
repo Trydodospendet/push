@@ -406,6 +406,36 @@ export type Database = {
         };
         Relationships: [];
       };
+      user_badges: {
+        Row: {
+          awarded_at: string;
+          badge: string;
+          seen_at: string | null;
+          user_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          awarded_at?: string;
+          badge: string;
+          seen_at?: string | null;
+          user_id: string;
+        };
+        Update: {
+          awarded_at?: string;
+          badge?: string;
+          seen_at?: string | null;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'user_badges_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       wallets: {
         Row: {
           balance_cents: number;
@@ -541,6 +571,15 @@ export type Database = {
           user_id: string;
         }[];
       };
+      get_my_level: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          level: number;
+          level_start_points: number;
+          next_level_points: number;
+          points: number;
+        }[];
+      };
       get_my_profile: {
         Args: Record<PropertyKey, never>;
         Returns: {
@@ -637,6 +676,7 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      mark_badge_seen: { Args: { p_badge: string }; Returns: undefined };
       recompute_progress: { Args: { p_challenge_id: string }; Returns: undefined };
       set_display_name: {
         Args: { p_display_name: string };
