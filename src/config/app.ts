@@ -25,7 +25,7 @@ export const LEGAL = {
   emailProvider: 'Resend (Resend, Inc.), Versand über Server in der EU (Irland)',
   updatedAt: '13.11.2026',
   /** Public web page with deletion instructions (docs/legal/delete-account.html, hosted). */
-  deletionUrl: 'https://puschdich.de/delete-account.html',
+  deletionUrl: 'https://puschdich.netlify.app/delete-account.html',
 } as const;
 
 /** DB: profiles.display_name */
