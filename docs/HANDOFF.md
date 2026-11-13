@@ -107,3 +107,11 @@ Veröffentlichung wie alle Rechtstexte prüfen lassen.
 ## Status Ausbau 1
 
 NACHT-AUFTRAG ERLEDIGT
+
+---
+
+# Ausbau 2 (gleicher Branch `ausbau`)
+
+## Fortschritt Ausbau 2
+
+- [x] 9. Lauf-Erlebnis: Karte vollflächig hinter den Inhalten mit eigenem dunklem Stil (`src/features/gps/map-style.ts`, aus OpenFreeMap „fiord“ umgefärbt), Strecke als leuchtende Lime-Linie die sich aufbaut, Kamera folgt/gleitet, wegziehbares Werte-Panel (`src/components/draggable-panel.tsx`), Live-Lauf mit großen Zahlen und letztem km, Splits pro km, Höhenprofil, Tempo-Diagramm, persönliche Rekorde, Lauf-Verlauf mit Mini-Karten (nur Form ohne Koordinaten), Wochen-/Monatsstatistik. DB: `20261126090000_run_analytics.sql` (Höhe als 7. Punktwert, Splits, Profil, Rekorde, Periodenstatistik), `20261126100000_run_shapes.sql`; pgTAP `15_run_analytics`.

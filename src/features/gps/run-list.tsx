@@ -1,22 +1,30 @@
 import { useRouter } from 'expo-router';
 import { Pressable, StyleSheet, View } from 'react-native';
 
-import { Card, ErrorState, Icon, LoadingState, Pill, Text } from '@/components';
+import { Card, ErrorState, Icon, Pill, Skeleton, Text } from '@/components';
 import { useSession } from '@/features/auth/auth-provider';
 import { de } from '@/i18n/de';
 import { formatDateTime } from '@/lib/dates';
 import { colors, layout, opacity, radius, spacing } from '@/theme';
 
+import { useRunShapes } from './analytics-api';
 import { useMyGpsRuns, type GpsRun } from './api';
 import { formatClock, formatKm } from './format';
+import { MiniRoute } from './mini-route';
 
-/** The user's own GPS runs, newest first; tapping one opens its map. */
+/** The user's own GPS runs, newest first, each with a mini map; tapping one opens its map. */
 export function RunList({ timezone }: { timezone: string }) {
   const userId = useSession().user.id;
   const runs = useMyGpsRuns(userId);
+  const shapes = useRunShapes(userId);
 
   if (runs.isPending) {
-    return <LoadingState />;
+    return (
+      <View style={styles.list}>
+        <Skeleton height={spacing.xl + spacing.lg} />
+        <Skeleton height={spacing.xl + spacing.lg} />
+      </View>
+    );
   }
   if (runs.isError) {
     return (
@@ -33,13 +41,26 @@ export function RunList({ timezone }: { timezone: string }) {
   return (
     <View style={styles.list}>
       {runs.data.map((run) => (
-        <RunRow key={run.id} run={run} timezone={timezone} />
+        <RunRow
+          key={run.id}
+          run={run}
+          timezone={timezone}
+          shape={shapes.data?.get(run.id) ?? null}
+        />
       ))}
     </View>
   );
 }
 
-function RunRow({ run, timezone }: { run: GpsRun; timezone: string }) {
+function RunRow({
+  run,
+  timezone,
+  shape,
+}: {
+  run: GpsRun;
+  timezone: string;
+  shape: [number, number][] | null;
+}) {
   const router = useRouter();
   const line = de.run.runLine(formatKm(run.distanceM), formatClock(run.durationS));
   const when = formatDateTime(new Date(run.startedAt), timezone);
@@ -53,6 +74,7 @@ function RunRow({ run, timezone }: { run: GpsRun; timezone: string }) {
       style={({ pressed }) => [styles.row, pressed && styles.pressed]}
     >
       <Card style={styles.card}>
+        <View style={styles.mini}>{shape ? <MiniRoute points={shape} /> : null}</View>
         <View style={styles.text}>
           <Text variant="heading">{line}</Text>
           <Text variant="caption" color="textMuted">
@@ -82,6 +104,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
+  },
+  mini: {
+    width: spacing.xl + spacing.lg,
+    height: spacing.xl + spacing.lg,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   text: {
     flex: 1,

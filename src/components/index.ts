@@ -8,6 +8,7 @@ export { Card, type CardProps } from './card';
 export { ChipGroup, type ChipGroupProps, type ChipOption } from './chip-group';
 export { FadeIn, type FadeInProps } from './fade-in';
 export { GlowBackdrop, type GlowBackdropProps } from './glow-backdrop';
+export { DraggablePanel, type DraggablePanelProps } from './draggable-panel';
 export { EmptyState, Illustration, type EmptyStateProps } from './empty-state';
 export { ErrorBoundary } from './error-boundary';
 export { Icon, type IconName, type IconProps } from './icon';

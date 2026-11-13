@@ -3,11 +3,12 @@ import { Stack } from 'expo-router';
 import { de } from '@/i18n/de';
 import { colors, typography } from '@/theme';
 
+/** The map lies behind the whole screen, so the header floats transparently over it. */
 export default function RunLayout() {
   return (
     <Stack
       screenOptions={{
-        headerStyle: { backgroundColor: colors.bg },
+        headerTransparent: true,
         headerTintColor: colors.text,
         headerTitleStyle: { ...typography.button },
         headerShadowVisible: false,

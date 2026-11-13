@@ -1,23 +1,29 @@
 import { useState } from 'react';
-import { Linking, StyleSheet, View } from 'react-native';
+import { Linking, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Button, Card, Screen, Sheet, Text } from '@/components';
+import { Button, Card, DraggablePanel, FadeIn, Sheet, Text } from '@/components';
 import { DEFAULT_TIMEZONE } from '@/config/app';
 import { useMyProfile } from '@/features/auth/api';
 import { useSession } from '@/features/auth/auth-provider';
+import { useGpsRunRoute, useMyGpsRuns } from '@/features/gps/api';
 import { formatClock, formatKm, formatPace } from '@/features/gps/format';
-import { paceSecondsPerKm } from '@/features/gps/geo';
+import { liveSplits, paceSecondsPerKm } from '@/features/gps/geo';
 import { useGps, type StartOutcome } from '@/features/gps/gps-provider';
+import { PeriodCard } from '@/features/gps/period-card';
 import { liveStats } from '@/features/gps/recorder';
+import { RecordsCard } from '@/features/gps/records-card';
 import { RouteMap } from '@/features/gps/route-map';
 import { RunList } from '@/features/gps/run-list';
 import { useClock } from '@/features/gps/use-clock';
 import { de } from '@/i18n/de';
-import { spacing } from '@/theme';
+import { colors, layout, radius, spacing } from '@/theme';
 
-const SCREEN_EDGES = ['bottom', 'left', 'right'] as const;
-
-/** Record a run with GPS: explanation first, then start / pause / stop with a live map. */
+/**
+ * Record a run with GPS. The map is the background of the whole screen: before the run it shows
+ * the last route with the explanation, history and statistics on top; during the run it follows
+ * the runner, with the big numbers in a panel that can be pulled down.
+ */
 export default function RunScreen() {
   const session = useSession();
   const profile = useMyProfile(session.user.id);
@@ -25,18 +31,43 @@ export default function RunScreen() {
   const { recorder } = gps;
   const active = recorder.status === 'recording' || recorder.status === 'paused';
   const timezone = profile.data?.timezone ?? DEFAULT_TIMEZONE;
+  const [inset, setInset] = useState(0);
 
   return (
-    <Screen scroll edges={SCREEN_EDGES} contentStyle={styles.content}>
-      {gps.recovered ? <RecoveredCard /> : null}
-      {active ? <ActiveRun /> : <IdleRun timezone={timezone} />}
+    <View style={styles.root}>
+      {active ? <LiveBackground inset={inset} /> : <LastRunBackground />}
+      {gps.recovered ? <RecoveredNotice /> : null}
+      {active ? <ActiveRun onInset={setInset} /> : <IdleRun timezone={timezone} />}
       <ResultSheet />
-    </Screen>
+    </View>
   );
 }
 
-function RecoveredCard() {
+/** The map follows the runner; the panel's height is kept free at the bottom. */
+function LiveBackground({ inset }: { inset: number }) {
+  const { recorder } = useGps();
+  return <RouteMap points={recorder.points} mode="follow" bottomInset={inset} />;
+}
+
+function LastRunBackground() {
+  const session = useSession();
+  const runs = useMyGpsRuns(session.user.id);
+  const latest = runs.data?.find((run) => run.hasRoute);
+  const route = useGpsRunRoute(latest?.id ?? '', latest !== undefined);
+  const { height } = useWindowDimensions();
+  return (
+    <RouteMap
+      points={route.data ?? []}
+      mode="fit"
+      animate
+      bottomInset={Math.round(height * 0.55)}
+    />
+  );
+}
+
+function RecoveredNotice() {
   const gps = useGps();
+  const insets = useSafeAreaInsets();
   const [busy, setBusy] = useState(false);
   if (!gps.recovered) {
     return null;
@@ -46,21 +77,23 @@ function RecoveredCard() {
     void task().finally(() => setBusy(false));
   };
   return (
-    <Card style={styles.card}>
-      <Text variant="heading">{de.run.recoveredTitle}</Text>
-      <Text color="textSecondary">{de.run.recoveredText(String(gps.recovered.pointCount))}</Text>
-      <Button
-        label={de.run.recoveredContinue}
-        loading={busy}
-        onPress={() => run(gps.continueRecovered)}
-      />
-      <Button
-        label={de.run.discard}
-        variant="secondary"
-        disabled={busy}
-        onPress={() => run(gps.discardRecovered)}
-      />
-    </Card>
+    <View style={[styles.notice, { top: insets.top + 56 }]}>
+      <Card style={styles.noticeCard}>
+        <Text variant="heading">{de.run.recoveredTitle}</Text>
+        <Text color="textSecondary">{de.run.recoveredText(String(gps.recovered.pointCount))}</Text>
+        <Button
+          label={de.run.recoveredContinue}
+          loading={busy}
+          onPress={() => run(gps.continueRecovered)}
+        />
+        <Button
+          label={de.run.discard}
+          variant="secondary"
+          disabled={busy}
+          onPress={() => run(gps.discardRecovered)}
+        />
+      </Card>
+    </View>
   );
 }
 
@@ -79,57 +112,73 @@ function startMessage(outcome: StartOutcome): string | null {
 
 function IdleRun({ timezone }: { timezone: string }) {
   const gps = useGps();
+  const session = useSession();
+  const { height } = useWindowDimensions();
   const [starting, setStarting] = useState(false);
   const [outcome, setOutcome] = useState<StartOutcome | null>(null);
   const message = outcome === null ? null : startMessage(outcome);
 
   return (
-    <>
-      <Card style={styles.card}>
-        <Text variant="label" color="textSecondary">
-          {de.run.explainTitle}
-        </Text>
-        {de.run.explain.map((line) => (
-          <Text key={line} color="textSecondary">
-            {`• ${line}`}
+    <ScrollView
+      style={StyleSheet.absoluteFill}
+      contentContainerStyle={{ paddingTop: Math.round(height * 0.4) }}
+      showsVerticalScrollIndicator={false}
+    >
+      <View style={styles.sheet}>
+        <FadeIn style={styles.sheetSection}>
+          <Button
+            label={de.run.start}
+            loading={starting}
+            disabled={gps.recovered !== null}
+            onPress={() => {
+              setStarting(true);
+              void gps
+                .start()
+                .then(setOutcome)
+                .finally(() => setStarting(false));
+            }}
+          />
+          {message ? (
+            <Text color="danger" accessibilityRole="alert">
+              {message}
+            </Text>
+          ) : null}
+          {outcome === 'blocked' ? (
+            <Button
+              label={de.run.openSettings}
+              variant="secondary"
+              onPress={() => void Linking.openSettings()}
+            />
+          ) : null}
+        </FadeIn>
+        <FadeIn delayMs={100}>
+          <PeriodCard userId={session.user.id} />
+        </FadeIn>
+        <FadeIn delayMs={160}>
+          <RecordsCard userId={session.user.id} />
+        </FadeIn>
+        <FadeIn delayMs={220} style={styles.sheetSection}>
+          <Text variant="label" color="textSecondary" accessibilityRole="header">
+            {de.run.historyLabel}
           </Text>
-        ))}
-      </Card>
-      {message ? (
-        <Text color="danger" accessibilityRole="alert">
-          {message}
-        </Text>
-      ) : null}
-      {outcome === 'blocked' ? (
-        <Button
-          label={de.run.openSettings}
-          variant="secondary"
-          onPress={() => void Linking.openSettings()}
-        />
-      ) : null}
-      <Button
-        label={de.run.start}
-        loading={starting}
-        disabled={gps.recovered !== null}
-        onPress={() => {
-          setStarting(true);
-          void gps
-            .start()
-            .then(setOutcome)
-            .finally(() => setStarting(false));
-        }}
-      />
-      <View style={styles.section}>
-        <Text variant="label" color="textSecondary" accessibilityRole="header">
-          {de.run.historyLabel}
-        </Text>
-        <RunList timezone={timezone} />
+          <RunList timezone={timezone} />
+        </FadeIn>
+        <Card style={styles.explain}>
+          <Text variant="label" color="textSecondary">
+            {de.run.explainTitle}
+          </Text>
+          {de.run.explain.map((line) => (
+            <Text key={line} variant="caption" color="textSecondary">
+              {`• ${line}`}
+            </Text>
+          ))}
+        </Card>
       </View>
-    </>
+    </ScrollView>
   );
 }
 
-function ActiveRun() {
+function ActiveRun({ onInset }: { onInset: (height: number) => void }) {
   const gps = useGps();
   const { recorder } = gps;
   const paused = recorder.status === 'paused';
@@ -138,6 +187,8 @@ function ActiveRun() {
   const now = useClock(!paused);
 
   const stats = liveStats(recorder.points);
+  const splits = liveSplits(recorder.points);
+  const lastSplit = splits[splits.length - 1];
   const last = recorder.points[recorder.points.length - 1];
   // Between two GPS points the clock keeps running (up to 10 s, then the signal is lost).
   const sinceLast = !paused && last ? Math.min(10, Math.max(0, (now - last.t) / 1000)) : 0;
@@ -151,37 +202,62 @@ function ActiveRun() {
 
   return (
     <>
-      <RouteMap points={recorder.points} mode="follow" height={260} />
-      <Text variant="label" color={paused ? 'textSecondary' : 'accent'} align="center">
-        {paused
-          ? de.run.paused
-          : recorder.points.length === 0
-            ? de.run.accuracyWaiting
-            : de.run.recording}
-      </Text>
-      <View style={styles.stats}>
-        <Stat label={de.run.time} value={formatClock(elapsed)} big />
+      <DraggablePanel
+        toggleLabel={de.runStats.panelToggle}
+        onHeight={onInset}
+        header={
+          <View style={styles.headerNumbers}>
+            <Text
+              variant="label"
+              color={paused ? 'textSecondary' : 'accent'}
+              align="center"
+              accessibilityLiveRegion="polite"
+            >
+              {paused
+                ? de.run.paused
+                : recorder.points.length === 0
+                  ? de.run.accuracyWaiting
+                  : de.run.recording}
+            </Text>
+            <Text
+              variant="display"
+              align="center"
+              style={styles.number}
+              adjustsFontSizeToFit
+              numberOfLines={1}
+            >
+              {formatClock(elapsed)}
+            </Text>
+          </View>
+        }
+      >
         <View style={styles.statRow}>
           <Stat label={de.run.distance} value={formatKm(stats.distanceM)} />
           <Stat label={de.run.pace} value={formatPace(pace)} />
         </View>
-      </View>
-      {recorder.full ? (
-        <Text color="danger" accessibilityRole="alert">
-          {de.run.full}
-        </Text>
-      ) : null}
-      <Button
-        label={paused ? de.run.resume : de.run.pause}
-        loading={busy}
-        onPress={() => act(paused ? gps.resume : gps.pause)}
-      />
-      <Button
-        label={de.run.stop}
-        variant="danger"
-        disabled={busy}
-        onPress={() => setStopOpen(true)}
-      />
+        {lastSplit ? (
+          <Stat
+            label={`${de.runStats.lastKm} (${lastSplit.km})`}
+            value={formatPace(lastSplit.seconds)}
+          />
+        ) : null}
+        {recorder.full ? (
+          <Text color="danger" accessibilityRole="alert">
+            {de.run.full}
+          </Text>
+        ) : null}
+        <Button
+          label={paused ? de.run.resume : de.run.pause}
+          loading={busy}
+          onPress={() => act(paused ? gps.resume : gps.pause)}
+        />
+        <Button
+          label={de.run.stop}
+          variant="danger"
+          disabled={busy}
+          onPress={() => setStopOpen(true)}
+        />
+      </DraggablePanel>
       <Sheet
         visible={stopOpen}
         title={de.run.stopTitle}
@@ -222,13 +298,13 @@ function ActiveRun() {
   );
 }
 
-function Stat({ label, value, big = false }: { label: string; value: string; big?: boolean }) {
+function Stat({ label, value }: { label: string; value: string }) {
   return (
     <View style={styles.stat} accessible accessibilityLabel={`${label}: ${value}`}>
       <Text variant="label" color="textSecondary" align="center">
         {label}
       </Text>
-      <Text variant={big ? 'display' : 'title'} align="center" style={styles.number}>
+      <Text variant="title" align="center" style={styles.number}>
         {value}
       </Text>
     </View>
@@ -270,20 +346,38 @@ function ResultSheet() {
 }
 
 const styles = StyleSheet.create({
-  content: {
-    paddingTop: spacing.md,
+  root: {
+    flex: 1,
+    backgroundColor: colors.bg,
+  },
+  sheet: {
+    gap: spacing.md,
+    padding: spacing.md,
     paddingBottom: spacing.xl,
-    gap: spacing.md,
+    minHeight: 600,
+    borderTopLeftRadius: radius.card * 2,
+    borderTopRightRadius: radius.card * 2,
+    backgroundColor: colors.bg,
+    borderColor: colors.border,
+    borderWidth: layout.borderWidth,
+    borderBottomWidth: 0,
   },
-  card: {
+  sheetSection: {
     gap: spacing.sm,
   },
-  section: {
-    gap: spacing.sm,
-    marginTop: spacing.md,
+  explain: {
+    gap: spacing.xs,
   },
-  stats: {
-    gap: spacing.md,
+  notice: {
+    position: 'absolute',
+    left: spacing.md,
+    right: spacing.md,
+  },
+  noticeCard: {
+    gap: spacing.sm,
+  },
+  headerNumbers: {
+    gap: spacing.xxs,
   },
   statRow: {
     flexDirection: 'row',
