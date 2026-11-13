@@ -7,11 +7,14 @@
 - Ausbau 3: Persönliche Ziele mit virtuellen Credits und Abrechnung pro Zeitraum, Tab „Aktivität“, feste Ranglisten und getrennte Registrierung/Anmeldung.
 - Projektregeln gekürzt, alte MVP-Spezifikation und bisherige Übergabe unverändert gesichert, Claude-Lesesperren eingerichtet.
 - Typecheck, Lint und 538 lokale Datenbankprüfungen grün. Jest parallel meldete 30 Fehler, seriell mit `npx jest --runInBand` waren alle 283 Tests grün.
+- Zielbild erneut geprüft (13.11.2026): Home führt über „Ziel setzen“, erklärt den Ablauf beim ersten Öffnen und zeigt ein wichtigstes plus weitere Ziele. Freunde/Liga sind unter Ranked; Aktivität ist als Tab erreichbar, zeigt Health-Daten und GPS-Läufe und bietet Android-Strecken an. Ziele binden Credits ab Start; die Fensterabrechnung verteilt verfallene Einsätze anteilig, zieht `fee_bps` ab und bucht Rundungsreste ans Haus.
+- Lokale Prüfungen erneut erfolgreich: `npm run typecheck`, `npm run lint`, `npx jest` (41 Suiten, 283 Tests) und `npx supabase test db` (19 Dateien, 538 Prüfungen). Jest meldet weiterhin nur doppelte manuelle Mock-Namen für `storage`.
 - Alle Details und frühere Prüfergebnisse stehen im [Archiv](HANDOFF_ARCHIV.md).
 
 ## Offen
 
 - GPS im Hintergrund, Benachrichtigungen, Karte, Aktivität und Health-Connect-Strecken auf echten Geräten prüfen. iOS liefert hier keine Strecken aus Health.
+- Auf echten Geräten zusätzlich bestätigen, dass der Tab „Aktivität“ direkt antippbar ist und die Zustände „keine Aktivitäten“, „Verbindung fehlt“ und „Sync fehlgeschlagen“ verständlich erscheinen.
 - Android-Widget zurückgestellt. Rechtstexte vor Veröffentlichung prüfen lassen.
 
 ## Nächster Schritt
@@ -24,6 +27,7 @@
 - Reicht die monatliche Gesamtliga oder sind Divisionen und andere Ranked-Punkte gewünscht?
 - Sollen Trainingstage wählbar sein? Aktuell gelten Di/Do/Sa und mindestens 80 % der Strecke.
 - Persönliche Ziele starten frühestens morgen und nutzen feste Zeiträume. Alte Gruppen-Pools sind weiter per Code erreichbar. Weitere Annahmen stehen im [Archiv](HANDOFF_ARCHIV.md).
+- Verteilung bei Rundung: ganzzahlige Credits werden proportional zum Einsatz verteilt; nicht verteilbare Rest-Credits gehen ans Haus. Die bestehende Gebühren- und Spendenlogik bleibt aktiv.
 
 ## Cloud-Aufgaben
 
