@@ -72,6 +72,20 @@ export function useMyLevel(userId: string) {
   });
 }
 
+/** The logo secret: the only badge the app claims itself (the server accepts nothing else). */
+export function useClaimLogoBadge(userId: string) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (): Promise<void> => {
+      const { error } = await supabase.rpc('claim_secret_badge', { p_secret: 'logo_tap' });
+      if (error) {
+        throw error;
+      }
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: badgeKeys.mine(userId) }),
+  });
+}
+
 export function useMarkBadgeSeen(userId: string) {
   const queryClient = useQueryClient();
   return useMutation({

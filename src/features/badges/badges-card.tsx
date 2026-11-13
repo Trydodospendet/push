@@ -5,7 +5,7 @@ import { de } from '@/i18n/de';
 import { colors, layout, radius, spacing } from '@/theme';
 
 import { useMyBadges, useMyLevel } from './api';
-import { BADGE_CODES, BADGE_ICONS } from './catalog';
+import { BADGE_CODES, BADGE_ICONS, isSecretBadge } from './catalog';
 
 const pointsFormat = new Intl.NumberFormat('de-DE', { maximumFractionDigits: 0 });
 
@@ -61,8 +61,11 @@ export function BadgesCard({ userId }: { userId: string }) {
       </View>
       <View style={styles.grid}>
         {BADGE_CODES.map((code) => {
-          const copy = de.badges.items[code];
           const has = earned.has(code);
+          const hidden = isSecretBadge(code) && !has;
+          const copy = hidden
+            ? { title: de.badges.secretTitle, description: de.badges.secretDescription }
+            : de.badges.items[code];
           return (
             <View
               key={code}
@@ -73,7 +76,10 @@ export function BadgesCard({ userId }: { userId: string }) {
               }`}
             >
               <View style={[styles.circle, has && styles.circleEarned]}>
-                <Icon name={BADGE_ICONS[code]} color={has ? 'onAccent' : 'textMuted'} />
+                <Icon
+                  name={hidden ? 'help' : BADGE_ICONS[code]}
+                  color={has ? 'onAccent' : 'textMuted'}
+                />
               </View>
               <Text variant="caption" color={has ? 'text' : 'textMuted'} align="center">
                 {copy.title}

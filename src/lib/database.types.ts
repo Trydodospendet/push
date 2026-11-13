@@ -614,6 +614,7 @@ export type Database = {
     Functions: {
       advance_challenges: { Args: Record<PropertyKey, never>; Returns: number };
       cheer_feed_entry: { Args: { p_feed_id: string }; Returns: number };
+      claim_secret_badge: { Args: { p_secret: string }; Returns: undefined };
       create_challenge: {
         Args: {
           p_duration_days: number;

@@ -738,6 +738,10 @@ export const de = {
     pointsHint: '1 Punkt pro Kilometer, 1 Punkt pro 1.000 Schritte, 50 Punkte pro Sieg.',
     earned: 'Erreicht',
     locked: 'Noch nicht erreicht',
+    secretTitle: '???',
+    secretDescription: 'Ein geheimes Abzeichen. Finde heraus, wie du es bekommst.',
+    secretUnlocked: 'Geheimes Abzeichen entdeckt!',
+    logoHint: 'PUSH.',
     newBadge: 'NEUES ABZEICHEN',
     close: 'Weiter',
     accessibility: (title: string, description: string) =>
@@ -756,6 +760,18 @@ export const de = {
         title: '10 Challenges',
         description: 'Du hast an 10 Challenges teilgenommen.',
       },
+      podium: {
+        title: 'Podium',
+        description: 'Top 3 in einer Rangliste mit mindestens drei Läufern.',
+      },
+      marathon: {
+        title: 'Marathon',
+        description: 'Ein Lauf über 42,195 km – das ist ein Marathon!',
+      },
+      early_bird: { title: 'Frühaufsteher', description: 'Gelaufen, bevor die Sonne aufgeht.' },
+      new_year: { title: 'Neujahrslauf', description: 'Das Jahr gleich mit einem Lauf begonnen.' },
+      lucky_run: { title: 'Glückszahl', description: 'Ein Lauf über genau 7,777 km.' },
+      logo_tap: { title: 'Gut getippt', description: 'Du hast das Logo sieben Mal angetippt.' },
     },
   },
   feed: {

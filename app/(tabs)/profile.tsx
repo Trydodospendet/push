@@ -15,6 +15,7 @@ import { useAvatarUrl } from '@/features/account/api';
 import { useMyProfile, useSignOut } from '@/features/auth/api';
 import { useSession } from '@/features/auth/auth-provider';
 import { BadgesCard } from '@/features/badges/badges-card';
+import { LogoEgg } from '@/features/badges/logo-egg';
 import { StatsCard } from '@/features/stats/stats-card';
 import { de } from '@/i18n/de';
 import { toUserMessage } from '@/lib/errors';
@@ -125,6 +126,7 @@ export default function ProfileScreen() {
           loading={signOut.isPending}
         />
       </Card>
+      <LogoEgg />
     </Screen>
   );
 }
