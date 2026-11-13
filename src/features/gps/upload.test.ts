@@ -34,6 +34,7 @@ const points: TrackPoint[] = Array.from({ length: 12 }, (_, i) => ({
   accuracy: 5,
   segment: 0,
   mocked: false,
+  altitude: null,
 }));
 
 const rpc = jest.mocked(supabase.rpc);

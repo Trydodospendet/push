@@ -2,6 +2,7 @@ import { decodeTrack, encodeTrack } from './codec';
 import { formatClock, formatKm, formatPace } from './format';
 import {
   haversineM,
+  liveSplits,
   measureTrack,
   paceSecondsPerKm,
   JUMP_RESET_STREAK,
@@ -31,6 +32,7 @@ function track(
     accuracy,
     segment: segmentFrom >= 0 && i >= segmentFrom ? 1 : 0,
     mocked: i === mockAt,
+    altitude: 100 + i * 0.5,
   }));
 }
 
@@ -87,6 +89,18 @@ describe('measureTrack (mirrors public.sync_gps_run)', () => {
   });
 });
 
+describe('liveSplits', () => {
+  it('gives one split per full kilometre with its time', () => {
+    const splits = liveSplits(track(400, 3));
+    expect(splits.map((split) => split.km)).toEqual([1, 2, 3]);
+    splits.forEach((split) => expect(Math.abs(split.seconds - 333)).toBeLessThanOrEqual(3));
+  });
+
+  it('is empty before the first kilometre', () => {
+    expect(liveSplits(track(100, 3))).toEqual([]);
+  });
+});
+
 describe('paceSecondsPerKm', () => {
   it('divides time by distance', () => {
     expect(paceSecondsPerKm(3000, 1000)).toBeCloseTo(333.3, 1);
@@ -131,7 +145,7 @@ describe('codec', () => {
     expect(encodeTrack(track(1000, 3)).length / 1000).toBeLessThan(25);
   });
 
-  it.each(['1,2,3', 'a,b,c,d,e,f;', '1,2,3,4,5,6,7;'])(
+  it.each(['1,2,3', 'a,b,c,d,e,f;', '1,2,3,4,5,6;', '1,2,3,4,5,6,7,8;'])(
     'returns nothing for damaged input %p',
     (text) => {
       expect(decodeTrack(text)).toEqual([]);
@@ -144,7 +158,7 @@ describe('codec', () => {
 });
 
 describe('recorderReducer', () => {
-  const sample = { lat: 52.5, lng: 13.4, t: 1000, accuracy: 5, mocked: false };
+  const sample = { lat: 52.5, lng: 13.4, t: 1000, accuracy: 5, mocked: false, altitude: null };
 
   function run(actions: Parameters<typeof recorderReducer>[1][]): RecorderState {
     return actions.reduce(recorderReducer, initialRecorderState);
@@ -221,11 +235,19 @@ describe('recorderReducer', () => {
 describe('buildUploadPayload', () => {
   it('uses the array format of public.sync_gps_run', () => {
     const payload = buildUploadPayload('run-1', [
-      { lat: 52.1234567, lng: 13.7654321, t: 5, accuracy: 4.26, segment: 1, mocked: true },
+      {
+        lat: 52.1234567,
+        lng: 13.7654321,
+        t: 5,
+        accuracy: 4.26,
+        segment: 1,
+        mocked: true,
+        altitude: 101.26,
+      },
     ]);
     expect(payload).toEqual({
       client_run_id: 'run-1',
-      points: [[52.123457, 13.765432, 5, 4.3, 1, 1]],
+      points: [[52.123457, 13.765432, 5, 4.3, 1, 1, 101.3]],
     });
   });
 });

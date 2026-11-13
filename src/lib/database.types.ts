@@ -848,6 +848,13 @@ export type Database = {
           value: number;
         }[];
       };
+      get_my_run_shapes: {
+        Args: { p_limit?: number };
+        Returns: {
+          run_id: string;
+          shape: Json;
+        }[];
+      };
       get_my_stats: {
         Args: Record<PropertyKey, never>;
         Returns: {

@@ -94,7 +94,7 @@ export function liveStats(points: readonly TrackPoint[]): LiveStats {
 export function buildUploadPayload(
   runId: string,
   points: readonly TrackPoint[],
-): { client_run_id: string; points: number[][] } {
+): { client_run_id: string; points: (number | null)[][] } {
   return {
     client_run_id: runId,
     points: points.map((point) => [
@@ -104,6 +104,7 @@ export function buildUploadPayload(
       Math.round(point.accuracy * 10) / 10,
       point.segment,
       point.mocked ? 1 : 0,
+      point.altitude === null ? null : Math.round(point.altitude * 10) / 10,
     ]),
   };
 }

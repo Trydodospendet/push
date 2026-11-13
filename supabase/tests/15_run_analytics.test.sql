@@ -2,7 +2,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 
-select plan(18);
+select plan(22);
 
 create function pg_temp.login(p_user_id uuid)
 returns void
@@ -147,7 +147,27 @@ select throws_ok(
   $$ select * from public.get_my_period_stats('year') $$,
   'P0001', 'invalid_period', 'only weeks and months exist'
 );
+-- Mini map shapes -------------------------------------------------------------------------------------------
+
+select results_eq(
+  $$ select jsonb_array_length(shape) between 10 and 29 from public.get_my_run_shapes() $$,
+  $$ values (true) $$,
+  'a run history entry has a shape of at most 28 points'
+);
+select ok(
+  (select bool_and((p->>0)::int between 0 and 1000 and (p->>1)::int between 0 and 1000)
+     from public.get_my_run_shapes(), jsonb_array_elements(shape) p),
+  'the shape is scaled into a 0-1000 box (no coordinates)'
+);
 select pg_temp.logout();
+select pg_temp.login('bbbbbbbb-0000-0000-0000-000000000002');
+select is((select count(*)::int from public.get_my_run_shapes()), 0, 'other people get no shapes of this run');
+select pg_temp.logout();
+
+select ok(
+  not has_function_privilege('anon', 'public.get_my_run_shapes(integer)', 'execute'),
+  'anonymous users cannot call the shapes function'
+);
 
 select ok(
   not has_function_privilege('anon', 'public.get_gps_run_splits(uuid)', 'execute')

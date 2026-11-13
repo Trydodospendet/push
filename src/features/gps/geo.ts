@@ -26,6 +26,8 @@ export type TrackPoint = {
   segment: number;
   /** The phone flagged the position as mocked (fake GPS). */
   mocked: boolean;
+  /** Altitude in metres above sea level, if the phone knows it. */
+  altitude: number | null;
 };
 
 export type Measurement = {
@@ -90,6 +92,55 @@ export function measureTrack(points: readonly TrackPoint[]): Measurement {
   }
 
   return { distanceM, movingS, usedPoints, jumps, mockedPoints };
+}
+
+export type LiveSplit = { km: number; seconds: number };
+
+/**
+ * Full kilometres so far with their time (display only; the server computes the real splits).
+ * The time inside the step that crosses a mark is interpolated.
+ */
+export function liveSplits(points: readonly TrackPoint[]): LiveSplit[] {
+  const splits: LiveSplit[] = [];
+  let distance = 0;
+  let time = 0;
+  let nextMark = 1000;
+  let splitStart = 0;
+  let prev: TrackPoint | null = null;
+  let jumpStreak = 0;
+  for (const point of points) {
+    if (point.accuracy > MAX_ACCURACY_M) {
+      continue;
+    }
+    if (prev === null || point.segment !== prev.segment) {
+      prev = point;
+      continue;
+    }
+    const seconds = (point.t - prev.t) / 1000;
+    if (seconds <= 0) {
+      continue;
+    }
+    const step = haversineM(prev.lat, prev.lng, point.lat, point.lng);
+    if (step / seconds > JUMP_SPEED_MS) {
+      jumpStreak += 1;
+      if (jumpStreak >= JUMP_RESET_STREAK) {
+        prev = point;
+        jumpStreak = 0;
+      }
+      continue;
+    }
+    jumpStreak = 0;
+    while (distance + step >= nextMark) {
+      const cross = time + seconds * ((nextMark - distance) / step);
+      splits.push({ km: splits.length + 1, seconds: Math.round(cross - splitStart) });
+      splitStart = cross;
+      nextMark += 1000;
+    }
+    distance += step;
+    time += seconds;
+    prev = point;
+  }
+  return splits;
 }
 
 /** Seconds per kilometre, or null while there is nothing to divide by. */
