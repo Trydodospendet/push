@@ -35,6 +35,9 @@ const privacySections: readonly LegalSection[] = [
       'Benachrichtigungen: Erinnerungen („Noch 2,3 km bis zum Ziel“, „Deine Challenge startet morgen“, „Dein Ergebnis ist da“) werden ausschließlich lokal auf deinem Handy geplant und angezeigt. Dafür wird kein Push-Server genutzt und es werden keine Daten an Dritte übermittelt. Du kannst sie im Profil oder in den Systemeinstellungen jederzeit ausschalten.',
       'GPS-Läufe (nur wenn du einen Lauf in der App aufzeichnest): Während der Aufzeichnung speichert die App deine Position (Breiten- und Längengrad), den Zeitpunkt, die Genauigkeit und ob das Handy die Position als gefälscht meldet. Sie läuft bei gesperrtem Bildschirm weiter, bis du den Lauf beendest; Android zeigt dafür eine dauerhafte Benachrichtigung. Außerhalb eines Laufs wird dein Standort nicht erfasst. Nach dem Lauf wird die Strecke auf den Server übertragen; dort werden Distanz und Zeit neu berechnet und auf Fälschungen geprüft.',
       'Die Strecke eines GPS-Laufs siehst ausschließlich du. Andere Teilnehmer sehen höchstens die Distanz. Auf der Karte in der App werden die ersten und letzten 200 Meter deiner Strecke ausgeblendet; diese Teile verlassen den Server nicht.',
+      'Profil und Sichtbarkeit: optional ein Profilbild (auf 256 × 256 Pixel verkleinert, in einem privaten Speicher; nur du kannst es sehen) und die Einstellung, in Ranglisten anonym zu bleiben – dann sehen andere „Anonym“ statt deines Namens.',
+      'Spenden: Entscheidest du dich, deinen Gewinnanteil zu spenden, wird das als Buchung (Betrag, Challenge, gewählte Organisation) gespeichert. Die Organisation erhält Summen ohne die Namen der Spender. Aktuell sind Credits virtuell.',
+      'Auskunft: In der App unter Profil → Daten & Datenschutz kannst du alle über dich gespeicherten Daten als Datei herunterladen.',
     ],
   },
   {

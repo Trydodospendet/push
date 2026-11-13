@@ -65,3 +65,45 @@
 - [x] 5. Grafiken: eigene SVG-Illustrationen (`src/components/art.tsx`, 17 Motive) in Einführung (5 Seiten), neuer Anleitung (`src/features/intro/guide.tsx`, 8 Schritte) und Leer-Zuständen; Skeleton-Ladezustände, `CountUp`, `Confetti`, `FadeIn`, `GlowBackdrop`, Haptik (Buttons, Chips, Erfolge); alles beachtet "Bewegung reduzieren" + eigenen Schalter.
 - [x] 6. Easter Eggs (geheime Abzeichen, im Profil als "???"): Marathon (Lauf ab 42,195 km), Frühaufsteher (Start 03:00–05:30), Neujahrslauf (Lauf am 1.1.), Glückszahl (7,777 km), Gut getippt (Logo im Profil 7x tippen, `claim_secret_badge`) – Migration `20261125090000_secret_badges.sql`, pgTAP `14_secret_badges`.
 - [x] 7. Qualitätsdurchgang (Teil 1): ErrorBoundary, Kontrast (`textMuted` heller: #8A8A8A, bewusste Abweichung von CLAUDE.md §9), Schriftgrößen-Obergrenze 1,5x, `steps_total` überall (Fortschritt, Aktivitätsliste, Erinnerungen), Simulationsskript auf Pool/Ranked/Spenden umgestellt.
+
+## Cloud-Aufgaben für morgen (nichts davon wurde ausgeführt)
+
+Reihenfolge einhalten. Alles in der Supabase-Cloud bzw. in den Dashboards; ich habe nichts
+hochgeladen, kein `db push`, kein `eas build`, kein `eas env`.
+
+1. **Backup**: Im Supabase-Dashboard unter Database → Backups prüfen, dass ein aktuelles Backup
+   existiert (die Migration `20261123090000` wandelt vorhandene Challenges um: alte „Ranked“-Pools
+   werden „Pool“, alte „Solo“-Ziele werden Pools mit Einladungscode, Wochen-Schlüssel werden
+   gelöscht).
+2. **Migrationen hochladen** (vom Projektordner, mit dem verknüpften Projekt):
+   `supabase db push` – es kommen alle Dateien ab `20261118090000_weekly_challenges.sql` bis zur
+   letzten (siehe Liste in `supabase/migrations/`). Danach im SQL-Editor prüfen:
+   `select jobname, schedule from cron.job;` (Jobs `advance-challenges`, `create-weekly-challenge`).
+3. **Storage**: Nach der Migration muss unter Storage der Bucket **avatars** existieren, **nicht
+   öffentlich**, Limit 512 KB, erlaubte Typen jpeg/png/webp (die Migration legt ihn an). Prüfen, dass
+   unter Policies vier Regeln „avatars: …“ stehen.
+4. **Auth-Einstellungen** (Authentication → Providers → Email / Sign In):
+   - Passwort-Anmeldung zulassen (Email-Provider an), **Minimale Passwortlänge 8**.
+   - **„Secure email change“ / doppelte Bestätigung ausschalten** (die App erwartet einen Code
+     an der neuen Adresse; siehe `supabase/config.toml`: `double_confirm_changes = false`).
+   - OTP-Länge 6 (wie bisher), Ablauf 3600 s.
+5. **E-Mail-Vorlagen** (Authentication → Email Templates), Inhalt aus den Dateien kopieren:
+   - _Confirm signup_ und _Magic Link_: `supabase/templates/sign-in-code.html`, Betreff „Dein Anmeldecode“.
+   - _Change Email Address_: `supabase/templates/email-change-code.html`, Betreff „Neue E-Mail-Adresse bestätigen“.
+     Danach einen Test-Code anfordern und die E-Mail ansehen (dunkel, Lime-Code).
+6. **Neue App-Version**: Die App braucht einen **neuen Development Build** (neue native Bausteine:
+   expo-notifications, expo-location, expo-task-manager, maplibre, expo-image-picker,
+   expo-image-manipulator, expo-haptics, react-native-svg). `eas build` erst nach dem Test mit den
+   lokalen Daten.
+7. **Spenden**: Die drei NGOs sind Platzhalter (Tabelle `ngos`). Sobald es echte Partner gibt:
+   Namen in der Tabelle ändern (Studio → Table Editor), nichts in der App.
+8. **Play Console**: Datenschutz-Seite (`docs/legal/privacy.html`) neu veröffentlichen (Feed,
+   GPS, Karten, Benachrichtigungen, Profilbild, Spenden sind ergänzt) und die Hinweise aus `docs/RELEASE.md` 2.8a (Vordergrunddienst-Formular).
+
+**Hinweis Datenschutz:** Die Datenschutzerklärung (App und `docs/legal/privacy.html`) nennt jetzt
+auch Profilbild, Anonymität in Ranglisten, Spenden-Buchungen und den Datenexport. Vor der
+Veröffentlichung wie alle Rechtstexte prüfen lassen.
+
+## Status Ausbau 1
+
+NACHT-AUFTRAG ERLEDIGT
