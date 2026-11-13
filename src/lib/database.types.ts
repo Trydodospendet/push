@@ -409,6 +409,49 @@ export type Database = {
           },
         ];
       };
+      friendships: {
+        Row: {
+          addressee_id: string;
+          created_at: string;
+          id: string;
+          requester_id: string;
+          responded_at: string | null;
+          status: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          addressee_id: string;
+          created_at?: string;
+          id?: string;
+          requester_id: string;
+          responded_at?: string | null;
+          status?: string;
+        };
+        Update: {
+          addressee_id?: string;
+          created_at?: string;
+          id?: string;
+          requester_id?: string;
+          responded_at?: string | null;
+          status?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'friendships_addressee_id_fkey';
+            columns: ['addressee_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'friendships_requester_id_fkey';
+            columns: ['requester_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       gps_runs: {
         Row: {
           base_reason: string | null;
@@ -472,6 +515,73 @@ export type Database = {
             columns: ['workout_id'];
             isOneToOne: false;
             referencedRelation: 'activity_workouts';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      group_members: {
+        Row: {
+          group_id: string;
+          joined_at: string;
+          user_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          group_id: string;
+          joined_at?: string;
+          user_id: string;
+        };
+        Update: {
+          group_id?: string;
+          joined_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'group_members_group_id_fkey';
+            columns: ['group_id'];
+            isOneToOne: false;
+            referencedRelation: 'groups';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'group_members_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      groups: {
+        Row: {
+          created_at: string;
+          id: string;
+          invite_code: string;
+          name: string;
+          owner_id: string | null;
+        };
+        ComputedFields: never;
+        Insert: {
+          created_at?: string;
+          id?: string;
+          invite_code: string;
+          name: string;
+          owner_id?: string | null;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          invite_code?: string;
+          name?: string;
+          owner_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'groups_owner_id_fkey';
+            columns: ['owner_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
             referencedColumns: ['id'];
           },
         ];
@@ -565,11 +675,13 @@ export type Database = {
           default_ngo_id: string | null;
           display_name: string;
           donate_default: boolean;
+          friend_code: string;
           id: string;
           onboarded_at: string | null;
           push_cheers: boolean;
           push_friends: boolean;
           push_results: boolean;
+          share_runs_with_friends: boolean;
           timezone: string;
         };
         ComputedFields: never;
@@ -580,11 +692,13 @@ export type Database = {
           default_ngo_id?: string | null;
           display_name: string;
           donate_default?: boolean;
+          friend_code?: string;
           id: string;
           onboarded_at?: string | null;
           push_cheers?: boolean;
           push_friends?: boolean;
           push_results?: boolean;
+          share_runs_with_friends?: boolean;
           timezone?: string;
         };
         Update: {
@@ -594,11 +708,13 @@ export type Database = {
           default_ngo_id?: string | null;
           display_name?: string;
           donate_default?: boolean;
+          friend_code?: string;
           id?: string;
           onboarded_at?: string | null;
           push_cheers?: boolean;
           push_friends?: boolean;
           push_results?: boolean;
+          share_runs_with_friends?: boolean;
           timezone?: string;
         };
         Relationships: [
@@ -692,6 +808,80 @@ export type Database = {
           },
         ];
       };
+      run_comments: {
+        Row: {
+          body: string;
+          created_at: string;
+          id: string;
+          user_id: string;
+          workout_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          body: string;
+          created_at?: string;
+          id?: string;
+          user_id: string;
+          workout_id: string;
+        };
+        Update: {
+          body?: string;
+          created_at?: string;
+          id?: string;
+          user_id?: string;
+          workout_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'run_comments_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'run_comments_workout_id_fkey';
+            columns: ['workout_id'];
+            isOneToOne: false;
+            referencedRelation: 'activity_workouts';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      run_kudos: {
+        Row: {
+          created_at: string;
+          user_id: string;
+          workout_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          created_at?: string;
+          user_id: string;
+          workout_id: string;
+        };
+        Update: {
+          created_at?: string;
+          user_id?: string;
+          workout_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'run_kudos_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'run_kudos_workout_id_fkey';
+            columns: ['workout_id'];
+            isOneToOne: false;
+            referencedRelation: 'activity_workouts';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       user_badges: {
         Row: {
           awarded_at: string;
@@ -754,6 +944,7 @@ export type Database = {
       [_ in never]: never;
     };
     Functions: {
+      add_run_comment: { Args: { p_body: string; p_workout_id: string }; Returns: string };
       advance_challenges: { Args: Record<PropertyKey, never>; Returns: number };
       cheer_feed_entry: { Args: { p_feed_id: string }; Returns: number };
       claim_secret_badge: { Args: { p_secret: string }; Returns: undefined };
@@ -800,8 +991,25 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      create_group: {
+        Args: { p_name: string };
+        Returns: {
+          created_at: string;
+          id: string;
+          invite_code: string;
+          name: string;
+          owner_id: string | null;
+        };
+        SetofOptions: {
+          from: '*';
+          to: 'groups';
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
       create_weekly_challenge: { Args: { p_now?: string }; Returns: string };
       delete_my_account: { Args: Record<PropertyKey, never>; Returns: undefined };
+      delete_run_comment: { Args: { p_comment_id: string }; Returns: undefined };
       export_my_data: { Args: { p_include_routes?: boolean }; Returns: Json };
       get_challenge_by_code: {
         Args: { p_code: string };
@@ -849,6 +1057,29 @@ export type Database = {
           kind: string;
         }[];
       };
+      get_friend_requests: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          created_at: string;
+          display_name: string;
+          id: string;
+        }[];
+      };
+      get_friend_runs: {
+        Args: { p_limit?: number };
+        Returns: {
+          comment_count: number;
+          display_name: string;
+          distance_m: number;
+          duration_s: number;
+          is_mine: boolean;
+          kudos_by_me: boolean;
+          kudos_count: number;
+          start_at: string;
+          user_id: string;
+          workout_id: string;
+        }[];
+      };
       get_gps_run_profile: {
         Args: { p_run_id: string };
         Returns: {
@@ -874,6 +1105,16 @@ export type Database = {
           km: number;
           pace_s_per_km: number;
           seconds: number;
+        }[];
+      };
+      get_group_board: {
+        Args: { p_group_id: string; p_period?: string };
+        Returns: {
+          display_name: string;
+          distance_m: number;
+          is_me: boolean;
+          rank: number;
+          runs: number;
         }[];
       };
       get_leaderboard: {
@@ -924,6 +1165,14 @@ export type Database = {
           title: string;
         }[];
       };
+      get_my_friend_code: { Args: Record<PropertyKey, never>; Returns: string };
+      get_my_friends: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          display_name: string;
+          user_id: string;
+        }[];
+      };
       get_my_gps_run_appeals: {
         Args: Record<PropertyKey, never>;
         Returns: {
@@ -943,6 +1192,15 @@ export type Database = {
           invalid_reason: string;
           is_valid: boolean;
           started_at: string;
+        }[];
+      };
+      get_my_groups: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          id: string;
+          invite_code: string;
+          member_count: number;
+          name: string;
         }[];
       };
       get_my_level: {
@@ -972,11 +1230,13 @@ export type Database = {
           default_ngo_id: string | null;
           display_name: string;
           donate_default: boolean;
+          friend_code: string;
           id: string;
           onboarded_at: string | null;
           push_cheers: boolean;
           push_friends: boolean;
           push_results: boolean;
+          share_runs_with_friends: boolean;
           timezone: string;
         };
         SetofOptions: {
@@ -1025,6 +1285,26 @@ export type Database = {
         }[];
       };
       get_potential_win: { Args: { p_challenge_id: string }; Returns: number };
+      get_run_comments: {
+        Args: { p_workout_id: string };
+        Returns: {
+          body: string;
+          created_at: string;
+          display_name: string;
+          id: string;
+          is_mine: boolean;
+        }[];
+      };
+      get_season_board: {
+        Args: { p_limit?: number };
+        Returns: {
+          display_name: string;
+          is_me: boolean;
+          points: number;
+          rank: number;
+        }[];
+      };
+      give_kudos: { Args: { p_workout_id: string }; Returns: undefined };
       join_challenge: {
         Args: { p_challenge_id: string; p_stake_cents?: number };
         Returns: {
@@ -1073,10 +1353,18 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      join_group: { Args: { p_code: string }; Returns: string };
       leave_challenge: { Args: { p_challenge_id: string }; Returns: number };
+      leave_group: { Args: { p_group_id: string }; Returns: undefined };
       mark_badge_seen: { Args: { p_badge: string }; Returns: undefined };
       recompute_progress: { Args: { p_challenge_id: string }; Returns: undefined };
       register_push_token: { Args: { p_platform: string; p_token: string }; Returns: undefined };
+      remove_friend: { Args: { p_user_id: string }; Returns: undefined };
+      respond_friend_request: {
+        Args: { p_accept: boolean; p_friendship_id: string };
+        Returns: undefined;
+      };
+      send_friend_request: { Args: { p_code: string }; Returns: string };
       set_avatar_path: { Args: { p_path?: string }; Returns: undefined };
       set_challenge_donation: {
         Args: { p_challenge_id: string; p_donate?: boolean; p_ngo_id?: string };
@@ -1091,11 +1379,13 @@ export type Database = {
           default_ngo_id: string | null;
           display_name: string;
           donate_default: boolean;
+          friend_code: string;
           id: string;
           onboarded_at: string | null;
           push_cheers: boolean;
           push_friends: boolean;
           push_results: boolean;
+          share_runs_with_friends: boolean;
           timezone: string;
         };
         SetofOptions: {
@@ -1111,6 +1401,7 @@ export type Database = {
         Returns: undefined;
       };
       set_ranking_visibility: { Args: { p_anonymous: boolean }; Returns: undefined };
+      set_share_runs: { Args: { p_share: boolean }; Returns: undefined };
       settle_challenge: { Args: { p_challenge_id: string }; Returns: boolean };
       submit_appeal: {
         Args: { p_message: string; p_workout_id: string };
