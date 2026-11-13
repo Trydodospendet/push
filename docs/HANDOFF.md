@@ -51,3 +51,10 @@
   (siehe `docs/SECURITY_NOTES.md` 8). iOS-Code weiterhin nicht auf einem Gerät getestet.
 - Die Kartenkacheln kommen von `tiles.openfreemap.org` (in der Datenschutzerklärung erwähnt).
 - `compileSdkVersion` ist unverändert 37.
+
+---
+
+# Ausbau-Auftrag (Branch `ausbau`, von `phase-8-gps`)
+
+## Fortschritt
+- [x] 1. Sicherheits-Check: `20261122090000_security_hardening.sql` (Rechte auf zwei Helfer-Funktionen entzogen, Default-Rechte für neue Tabellen/Funktionen geschlossen), `supabase/tests/11_security.test.sql` (prüft ALLE Tabellen/Funktionen generisch, auch spätere).
