@@ -823,3 +823,24 @@ npm run start:cloud -- --clear
 ```
 
 QR-Code scannen. Heute 3 km mit 20 Credits prüfen, eigene Werte/Datumsbereiche ausprobieren, Freundesziel ab morgen erstellen und Code teilen. Wallet/Community im Profil, Ranglisten-Beispiele innerhalb der Ranked-Details. Beim Trainingsplan zunächst Einführung durchgehen, Plan starten und Home ansehen. Falls GPS-Liste fehlschlägt: den nun sichtbaren technischen Fehlertext mitteilen; dieser Fehler ist noch nicht als behoben bestätigt.
+
+
+## Coach, Header und endgültige Zielauswertung
+
+Migration: 20261130130000_immediate_results.sql. Der gespeicherte Fortschritt wird am Zielende endgültig; synchronisiere vorher. Die Serverbuchung erfolgt im nächsten Zehn-Sekunden-Durchlauf. Diese App-Änderungen nutzen vorhandene native Module. Ein neuer Build wird erst für Firebase-Push nötig.
+
+PowerShell öffnen: Win + R, powershell, Enter. Nach Backup-Prüfung:
+
+```powershell
+cd "$HOME\Desktop\PUSH"
+npx supabase db push --remote --dry-run
+npx supabase db push --remote
+```
+
+Erwartet wird nur die oben genannte Migration. Anschließend den bestehenden Expo-Server mit Strg+C beenden und im sichtbaren Fenster starten:
+
+```powershell
+npm run start:cloud -- --clear
+```
+
+Gerätetest: Trainingsplan wischen, Bestätigung bei großer Schrift scrollen, Coach ziehen und antippen, Standort erlauben und draußen Tempo prüfen. Home-Schritte mit Laufen vergleichen. Lokale Testnachricht im Profil auslösen. Firebase-Push bleibt bis zur Einrichtung nach PUSH.md offen.

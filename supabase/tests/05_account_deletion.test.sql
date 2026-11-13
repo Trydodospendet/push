@@ -1,5 +1,7 @@
 -- Phase 5 – deleting an account: refunds, forfeits, anonymised ledger, settlement still adds up.
 begin;
+-- Preserve coverage of previously created goals with a synchronization grace period.
+alter table public.challenges alter column sync_grace_hours set default 24;
 create extension if not exists pgtap with schema extensions;
 
 select plan(26);

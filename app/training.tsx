@@ -1,3 +1,4 @@
+import { IntroPager } from '@/features/intro/intro-pager';
 import { Stack } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
@@ -44,6 +45,8 @@ export default function TrainingScreen() {
     );
   };
 
+  if (!active.isPending && !active.isError && !active.data && slide < de.improvements.slides.length)
+    return <IntroPager training onFinish={() => setSlide(de.improvements.slides.length)} />;
   return (
     <Screen scroll edges={SCREEN_EDGES} contentStyle={styles.content}>
       <Stack.Screen options={{ title: de.training.title }} />
@@ -58,19 +61,6 @@ export default function TrainingScreen() {
           sessions={sessions}
           onStop={() => setConfirmStop(true)}
         />
-      ) : slide < de.improvements.slides.length ? (
-        <Card style={styles.card}>
-          <Text variant="heading">{`${slide + 1} / ${de.improvements.slides.length}`}</Text>
-          <Text>{de.improvements.slides[slide]}</Text>
-          <Button
-            label={
-              slide === de.improvements.slides.length - 1
-                ? de.improvements.choose
-                : de.improvements.next
-            }
-            onPress={() => setSlide(slide + 1)}
-          />
-        </Card>
       ) : (
         <FadeIn style={styles.section}>
           <Text color="textSecondary">{de.training.intro}</Text>

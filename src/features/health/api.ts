@@ -30,6 +30,7 @@ export type DaySteps = {
 export function useMyProgress(userId: string) {
   return useQuery({
     queryKey: activityKeys.progress(userId),
+    refetchInterval: 10000,
     queryFn: async (): Promise<Record<string, number>> => {
       const { data, error } = await supabase.rpc('get_my_progress');
       if (error) {

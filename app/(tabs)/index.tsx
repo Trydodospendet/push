@@ -7,6 +7,9 @@ import { DEFAULT_TIMEZONE } from '@/config/app';
 import { useSession } from '@/features/auth/auth-provider';
 import { useMyChallenges } from '@/features/challenges/api';
 import { CompactGoal } from '@/features/challenges/compact-goal';
+import { LastGoalResult } from '@/features/challenges/last-goal-result';
+import { TodaySteps } from '@/features/health/today-card';
+import { useClock } from '@/features/gps/use-clock';
 import { useMyProgress } from '@/features/health/api';
 import { useHealth } from '@/features/health/health-provider';
 import { pickPrimaryChallenge } from '@/features/health/progress';
@@ -30,9 +33,13 @@ export default function HomeScreen() {
   const health = useHealth();
   const mine = useMyChallenges(session.user.id);
   const progress = useMyProgress(session.user.id);
+  const clock = useClock(true);
   const joined = mine.data?.filter(
     (challenge) =>
-      challenge.isParticipant && challenge.status !== 'settled' && challenge.status !== 'cancelled',
+      challenge.isParticipant &&
+      challenge.status !== 'settled' &&
+      challenge.status !== 'cancelled' &&
+      Date.parse(challenge.ends_at) > clock,
   );
   const primary = joined ? pickPrimaryChallenge(joined) : undefined;
   const timezone = primary?.timezone ?? DEFAULT_TIMEZONE;
@@ -75,7 +82,7 @@ export default function HomeScreen() {
           {de.home.label}
         </Text>
         <Card style={styles.how}>
-          <Text variant="title">{de.home.emptyTitle}</Text>
+          <Text variant="title">{mine.data.length ? de.coach.nextGoal : de.home.emptyTitle}</Text>
           <Text color="textSecondary">{de.home.emptyText}</Text>
           {setGoal}
         </Card>
@@ -87,6 +94,8 @@ export default function HomeScreen() {
             <Text key={step} color="textSecondary">{`${index + 1}. ${step}`}</Text>
           ))}
         </Card>
+        <LastGoalResult />
+        <TodaySteps />
         <HealthBanner />
         <StreakAndWeek userId={session.user.id} />
         {trainingCard}
@@ -118,7 +127,7 @@ export default function HomeScreen() {
         />
       }
     >
-      {setGoal}
+      <Text variant="title">{de.home.label}</Text>
       <HealthBanner />
       {primary ? (
         <>
@@ -146,6 +155,10 @@ export default function HomeScreen() {
           </Pressable>
         </>
       ) : null}
+      {setGoal}
+      <TodaySteps
+        target={primary?.goal_type === 'steps_daily' ? primary.target_value : undefined}
+      />
       {others.length > 0 ? (
         <View style={styles.others}>
           <Text variant="label" color="textSecondary" accessibilityRole="header">
@@ -161,6 +174,7 @@ export default function HomeScreen() {
           ))}
         </View>
       ) : null}
+      <LastGoalResult />
       <StreakAndWeek userId={session.user.id} />
       {trainingCard}
       <RecentWins userId={session.user.id} timezone={timezone} />

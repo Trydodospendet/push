@@ -1,3 +1,4 @@
+import { Coach } from '@/features/coach/coach';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { useFonts } from 'expo-font';
 import { router, Stack } from 'expo-router';
@@ -154,72 +155,84 @@ function AppStack({ isSignedIn, isOnboarded }: { isSignedIn: boolean; isOnboarde
           : '/onboarding/name';
 
   return (
-    <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg } }}>
-      <Stack.Protected guard={!isSignedIn} redirectTo={home}>
-        <Stack.Screen name="(auth)" />
-      </Stack.Protected>
-      <Stack.Protected guard={isSignedIn && !isSetUp} redirectTo={home}>
-        <Stack.Screen name="onboarding" />
-      </Stack.Protected>
-      <Stack.Protected guard={isSetUp} redirectTo={home}>
-        <Stack.Screen name="(tabs)" />
-        <Stack.Screen
-          name="wallet"
-          options={{
-            headerShown: true,
-            title: de.tabs.wallet,
-            headerStyle: { backgroundColor: colors.bg },
-            headerTintColor: colors.text,
-          }}
-        />
-        <Stack.Screen
-          name="pool"
-          options={{
-            headerShown: true,
-            title: de.improvements.pool,
-            headerStyle: { backgroundColor: colors.bg },
-            headerTintColor: colors.text,
-          }}
-        />
-        <Stack.Screen name="challenge" />
-        <Stack.Screen name="how-it-works" />
-        <Stack.Screen name="run" />
-        <Stack.Screen name="activity" />
-        <Stack.Screen name="settings" />
-        <Stack.Screen
-          name="social"
-          options={{
-            headerShown: true,
-            headerStyle: { backgroundColor: colors.bg },
-            headerTintColor: colors.text,
-            headerShadowVisible: false,
-            headerBackButtonDisplayMode: 'minimal',
-          }}
-        />
-        <Stack.Screen name="invite/[code]" />
-        <Stack.Screen name="join/[code]" />
-        <Stack.Screen
-          name="battery"
-          options={{
-            headerShown: true,
-            headerStyle: { backgroundColor: colors.bg },
-            headerTintColor: colors.text,
-            headerShadowVisible: false,
-            headerBackButtonDisplayMode: 'minimal',
-          }}
-        />
-        <Stack.Screen
-          name="help"
-          options={{
-            headerShown: true,
-            headerStyle: { backgroundColor: colors.bg },
-            headerTintColor: colors.text,
-            headerShadowVisible: false,
-            headerBackButtonDisplayMode: 'minimal',
-          }}
-        />
-      </Stack.Protected>
-      <Stack.Screen name="legal" />
-    </Stack>
+    <>
+      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg } }}>
+        <Stack.Protected guard={!isSignedIn} redirectTo={home}>
+          <Stack.Screen name="(auth)" />
+        </Stack.Protected>
+        <Stack.Protected guard={isSignedIn && !isSetUp} redirectTo={home}>
+          <Stack.Screen name="onboarding" />
+        </Stack.Protected>
+        <Stack.Protected guard={isSetUp} redirectTo={home}>
+          <Stack.Screen name="(tabs)" />
+          <Stack.Screen
+            name="wallet"
+            options={{
+              headerShown: true,
+              title: de.tabs.wallet,
+              headerStyle: { backgroundColor: colors.bg },
+              headerTintColor: colors.text,
+            }}
+          />
+          <Stack.Screen
+            name="pool"
+            options={{
+              headerShown: true,
+              title: de.improvements.pool,
+              headerStyle: { backgroundColor: colors.bg },
+              headerTintColor: colors.text,
+            }}
+          />
+          <Stack.Screen name="challenge" />
+          <Stack.Screen name="how-it-works" />
+          <Stack.Screen name="run" />
+          <Stack.Screen
+            name="training"
+            options={{
+              headerShown: true,
+              title: de.training.title,
+              headerStyle: { backgroundColor: colors.bg },
+              headerTintColor: colors.text,
+            }}
+          />
+          <Stack.Screen name="activity" />
+          <Stack.Screen name="settings" />
+          <Stack.Screen
+            name="social"
+            options={{
+              headerShown: true,
+              headerStyle: { backgroundColor: colors.bg },
+              headerTintColor: colors.text,
+              headerShadowVisible: false,
+              headerBackButtonDisplayMode: 'minimal',
+            }}
+          />
+          <Stack.Screen name="invite/[code]" />
+          <Stack.Screen name="join/[code]" />
+          <Stack.Screen
+            name="battery"
+            options={{
+              headerShown: true,
+              headerStyle: { backgroundColor: colors.bg },
+              headerTintColor: colors.text,
+              headerShadowVisible: false,
+              headerBackButtonDisplayMode: 'minimal',
+            }}
+          />
+          <Stack.Screen
+            name="help"
+            options={{
+              headerShown: true,
+              headerStyle: { backgroundColor: colors.bg },
+              headerTintColor: colors.text,
+              headerShadowVisible: false,
+              headerBackButtonDisplayMode: 'minimal',
+            }}
+          />
+        </Stack.Protected>
+        <Stack.Screen name="legal" />
+      </Stack>
+      {isSetUp ? <Coach key={home} /> : null}
+    </>
   );
 }

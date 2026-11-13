@@ -77,3 +77,13 @@ export async function applyPlan(plan: readonly PlannedReminder[]): Promise<void>
 export async function cancelAll(): Promise<void> {
   await Notifications.cancelAllScheduledNotificationsAsync();
 }
+
+/** A local delivery check, independent of Firebase and server configuration. */
+export async function sendTestNotification(): Promise<boolean> {
+  if ((await requestPermission()) !== 'granted') return false;
+  await Notifications.scheduleNotificationAsync({
+    content: { title: de.coach.hello, body: de.coach.ongoing },
+    trigger: null,
+  });
+  return true;
+}

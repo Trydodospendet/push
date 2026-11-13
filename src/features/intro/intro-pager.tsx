@@ -9,7 +9,7 @@ import {
   type ScrollViewInstance,
 } from 'react-native';
 
-import { Art, Button, Screen, Text } from '@/components';
+import { Art, Button, Screen, Text, FadeIn, type ArtName } from '@/components';
 import { healthSourceName } from '@/features/health/platform';
 import { de } from '@/i18n/de';
 import { colors, radius, spacing } from '@/theme';
@@ -17,14 +17,25 @@ import { colors, radius, spacing } from '@/theme';
 export type IntroPagerProps = {
   /** Called by "Los geht's" on the last page and by "Überspringen". */
   onFinish: () => void;
+  training?: boolean;
 };
 
 /** Swipeable pages: how it works, automatic checking, pool, ranked, donations. */
-export function IntroPager({ onFinish }: IntroPagerProps) {
+export function IntroPager({ onFinish, training = false }: IntroPagerProps) {
   const { width } = useWindowDimensions();
   const scroll = useRef<ScrollViewInstance>(null);
   const [index, setIndex] = useState(0);
-  const pages = de.intro.pages(healthSourceName);
+  const pages = training
+    ? de.intro
+        .pages(healthSourceName)
+        .slice(0, 3)
+        .map((page, i) => ({
+          ...page,
+          art: (['run', 'calendar', 'trophy'] as ArtName[])[i],
+          title: de.coach.trainingTitles[i],
+          text: de.improvements.slides[i],
+        }))
+    : de.intro.pages(healthSourceName);
   const last = index === pages.length - 1;
 
   const onScrollEnd = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
@@ -55,12 +66,14 @@ export function IntroPager({ onFinish }: IntroPagerProps) {
       >
         {pages.map((page, pageIndex) => (
           <View
-            key={page.title}
+            key={pageIndex}
             style={[styles.page, { width }]}
             accessible
             accessibilityLabel={`${de.intro.pageOf(pageIndex + 1, pages.length)}. ${page.title}. ${page.text}`}
           >
-            <Art name={page.art} size={176} />
+            <FadeIn key={`${pageIndex}-${index}`}>
+              <Art name={page.art} size={176} />
+            </FadeIn>
             <View style={styles.texts}>
               <Text variant="title" align="center" accessibilityRole="header">
                 {page.title}
@@ -75,7 +88,7 @@ export function IntroPager({ onFinish }: IntroPagerProps) {
       <View style={styles.footer}>
         <View style={styles.dots} accessibilityElementsHidden>
           {pages.map((page, dotIndex) => (
-            <View key={page.title} style={[styles.dot, dotIndex === index && styles.dotActive]} />
+            <View key={dotIndex} style={[styles.dot, dotIndex === index && styles.dotActive]} />
           ))}
         </View>
         <Button label={last ? de.intro.start : de.intro.next} onPress={next} />

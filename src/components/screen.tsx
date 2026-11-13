@@ -1,4 +1,4 @@
-import type { ReactElement, ReactNode } from 'react';
+import { createContext, useContext, type ReactElement, type ReactNode } from 'react';
 import {
   ScrollView,
   StyleSheet,
@@ -10,6 +10,8 @@ import {
 import { SafeAreaView, type Edge } from 'react-native-safe-area-context';
 
 import { colors, spacing } from '@/theme';
+
+export const ScreenHeaderContext = createContext(false);
 
 export type ScreenProps = {
   children: ReactNode;
@@ -32,8 +34,13 @@ export function Screen({
   edges,
   testID,
 }: ScreenProps) {
+  const hasHeader = useContext(ScreenHeaderContext);
   return (
-    <SafeAreaView style={styles.root} edges={edges} testID={testID}>
+    <SafeAreaView
+      style={styles.root}
+      edges={edges ?? (hasHeader ? ['bottom', 'left', 'right'] : undefined)}
+      testID={testID}
+    >
       {scroll ? (
         <ScrollView
           contentContainerStyle={[styles.content, styles.scrollContent, contentStyle]}

@@ -17,6 +17,7 @@ import { useSession } from '@/features/auth/auth-provider';
 import { useCreateGoal } from '@/features/challenges/api';
 import { describeGoal, formatTarget, suggestTitle } from '@/features/challenges/format';
 import { createGoalSchema, goalPeriodDays } from '@/features/challenges/schemas';
+import { useNgos } from '@/features/donations/api';
 import { useWalletBalance } from '@/features/wallet/api';
 import { de } from '@/i18n/de';
 import { addDays, formatDayLabel, toLocalDate } from '@/lib/dates';
@@ -52,6 +53,9 @@ export default function SetGoalScreen() {
   const router = useRouter();
   const session = useSession();
   const profile = useMyProfile(session.user.id);
+  const ngos = useNgos();
+  const [donate, setDonate] = useState(false);
+  const [ngoId, setNgoId] = useState<string | null>(null);
   const balance = useWalletBalance(session.user.id);
   const create = useCreateGoal();
 
@@ -75,8 +79,6 @@ export default function SetGoalScreen() {
   const label = startDate || endDate ? `${first} – ${last}` : periodLabel(period, first, last);
   const title = `${suggestTitle(goalType, targetValue)} · ${label}`;
   // The settlement follows 24 hours after the period ended (time to synchronise).
-  const settlementDay =
-    /^\d{4}-\d{2}-\d{2}$/.test(last) && !Number.isNaN(Date.parse(last)) ? addDays(last, 2) : today;
 
   const goalOptions: ChipOption<GoalType>[] = GOAL_TYPES.map((type) => ({
     value: type,
@@ -123,6 +125,8 @@ export default function SetGoalScreen() {
       startDate: first,
       endDate: last,
       withFriends,
+      donate,
+      ngoId: ngoId ?? ngos.data?.[0]?.id ?? null,
     });
     if (!result.success) {
       setError(result.error.issues[0]?.message ?? de.create.invalidInput);
@@ -142,6 +146,8 @@ export default function SetGoalScreen() {
       startDate: first,
       endDate: last,
       withFriends,
+      donate,
+      ngoId: ngoId ?? ngos.data?.[0]?.id ?? null,
     });
     if (!result.success) {
       setError(de.create.invalidInput);
@@ -230,6 +236,24 @@ export default function SetGoalScreen() {
           {de.create.stakeHint}
         </Text>
       </View>
+      <ChipGroup
+        label={de.donations.choice}
+        options={[
+          { value: 'keep', label: de.donations.keep },
+          { value: 'donate', label: de.donations.donate },
+        ]}
+        value={donate ? 'donate' : 'keep'}
+        onChange={(value) => setDonate(value === 'donate')}
+      />
+      {donate ? (
+        <ChipGroup
+          label={de.donations.ngo}
+          options={(ngos.data ?? []).map((n) => ({ value: n.id, label: n.name }))}
+          value={ngoId ?? ngos.data?.[0]?.id ?? ''}
+          onChange={setNgoId}
+        />
+      ) : null}
+      <Text color="textMuted">{de.coach.locked}</Text>
       <View style={styles.group}>
         {error && !confirming ? (
           <Text variant="caption" color="danger" accessibilityRole="alert">
@@ -251,7 +275,8 @@ export default function SetGoalScreen() {
       >
         <Text>{de.create.confirmGoal(describeGoal(goalType, targetValue), label)}</Text>
         <Text>{de.create.confirmStake(stake)}</Text>
-        <Text color="textSecondary">{de.create.confirmReturn(formatDayLabel(settlementDay))}</Text>
+        <Text color="textSecondary">{de.coach.winReturn}</Text>
+        <Text color="textSecondary">{de.coach.cutoff}</Text>
         <Text color="textSecondary">{de.create.confirmMissed}</Text>
         <Text color="accent">{de.create.confirmBound(first, first === today)}</Text>
         {balance.data !== undefined ? (

@@ -1,3 +1,5 @@
+import { useClock } from '@/features/gps/use-clock';
+import { progressRatio } from '@/features/health/progress';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { RefreshControl, Share, StyleSheet, View } from 'react-native';
@@ -122,6 +124,7 @@ function ChallengeDetail({
   started,
   clearStarted,
 }: ChallengeDetailProps) {
+  const clock = useClock(true);
   const join = useJoinChallenge();
   const leave = useLeaveChallenge();
   const health = useHealth();
@@ -223,7 +226,10 @@ function ChallengeDetail({
       ) : null}
 
       {staked && isParticipant && !isFinished(challenge) ? (
-        <ChallengeDonationCard challengeId={challenge.id} />
+        <ChallengeDonationCard
+          challengeId={challenge.id}
+          locked={Date.parse(challenge.starts_at) <= clock}
+        />
       ) : null}
 
       <PotCard challenge={challenge} />
@@ -442,10 +448,23 @@ function ResultCard({
   me: Participant;
   result: ChallengeResult | null;
 }) {
+  const ownProgress = useMyProgress(useSession().user.id);
   let title: string;
   let text: string | null = null;
   if (challenge.status === 'settling') {
-    title = de.challenge.resultPending;
+    const value = ownProgress.data?.[challenge.id];
+    title =
+      value === undefined
+        ? de.challenge.resultPending
+        : progressRatio(
+              challenge.goal_type as import('@/config/app').GoalType,
+              value,
+              challenge.target_value,
+              challengeDays(challenge).days,
+            ) >= 1
+          ? de.coach.won
+          : de.coach.missed;
+    text = de.coach.closed;
   } else if (challenge.status === 'cancelled' || me.result === 'refunded') {
     title = de.challenge.resultCancelled;
     text =

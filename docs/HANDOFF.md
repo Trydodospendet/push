@@ -1,6 +1,18 @@
 # Übergabe – Branch `ausbau`
 
-## Aktueller Ausbau: freie Ziele und Navigation
+## Aktueller Stand: Coach und sofortige Ergebnisse (14.11.2026)
+
+- Nutzerentscheidung: Am Zielende endgültig abrechnen; verspätete Synchronisierung zählt nicht. Neue Migration 20261130130000_immediate_results.sql friert den gespeicherten Fortschritt am Ende ein, setzt die Kulanzzeit auf null und den Abrechnungsjob auf zehn Sekunden. Neue sofortige Ziele werden direkt aktiv. Alte Abrechnungstests behalten ausdrücklich ihre historische Kulanzzeit; neue Cutoff-Tests prüfen die neue Regel.
+- Gewinnverwendung wird bei Teilnahme festgehalten, kann vor Beginn gewählt und ab Start nicht mehr geändert werden. Profiländerungen beeinflussen laufende Ziele nicht.
+- Header mit Zielfortschritt, Zielsetzen unter dem aktiven Ziel, abgeschlossene Ziele separat. Heutige Schritte und Wochen-Schrittsumme zusätzlich zu gemessenen Laufkilometern; laufende App synchronisiert Health regelmäßig.
+- Trainingsplan-Einführung mit Wischseiten, Grafiken und Übergängen. Header und scrollbar begrenzte Bestätigungsfenster berücksichtigen Kameraaussparungen; Karten erhalten dezente Schatten.
+- Kleiner verschiebbarer Laufhase in Akzentfarbe mit Sprechblase, Blickbewegung, Schwindelanimation, Ausblenden und Tempoansicht. Entwicklungsstufen nach 2/7/30/90 aktiven Tagen ab erster Coach-Nutzung; lokaler Speicher pro Konto. GPS-Tempo erfordert Standortfreigabe, läuft nur im Vordergrund und speichert keine Strecke. Begrüßung nutzt Fortschrittsdifferenzen und Zielergebnisse.
+- Typecheck, Lint, 285 Jest-Tests (42 Suites), 555 pgTAP-Tests (21 Dateien) erfolgreich. Oberfläche und GPS-Tempo noch auf dem Gerät prüfen.
+- Cloud-Dry-run listet nur 20261130130000_immediate_results.sql. Flexible Ziele sind inzwischen angewendet. Cloud-Push bleibt gemäß CLAUDE.md dem Nutzer vorbehalten.
+- Push offen: Nutzer hat noch kein Firebase-Projekt; google-services.json fehlt. Supabase functions list liefert keine bereitgestellten Funktionen. Lokale Testnachricht ist unter Profil → Benachrichtigungen verfügbar. Firebase, FCM-Zugang, neuer Android-Build und Versandfunktion/Cron stehen aus. Kein Build oder Cloud-Push durch Agenten ausführen.
+- Browser-Einrichtung wurde bisher durch Computer-Use gestoppt, weil die aktuelle Chrome-URL nicht verlässlich erkannt wurde. Erneuter Versuch nach Nutzerfortsetzung; persönliche Anmeldung nicht automatisieren.
+
+## Vorheriger Ausbau: freie Ziele und Navigation
 
 - Cloud-Schema read-only geprüft: `create_goal` in der Cloud setzt bei heute `starts_at = now()` und ruft danach `private.join` auf. Das erklärt `challenge_not_open`; die bisherige Migrationsliste hatte diese Funktionsabweichung nicht erkannt.
 - Neue Migration `20261130120000_flexible_goals.sql`: Eigentümer-Buchung atomar bei Erstellung, neue RPC für Start-/Enddatum und private Freundesziele. Beispiel 3 km / heute / 20 Credits lokal geprüft. Cloud-Anwendung steht aus; Dry-run listet genau diese eine Migration.

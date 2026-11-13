@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react';
-import { Modal, Pressable, StyleSheet, View } from 'react-native';
+import { Modal, Pressable, ScrollView, StyleSheet, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { colors, layout, radius, scrim, spacing } from '@/theme';
@@ -18,6 +18,7 @@ export type SheetProps = {
 /** Bottom sheet for confirmations (e.g. joining a challenge). Slides in, no shadows. */
 export function Sheet({ visible, title, onClose, children, closeLabel }: SheetProps) {
   const insets = useSafeAreaInsets();
+  const { height } = useWindowDimensions();
 
   return (
     <Modal
@@ -36,14 +37,25 @@ export function Sheet({ visible, title, onClose, children, closeLabel }: SheetPr
           accessibilityLabel={closeLabel}
         />
         <View
-          style={[styles.sheet, { paddingBottom: insets.bottom + spacing.lg }]}
+          style={[
+            styles.sheet,
+            {
+              maxHeight: height - insets.top - spacing.md,
+              paddingBottom: insets.bottom + spacing.lg,
+            },
+          ]}
           accessibilityViewIsModal
         >
           <View style={styles.handle} />
           <Text variant="heading" accessibilityRole="header">
             {title}
           </Text>
-          {children}
+          <ScrollView
+            keyboardShouldPersistTaps="handled"
+            contentContainerStyle={{ gap: spacing.md }}
+          >
+            {children}
+          </ScrollView>
         </View>
       </View>
     </Modal>

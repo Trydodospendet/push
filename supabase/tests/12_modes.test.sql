@@ -1,5 +1,7 @@
 -- Ausbau – pool with different stakes, donations, and ranked without stake.
 begin;
+-- Preserve coverage of previously created goals with a synchronization grace period.
+alter table public.challenges alter column sync_grace_hours set default 24;
 create extension if not exists pgtap with schema extensions;
 
 select plan(53);
@@ -209,10 +211,15 @@ select is(
 
 -- Same pool as "prop"; user 1 donates the share by choice for this challenge, user 2 through the
 -- default in the profile, user 4 has a default but turns it off for this challenge.
+update public.profiles set donate_default=true, default_ngo_id='00000000-0000-4000-a000-000000000002' where id=pg_temp.u(2);
+update public.profiles set donate_default=true, default_ngo_id='00000000-0000-4000-a000-000000000003' where id=pg_temp.u(4);
 select pg_temp.finished('donate', 7, 0, array[1, 2, 3, 4], array[1000, 3000, 2000, 1000]::bigint[]);
 select pg_temp.run(1, 'donate', 5000);
 select pg_temp.run(2, 'donate', 5000);
 select pg_temp.run(4, 'donate', 5000);
+-- Choices are made before the start; restore the past window for settlement afterwards.
+create temp table donation_window as select starts_at,ends_at,status from public.challenges where id=pg_temp.c('donate');
+update public.challenges set starts_at=now()+interval '1 day',ends_at=now()+interval '3 days',status='open' where id=pg_temp.c('donate');
 
 select pg_temp.login(pg_temp.u(1));
 select public.set_challenge_donation(pg_temp.c('donate'), true, '00000000-0000-4000-a000-000000000001');
@@ -250,6 +257,7 @@ select pg_temp.logout();
 
 -- Winners 1 (1.00), 2 (3.00), 4 (1.00); loser 3 (2.00) → distributable 20.00 over 5.00 of stakes:
 -- shares 4.00, 12.00, 4.00.
+update public.challenges c set starts_at=w.starts_at,ends_at=w.ends_at,status=w.status from donation_window w where c.id=pg_temp.c('donate');
 select public.settle_challenge(pg_temp.c('donate'));
 
 
@@ -332,6 +340,7 @@ select is(
 );
 
 -- Winner without a chosen NGO: the first active one.
+update public.profiles set donate_default=true where id=pg_temp.u(5);
 select pg_temp.finished('donate_first', 9, 0, array[5, 6], array[1000, 1000]::bigint[]);
 select pg_temp.run(5, 'donate_first', 5000);
 update public.profiles set donate_default = true where id = pg_temp.u(5);

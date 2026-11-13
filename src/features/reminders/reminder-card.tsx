@@ -5,6 +5,7 @@ import { Button, Card, Text } from '@/components';
 import { de } from '@/i18n/de';
 import { colors, layout, spacing } from '@/theme';
 
+import { sendTestNotification } from './notifications';
 import { useReminders } from './reminder-provider';
 
 const pad = (value: number) => String(value).padStart(2, '0');
@@ -14,6 +15,7 @@ const MINUTE_STEP = 15;
 export function ReminderCard() {
   const reminders = useReminders();
   const { settings } = reminders;
+  const [testMessage, setTestMessage] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
   const shift = (hourDelta: number, minuteDelta: number) => {
@@ -58,6 +60,16 @@ export function ReminderCard() {
           />
         </>
       ) : null}
+      <Button
+        label={de.coach.testNotification}
+        variant="secondary"
+        onPress={() => {
+          void sendTestNotification()
+            .then((ok) => setTestMessage(ok ? de.coach.testSent : de.reminders.deniedHint))
+            .catch(() => setTestMessage(de.common.genericError));
+        }}
+      />
+      {testMessage ? <Text>{testMessage}</Text> : null}
       {settings.enabled ? (
         <View style={styles.timeRow}>
           <Text color="textSecondary">{de.reminders.timeLabel}</Text>

@@ -1,5 +1,7 @@
 -- Phase 4 / Ausbau – pool settlement, lifecycle, ranking and scheduler.
 begin;
+-- Preserve coverage of previously created goals with a synchronization grace period.
+alter table public.challenges alter column sync_grace_hours set default 24;
 create extension if not exists pgtap with schema extensions;
 
 select plan(68);
@@ -108,10 +110,10 @@ update public.profiles set display_name = 'Nutzer ' || right(id::text, 1);
 
 select is(
   (select count(*)::int from cron.job
-    where jobname = 'advance-challenges' and schedule = '*/5 * * * *'
+    where jobname = 'advance-challenges' and schedule = '10 seconds'
       and command = 'select public.advance_challenges()'),
   1,
-  'pg_cron runs advance_challenges every 5 minutes'
+  'pg_cron runs advance_challenges every 10 seconds'
 );
 
 select is(

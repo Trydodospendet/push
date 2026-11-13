@@ -1,8 +1,11 @@
 import { StyleSheet, View } from 'react-native';
 
 import { Button, Card, EmptyState, Icon, LoadingState, Text } from '@/components';
+import { useMyDailySteps } from '@/features/health/api';
+import { useMyProfile } from '@/features/auth/api';
+import { DEFAULT_TIMEZONE } from '@/config/app';
+import { addDays, toLocalDate, formatDateTime } from '@/lib/dates';
 import { de } from '@/i18n/de';
-import { formatDateTime } from '@/lib/dates';
 import { formatAmount } from '@/lib/money';
 import { colors, layout, radius, spacing } from '@/theme';
 
@@ -15,6 +18,9 @@ const RECENT_WINS = 3;
 export function StreakAndWeek({ userId }: { userId: string }) {
   const stats = useMyStats(userId);
   const week = useMyWeek(userId);
+  const profile = useMyProfile(userId);
+  const today = toLocalDate(new Date(), profile.data?.timezone ?? DEFAULT_TIMEZONE);
+  const steps = useMyDailySteps(userId, addDays(today, -6), today, true);
 
   if (stats.isPending || week.isPending) {
     return <LoadingState />;
@@ -62,6 +68,18 @@ export function StreakAndWeek({ userId }: { userId: string }) {
         </Text>
         <Card>
           <WeekChart days={week.data} />
+          {steps.data ? (
+            <Text>
+              {steps.data
+                .filter((day) => day.isValid)
+                .reduce((sum, day) => sum + day.steps, 0)
+                .toLocaleString('de-DE')}{' '}
+              {de.coach.weekSteps}
+            </Text>
+          ) : null}
+          <Text variant="caption" color="textMuted">
+            {de.coach.stepsNote}
+          </Text>
         </Card>
       </View>
     </>

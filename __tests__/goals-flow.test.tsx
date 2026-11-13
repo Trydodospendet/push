@@ -101,7 +101,7 @@ describe('goals', () => {
     const created = goal();
     mockDb.set({ challenges: [], challenge_participants: [], wallets: { balance_cents: 10000 } });
     mockRpc({
-      create_scheduled_goal: () => {
+      create_goal_with_preferences: () => {
         mockDb.set({
           challenges: [created],
           challenge_participants: [participant(created)],
@@ -122,14 +122,17 @@ describe('goals', () => {
     await user.press(screen.getByRole('button', { name: 'Weiter' }));
 
     // Nothing is booked yet: first the confirmation with all consequences.
-    expect(supabaseMock.rpc).not.toHaveBeenCalledWith('create_scheduled_goal', expect.anything());
+    expect(supabaseMock.rpc).not.toHaveBeenCalledWith(
+      'create_goal_with_preferences',
+      expect.anything(),
+    );
     expect(
       await screen.findByText(
         'Du setzt 10,00 Credits. Der Betrag wird jetzt von deinem Guthaben abgebucht.',
       ),
     ).toBeOnTheScreen();
     expect(
-      screen.getByText(/Schaffst du dein Ziel, kommt dein Einsatz am .* zurück/),
+      screen.getByText(/Schaffst du dein Ziel, bekommst du nach dem Ende deinen Einsatz zurück/),
     ).toBeOnTheScreen();
     expect(
       screen.getByText('Verfehlst du dein Ziel, verfällt dein Einsatz in den Pool.'),
@@ -142,7 +145,7 @@ describe('goals', () => {
     await user.press(screen.getByRole('button', { name: '10,00 Credits setzen' }));
 
     expect(supabaseMock.rpc).toHaveBeenCalledWith(
-      'create_scheduled_goal',
+      'create_goal_with_preferences',
       expect.objectContaining({
         p_goal_type: 'run_total',
         p_target_value: 10000,

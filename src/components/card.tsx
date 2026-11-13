@@ -18,6 +18,11 @@ const styles = StyleSheet.create({
     borderWidth: layout.borderWidth,
     borderRadius: radius.card,
     padding: spacing.md,
+    elevation: 3,
+    shadowColor: colors.bg,
+    shadowOpacity: 0.15,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
   },
   raised: {
     backgroundColor: colors.surfaceRaised,

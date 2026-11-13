@@ -6,8 +6,8 @@ const HOUR_MS = 60 * MINUTE_MS;
 
 /** Daily reminders are planned this many days ahead; every sync plans them again. */
 const DAILY_HORIZON_DAYS = 3;
-/** The server settles on the next 5-minute run after the grace period; wait a bit longer. */
-const SETTLEMENT_DELAY_MS = 10 * MINUTE_MS;
+/** Allow the ten-second server scheduler time to book the result. */
+const SETTLEMENT_DELAY_MS = MINUTE_MS;
 
 export type ReminderSettings = {
   enabled: boolean;

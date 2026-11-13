@@ -1,3 +1,5 @@
+import { ScreenHeaderContext } from '@/components/screen';
+import { GoalHeader } from '@/features/challenges/goal-header';
 import { Tabs } from 'expo-router';
 
 import { Icon, type IconName } from '@/components';
@@ -13,10 +15,11 @@ function tabIcon(name: IconName, focusedName: IconName) {
 
 export default function TabsLayout() {
   return (
-    <>
+    <ScreenHeaderContext.Provider value={true}>
       <Tabs
         screenOptions={{
-          headerShown: false,
+          headerShown: true,
+          header: () => <GoalHeader />,
           sceneStyle: { backgroundColor: colors.bg },
           tabBarActiveTintColor: colors.text,
           tabBarInactiveTintColor: colors.textMuted,
@@ -63,6 +66,6 @@ export default function TabsLayout() {
         />
       </Tabs>
       <WinCelebration />
-    </>
+    </ScreenHeaderContext.Provider>
   );
 }

@@ -99,7 +99,7 @@ describe('planReminders', () => {
     const plan = planReminders([ch], {}, settings, now);
     const result = plan.find((entry) => entry.key === 'result-c1');
     expect(result?.body).toBe('Dein Ergebnis ist da.');
-    expect(result?.at.getTime()).toBe(Date.parse(ch.endsAt) + 24 * HOUR + 10 * 60_000);
+    expect(result?.at.getTime()).toBe(Date.parse(ch.endsAt) + 24 * HOUR + 60_000);
   });
 
   it('plans nothing for settled challenges and sorts by time', () => {

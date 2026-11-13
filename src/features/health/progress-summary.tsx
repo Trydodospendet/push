@@ -1,3 +1,4 @@
+import { TodaySteps } from './today-card';
 import { StyleSheet, View } from 'react-native';
 
 import { ProgressBar, ProgressRing, Text } from '@/components';
@@ -92,6 +93,9 @@ export function ProgressSummary({
       </View>
       <ProgressBar progress={ratio} accessibilityLabel={de.progress.barLabel} />
       {status}
+      {challenge.goal_type === 'steps_daily' ? (
+        <TodaySteps target={challenge.target_value} />
+      ) : null}
       {footerText}
     </View>
   );

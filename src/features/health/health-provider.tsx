@@ -194,7 +194,13 @@ export function HealthProvider({ userId, timezone, children }: HealthProviderPro
         void runSync(true);
       }
     });
-    return () => subscription.remove();
+    const timer = setInterval(() => {
+      if (AppState.currentState === 'active') void runSync(true);
+    }, AUTO_SYNC_INTERVAL_MS);
+    return () => {
+      subscription.remove();
+      clearInterval(timer);
+    };
   }, [connected, runSync]);
 
   const value = useMemo<HealthContextValue>(

@@ -53,7 +53,7 @@ export function PushCard() {
           await secureStorage.removeItem(storageKey(userId));
           setEnabled(false);
         });
-    void task.finally(() => setBusy(false));
+    void task.catch(() => setMessage('unavailable')).finally(() => setBusy(false));
   };
 
   const kinds = {

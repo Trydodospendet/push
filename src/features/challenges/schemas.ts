@@ -30,6 +30,8 @@ export const createGoalSchema = z
     startDate: z.string().optional(),
     endDate: z.string().optional(),
     withFriends: z.boolean().optional(),
+    donate: z.boolean().optional(),
+    ngoId: z.string().nullable().optional(),
   })
   .refine(
     ({ goalType, targetValue }) =>

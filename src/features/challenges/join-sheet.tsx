@@ -3,6 +3,8 @@ import { StyleSheet, View } from 'react-native';
 
 import { Button, ChipGroup, Sheet, Text, type ChipOption } from '@/components';
 import { STAKE_PRESETS_CENTS } from '@/config/app';
+import { useMyProfile } from '@/features/auth/api';
+import { DonationDefaultsCard } from '@/features/donations/donation-cards';
 import { useSession } from '@/features/auth/auth-provider';
 import { useWalletBalance } from '@/features/wallet/api';
 import { de } from '@/i18n/de';
@@ -35,6 +37,7 @@ export function JoinSheet({
   error,
 }: JoinSheetProps) {
   const session = useSession();
+  const profile = useMyProfile(session.user.id);
   const balance = useWalletBalance(session.user.id);
   const [chosen, setChosen] = useState<number | null>(null);
   const ranked = mode === 'ranked';
@@ -64,6 +67,14 @@ export function JoinSheet({
             value={stake}
             onChange={setChosen}
           />
+          {profile.data ? (
+            <DonationDefaultsCard
+              userId={session.user.id}
+              donate={profile.data.donate_default}
+              ngoId={profile.data.default_ngo_id}
+            />
+          ) : null}
+          <Text color="textMuted">{de.coach.locked}</Text>
           <Text>{de.joinSheet.stakeChosen(formatAmount(stake))}</Text>
           {balance.data !== undefined ? (
             <Text variant="caption" color="textSecondary">

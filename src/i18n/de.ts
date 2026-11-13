@@ -135,6 +135,34 @@ const imprintSections: readonly LegalSection[] = [
 
 /** All user-facing texts of the app. Screens and components never hard-code strings. */
 export const de = {
+  coach: {
+    trainingTitles: ['Dein Laufziel', 'Dein Rhythmus', 'Dein Fortschritt'],
+    testNotification: 'Testnachricht senden',
+    testSent: 'Lokale Testnachricht gesendet. Server-Push braucht zusätzlich Firebase.',
+    nextGoal: 'Bereit für deinen nächsten Schritt?',
+    today: 'HEUTE',
+    stepsNote: 'Schritte und erfasste Laufkilometer sind unterschiedliche Werte.',
+    hello: 'Willkommen zurück!',
+    more: 'Weiter so – seit deinem letzten Besuch:',
+    won: 'Ziel geschafft! Du kannst stolz auf dich sein.',
+    missed: 'Diesmal hat es nicht gereicht. Dein nächster Schritt zählt trotzdem.',
+    ongoing: 'Jeder Schritt bringt dich weiter. Dein Tempo zählt.',
+    stages: ['Ei', 'Baby-Hase', 'Junger Hase', 'Laufpartner', 'Erfahrener Coach'],
+    speed: 'km/h',
+    noGps: 'Warte auf ein genaues GPS-Signal. Standortfreigabe erforderlich.',
+    move: 'Coach verschieben; antippen für Tempo',
+    progress: 'Dein Ziel im Blick',
+    winReturn:
+      'Schaffst du dein Ziel, bekommst du nach dem Ende deinen Einsatz zurück und gegebenenfalls einen Gewinnanteil. Die Buchung erfolgt automatisch.',
+    cutoff:
+      'Am Zielende zählt nur der bereits synchronisierte Stand. Später übertragene Aktivitäten zählen nicht mehr.',
+    closed:
+      'Zielzeit beendet. Der gespeicherte Stand ist endgültig; die Buchung folgt automatisch.',
+    locked: 'Die Verwendung deines Gewinnanteils ist ab dem Start festgelegt.',
+    weekSteps: 'Schritte in den letzten sieben Tagen',
+    hide: 'Coach ausblenden',
+    show: 'Coach anzeigen',
+  },
   improvements: {
     startDate: 'Startdatum (JJJJ-MM-TT)',
     endDate: 'Letzter Tag (JJJJ-MM-TT)',
@@ -623,7 +651,9 @@ export const de = {
     ruleOnlyPeriod: 'Es zählen nur Aktivitäten, die im Zeitraum beginnen.',
     ruleManual: 'Manuelle Einträge zählen nicht – nur automatisch aufgezeichnete Daten.',
     ruleGrace: (hours: number) =>
-      `Nach dem Ende hast du ${hours} Stunden Zeit, deine Daten zu synchronisieren.`,
+      hours === 0
+        ? 'Synchronisiere vor dem Ende. Danach wird der gespeicherte Stand endgültig abgerechnet.'
+        : `Nach dem Ende hast du ${hours} Stunden Zeit, deine Daten zu synchronisieren.`,
     ruleMinParticipants: (min: number) =>
       `Sind beim Start weniger als ${min} Personen dabei, wird die Challenge abgesagt und alle bekommen ihren Einsatz zurück.`,
     rulePayout:
@@ -662,7 +692,7 @@ export const de = {
     resultDonated: (amount: string) => `Davon hast du ${amount} Credits gespendet.`,
     resultCancelled: 'Challenge abgesagt.',
     resultRefundText: (amount: string) => `Dein Einsatz von ${amount} Credits wurde erstattet.`,
-    resultPending: 'Die Auswertung läuft. Das Ergebnis erscheint nach der Synchronisierungsfrist.',
+    resultPending: 'Zielzeit beendet. Die automatische Ergebnisbuchung wird aktualisiert.',
     yourProgress: 'DEIN FORTSCHRITT',
     progressPending: 'Dein Fortschritt erscheint hier, sobald die Challenge läuft.',
     progressCancelled: 'Die Challenge wurde abgesagt.',
@@ -740,7 +770,7 @@ export const de = {
     confirmStake: (amount: string) =>
       `Du setzt ${amount} Credits. Der Betrag wird jetzt von deinem Guthaben abgebucht.`,
     confirmReturn: (day: string) =>
-      `Schaffst du dein Ziel, kommt dein Einsatz am ${day} zurück – plus ein Anteil an den verfallenen Einsätzen aller, die ihr Ziel im selben Zeitraum erreichen. (Die Abrechnung folgt 24 Stunden nach Ende des Zeitraums, damit alle Daten synchronisiert werden können.)`,
+      `Schaffst du dein Ziel, kommt dein Einsatz am ${day} zurück – plus ein Anteil an den verfallenen Einsätzen aller, die ihr Ziel im selben Zeitraum erreichen.`,
     confirmMissed: 'Verfehlst du dein Ziel, verfällt dein Einsatz in den Pool.',
     confirmBound: (start: string, startsToday: boolean) =>
       startsToday

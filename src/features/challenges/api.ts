@@ -51,6 +51,7 @@ export function useOpenChallenges(mode: 'ranked' | 'pool') {
 export function useMyChallenges(userId: string) {
   return useQuery({
     queryKey: challengeKeys.mine(userId),
+    refetchInterval: 10000,
     queryFn: async (): Promise<MyChallenge[]> => {
       const [joined, created] = await Promise.all([
         supabase
@@ -89,6 +90,7 @@ export function useMyChallenges(userId: string) {
 export function useChallenge(id: string) {
   return useQuery({
     queryKey: challengeKeys.detail(id),
+    refetchInterval: 10000,
     queryFn: async (): Promise<Challenge | null> => {
       const { data, error } = await supabase
         .from('challenges')
@@ -176,7 +178,7 @@ export function useCreateGoal() {
     mutationFn: async (input: CreateGoalInput): Promise<Challenge> => {
       const { data, error } =
         input.startDate && input.endDate
-          ? await supabase.rpc('create_scheduled_goal', {
+          ? await supabase.rpc('create_goal_with_preferences', {
               p_title: input.title,
               p_goal_type: input.goalType,
               p_target_value: input.targetValue,
@@ -184,6 +186,8 @@ export function useCreateGoal() {
               p_start_date: input.startDate,
               p_end_date: input.endDate,
               p_with_friends: input.withFriends ?? false,
+              p_donate: input.donate ?? false,
+              p_ngo_id: input.ngoId ?? null,
             })
           : await supabase.rpc('create_goal', {
               p_title: input.title,

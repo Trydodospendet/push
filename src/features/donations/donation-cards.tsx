@@ -80,7 +80,13 @@ export function DonationDefaultsCard({
 type Choice = 'default' | 'donate' | 'keep';
 
 /** Challenge detail: decide for this pool whether the winnings are donated. */
-export function ChallengeDonationCard({ challengeId }: { challengeId: string }) {
+export function ChallengeDonationCard({
+  challengeId,
+  locked = false,
+}: {
+  challengeId: string;
+  locked?: boolean;
+}) {
   const current = useMyChallengeDonation(challengeId, true);
   const save = useSetChallengeDonation(challengeId);
   const options = useNgoOptions();
@@ -99,6 +105,13 @@ export function ChallengeDonationCard({ challengeId }: { challengeId: string }) 
   }
 
   const data = current.data;
+  if (locked)
+    return (
+      <Card>
+        <Text>{data.effectiveDonate ? de.donations.nowDonating : de.donations.nowKeeping}</Text>
+        <Text variant="caption">{de.coach.locked}</Text>
+      </Card>
+    );
   const choice: Choice = data.donate === null ? 'default' : data.donate ? 'donate' : 'keep';
   const choices: ChipOption<Choice>[] = [
     { value: 'default', label: de.donations.useDefault },
