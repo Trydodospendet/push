@@ -1,6 +1,6 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Linking, StyleSheet, Switch, View } from 'react-native';
 
 import { Avatar, Button, Card, ErrorState, LoadingState, Screen, Sheet, Text } from '@/components';
 import { DEFAULT_TIMEZONE } from '@/config/app';
@@ -9,11 +9,12 @@ import { useSession } from '@/features/auth/auth-provider';
 import { useHealth } from '@/features/health/health-provider';
 import { healthSourceName } from '@/features/health/platform';
 import { useLastSyncText } from '@/features/health/sync-status';
+import { useReminders } from '@/features/reminders/reminder-provider';
 import { useMyStats } from '@/features/stats/api';
 import { toUserMessage } from '@/lib/errors';
 import { formatAmount } from '@/lib/money';
 import { de } from '@/i18n/de';
-import { spacing } from '@/theme';
+import { colors, layout, spacing } from '@/theme';
 
 /** Name, email, health connection, legal pages, sign-out and account deletion. */
 export default function ProfileScreen() {
@@ -58,6 +59,7 @@ export default function ProfileScreen() {
         onPress={() => router.push('/how-it-works')}
       />
       <HealthCard timezone={profile.data?.timezone ?? DEFAULT_TIMEZONE} />
+      <ReminderCard />
       <Card style={styles.card}>
         <Text variant="label" color="textSecondary">
           {de.profile.legalLabel}
@@ -214,6 +216,108 @@ function StatsCard({ userId }: { userId: string }) {
   );
 }
 
+const pad = (value: number) => String(value).padStart(2, '0');
+const MINUTE_STEP = 15;
+
+/** Daily reminder on/off and time; the time is chosen with four buttons (no extra library). */
+function ReminderCard() {
+  const reminders = useReminders();
+  const { settings } = reminders;
+  const [busy, setBusy] = useState(false);
+
+  const shift = (hourDelta: number, minuteDelta: number) => {
+    const total =
+      (settings.hour * 60 + settings.minute + hourDelta * 60 + minuteDelta + 1440) % 1440;
+    void reminders.setTime(Math.floor(total / 60), total % 60);
+  };
+
+  return (
+    <Card style={styles.card}>
+      <Text variant="label" color="textSecondary">
+        {de.reminders.label}
+      </Text>
+      <View style={styles.toggleRow}>
+        <View style={styles.toggleText}>
+          <Text>{de.reminders.toggle}</Text>
+          <Text variant="caption" color="textMuted">
+            {de.reminders.toggleHint}
+          </Text>
+        </View>
+        <Switch
+          value={settings.enabled}
+          disabled={busy || !reminders.ready}
+          accessibilityLabel={de.reminders.toggle}
+          trackColor={{ false: colors.border, true: colors.accent }}
+          thumbColor={colors.text}
+          onValueChange={(value) => {
+            setBusy(true);
+            void reminders.setEnabled(value).finally(() => setBusy(false));
+          }}
+        />
+      </View>
+      {reminders.permission === 'denied' && !settings.enabled ? (
+        <>
+          <Text variant="caption" color="danger" accessibilityRole="alert">
+            {de.reminders.deniedHint}
+          </Text>
+          <Button
+            label={de.reminders.openSettings}
+            variant="secondary"
+            onPress={() => void Linking.openSettings()}
+          />
+        </>
+      ) : null}
+      {settings.enabled ? (
+        <View style={styles.timeRow}>
+          <Text color="textSecondary">{de.reminders.timeLabel}</Text>
+          <View style={styles.stepper}>
+            <View style={styles.stepButton}>
+              <Button
+                label="−"
+                accessibilityLabel={de.reminders.hourDown}
+                variant="secondary"
+                onPress={() => shift(-1, 0)}
+              />
+            </View>
+            <View style={styles.stepButton}>
+              <Button
+                label="+"
+                accessibilityLabel={de.reminders.hourUp}
+                variant="secondary"
+                onPress={() => shift(1, 0)}
+              />
+            </View>
+          </View>
+          <Text variant="heading" style={styles.statValue}>
+            {de.reminders.time(pad(settings.hour), pad(settings.minute))}
+          </Text>
+          <View style={styles.stepper}>
+            <View style={styles.stepButton}>
+              <Button
+                label="−"
+                accessibilityLabel={de.reminders.minuteDown}
+                variant="secondary"
+                onPress={() => shift(0, -MINUTE_STEP)}
+              />
+            </View>
+            <View style={styles.stepButton}>
+              <Button
+                label="+"
+                accessibilityLabel={de.reminders.minuteUp}
+                variant="secondary"
+                onPress={() => shift(0, MINUTE_STEP)}
+              />
+            </View>
+          </View>
+        </View>
+      ) : null}
+      <Text variant="caption" color="textMuted">
+        {de.reminders.localOnlyHint}
+      </Text>
+    </Card>
+  );
+}
+
 function HealthCard({ timezone }: { timezone: string }) {
   const health = useHealth();
   const lastSync = useLastSyncText(timezone);
@@ -291,6 +395,26 @@ const styles = StyleSheet.create({
   },
   statValue: {
     fontVariant: ['tabular-nums'],
+  },
+  toggleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: spacing.md,
+    minHeight: layout.minTouchTarget,
+  },
+  toggleText: {
+    flex: 1,
+  },
+  timeRow: {
+    gap: spacing.sm,
+  },
+  stepButton: {
+    flex: 1,
+  },
+  stepper: {
+    flexDirection: 'row',
+    gap: spacing.sm,
   },
   footer: {
     flex: 1,

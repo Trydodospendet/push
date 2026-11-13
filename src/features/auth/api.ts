@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { clearHealthState } from '@/features/health/storage';
+import { clearReminderSettings } from '@/features/reminders/storage';
 import { clearIntroSeen } from '@/features/intro/storage';
 import { clearCelebrationState } from '@/features/stats/celebration-storage';
 import type { Database } from '@/lib/database.types';
@@ -64,6 +65,7 @@ export function useDeleteAccount(userId: string) {
         clearHealthState(userId),
         clearIntroSeen(userId),
         clearCelebrationState(userId),
+        clearReminderSettings(userId),
       ]);
       // The user no longer exists on the server, so only the local session is removed.
       await supabase.auth.signOut({ scope: 'local' });

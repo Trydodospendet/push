@@ -1,0 +1,132 @@
+import type { GoalType } from '@/config/app';
+import { de } from '@/i18n/de';
+
+const MINUTE_MS = 60_000;
+const HOUR_MS = 60 * MINUTE_MS;
+
+/** Daily reminders are planned this many days ahead; every sync plans them again. */
+const DAILY_HORIZON_DAYS = 3;
+/** The server settles on the next 5-minute run after the grace period; wait a bit longer. */
+const SETTLEMENT_DELAY_MS = 10 * MINUTE_MS;
+
+export type ReminderSettings = {
+  enabled: boolean;
+  /** Local time of the daily reminder. */
+  hour: number;
+  minute: number;
+};
+
+export const defaultReminderSettings: ReminderSettings = { enabled: false, hour: 18, minute: 0 };
+
+export type ReminderChallenge = {
+  id: string;
+  title: string;
+  goalType: GoalType;
+  targetValue: number;
+  status: string;
+  startsAt: string;
+  endsAt: string;
+  syncGraceHours: number;
+};
+
+export type PlannedReminder = {
+  /** Stable key, so the same reminder is always the same notification. */
+  key: string;
+  title: string;
+  body: string;
+  at: Date;
+};
+
+const kmFormat = new Intl.NumberFormat('de-DE', { maximumFractionDigits: 1 });
+const integerFormat = new Intl.NumberFormat('de-DE', { maximumFractionDigits: 0 });
+
+/** Metres left until a run goal, or null if the goal is already reached. */
+function remainingMeters(challenge: ReminderChallenge, progress: number): number | null {
+  const left = challenge.targetValue - progress;
+  return left > 0 ? left : null;
+}
+
+function atTime(day: Date, settings: ReminderSettings): Date {
+  const result = new Date(day);
+  result.setHours(settings.hour, settings.minute, 0, 0);
+  return result;
+}
+
+/**
+ * Plans the local notifications for the signed-in user. Pure: it only decides when and what;
+ * it never decides who reached a goal (the server does). `progress` is the last known server
+ * value per challenge, so a reminder text can be older than the latest run until the next sync.
+ */
+export function planReminders(
+  challenges: readonly ReminderChallenge[],
+  progress: Readonly<Record<string, number>>,
+  settings: ReminderSettings,
+  now: Date,
+): PlannedReminder[] {
+  if (!settings.enabled) {
+    return [];
+  }
+  const planned: PlannedReminder[] = [];
+
+  for (const challenge of challenges) {
+    const startsAt = new Date(challenge.startsAt);
+    const endsAt = new Date(challenge.endsAt);
+
+    if (challenge.status === 'open') {
+      const dayBefore = new Date(startsAt.getTime() - 24 * HOUR_MS);
+      const at = atTime(dayBefore, settings);
+      if (at > now && at < startsAt) {
+        planned.push({
+          key: `start-${challenge.id}`,
+          title: challenge.title,
+          body: de.reminders.startsTomorrow,
+          at,
+        });
+      }
+    }
+
+    if (['open', 'active', 'settling'].includes(challenge.status)) {
+      const settleAt = new Date(
+        endsAt.getTime() + challenge.syncGraceHours * HOUR_MS + SETTLEMENT_DELAY_MS,
+      );
+      if (settleAt > now) {
+        planned.push({
+          key: `result-${challenge.id}`,
+          title: challenge.title,
+          body: de.reminders.resultReady,
+          at: settleAt,
+        });
+      }
+    }
+
+    if (challenge.status === 'active' || challenge.status === 'open') {
+      const value = progress[challenge.id] ?? 0;
+      const left = challenge.goalType === 'steps_daily' ? null : remainingMeters(challenge, value);
+      const reachedRunGoal = challenge.goalType !== 'steps_daily' && left === null;
+      if (reachedRunGoal) {
+        continue;
+      }
+      const body =
+        challenge.goalType === 'steps_daily'
+          ? de.reminders.stepsOpen(integerFormat.format(challenge.targetValue))
+          : de.reminders.kmLeft(kmFormat.format((left ?? 0) / 1000));
+
+      for (let offset = 0; offset < DAILY_HORIZON_DAYS; offset += 1) {
+        const day = new Date(now);
+        day.setDate(day.getDate() + offset);
+        const at = atTime(day, settings);
+        // Only while the challenge runs; nothing on days when it has not started or is over.
+        if (at > now && at >= startsAt && at < endsAt) {
+          planned.push({
+            key: `daily-${challenge.id}-${offset}`,
+            title: challenge.title,
+            body,
+            at,
+          });
+        }
+      }
+    }
+  }
+
+  return planned.sort((a, b) => a.at.getTime() - b.at.getTime());
+}

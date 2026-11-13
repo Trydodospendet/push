@@ -31,7 +31,8 @@ const privacySections: readonly LegalSection[] = [
       'Gesundheits- und Fitnessdaten (Health Connect bzw. Apple Health), nur lesend und nur aus den letzten 45 Tagen: Lauf-Workouts (Beginn, Ende, Distanz, Dauer, Name der aufzeichnenden App und ob der Lauf von Hand eingetragen wurde) sowie deine Schritte pro Tag.',
       `${APP_NAME} schreibt keine Daten in Health Connect oder Apple Health und liest keine anderen Gesundheitsdaten (z. B. keine Herzfrequenz, kein Gewicht, keine GPS-Routen).`,
       'Technische Daten: Bei jeder Verbindung zum Server werden IP-Adresse, Zeitpunkt und Art der Anfrage in Server-Protokollen des Hosting-Anbieters erfasst.',
-      'Auf deinem Gerät: deine Anmeldung und der Verbindungsstatus zu den Gesundheitsdaten, gespeichert im verschlüsselten Gerätespeicher.',
+      'Auf deinem Gerät: deine Anmeldung, der Verbindungsstatus zu den Gesundheitsdaten und deine Erinnerungs-Einstellungen (an/aus, Uhrzeit), gespeichert im verschlüsselten Gerätespeicher.',
+      'Benachrichtigungen: Erinnerungen („Noch 2,3 km bis zum Ziel“, „Deine Challenge startet morgen“, „Dein Ergebnis ist da“) werden ausschließlich lokal auf deinem Handy geplant und angezeigt. Dafür wird kein Push-Server genutzt und es werden keine Daten an Dritte übermittelt. Du kannst sie im Profil oder in den Systemeinstellungen jederzeit ausschalten.',
     ],
   },
   {
@@ -554,6 +555,27 @@ export const de = {
     howItWorks: "So funktioniert's",
     accountLabel: 'KONTO',
     deleteAccount: 'Konto löschen',
+  },
+  reminders: {
+    label: 'ERINNERUNGEN',
+    toggle: 'Tägliche Erinnerung',
+    toggleHint: 'Erinnert dich auf diesem Handy, solange ein Ziel offen ist.',
+    timeLabel: 'Uhrzeit',
+    time: (hour: string, minute: string) => `${hour}:${minute} Uhr`,
+    hourUp: 'Eine Stunde später',
+    hourDown: 'Eine Stunde früher',
+    minuteUp: '15 Minuten später',
+    minuteDown: '15 Minuten früher',
+    kmLeft: (km: string) => `Noch ${km} km bis zum Ziel.`,
+    stepsOpen: (steps: string) => `Dein Tagesziel von ${steps} Schritten ist noch offen.`,
+    startsTomorrow: 'Deine Challenge startet morgen.',
+    resultReady: 'Dein Ergebnis ist da.',
+    deniedHint:
+      'Benachrichtigungen sind für PUSH ausgeschaltet. Erlaube sie in den Systemeinstellungen.',
+    openSettings: 'Einstellungen öffnen',
+    localOnlyHint:
+      'Die Erinnerungen werden nur auf deinem Handy geplant. Es werden keine Daten dafür an einen Server geschickt.',
+    channelName: 'Erinnerungen',
   },
   deleteAccount: {
     title: 'Konto endgültig löschen?',

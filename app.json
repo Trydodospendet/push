@@ -37,6 +37,12 @@
       "expo-font",
       "expo-secure-store",
       [
+        "expo-notifications",
+        {
+          "color": "#C6FF00"
+        }
+      ],
+      [
         "@kingstinct/react-native-healthkit",
         {
           "NSHealthShareUsageDescription": "PUSH liest deine Lauf-Workouts, Geh- und Laufdistanz sowie Tagesschritte, damit Challenges automatisch geprüft werden können. PUSH schreibt keine Gesundheitsdaten.",

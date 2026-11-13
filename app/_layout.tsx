@@ -11,6 +11,7 @@ import { AuthProvider, useAuth } from '@/features/auth/auth-provider';
 import { DEFAULT_TIMEZONE } from '@/config/app';
 import { HealthProvider, useHealth } from '@/features/health/health-provider';
 import { IntroProvider, useIntro } from '@/features/intro/intro-provider';
+import { ReminderProvider } from '@/features/reminders/reminder-provider';
 import { de } from '@/i18n/de';
 import { createQueryClient } from '@/lib/query-client';
 import { colors, fontAssets } from '@/theme';
@@ -91,7 +92,9 @@ function RootNavigator() {
       timezone={profile.data?.timezone ?? DEFAULT_TIMEZONE}
     >
       <IntroProvider userId={session?.user.id ?? null}>
-        <AppStack isSignedIn={isSignedIn} isOnboarded={isOnboarded} />
+        <ReminderProvider userId={session?.user.id ?? null}>
+          <AppStack isSignedIn={isSignedIn} isOnboarded={isOnboarded} />
+        </ReminderProvider>
       </IntroProvider>
     </HealthProvider>
   );
