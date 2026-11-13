@@ -144,3 +144,94 @@ Alle Punkte 9–16 sind umgesetzt und getestet (typecheck, lint ohne Warnungen, 
 6. Rechtstexte (Datenschutz, Impressum) müssen vor Veröffentlichung juristisch geprüft werden.
 
 AUSBAU-2 ERLEDIGT
+
+---
+
+# Ausbau 3 (gleicher Branch `ausbau`)
+
+Ziel: Der wichtigste Weg ist beim ersten Öffnen verständlich – Ziel setzen → Einsatz festlegen →
+Aktivität wird automatisch übernommen → Ergebnis sehen.
+
+## Fortschritt Ausbau 3
+
+- [x] 1. **Home und Einführung:** Zentraler Knopf „Ziel setzen“ (Home zeigt nur noch ihn;
+      „Challenge finden“, „GPS-Lauf starten“, „Freunde & Liga“ und „Trainingsplan“ sind weg).
+      Leerer Zustand mit 4-Schritte-Erklärung; die Einführung (5 Seiten) und die Anleitung erklären den
+      neuen Ablauf und wo man den Fortschritt sieht (Home + Tab Aktivität). Mehrere Ziele: das
+      wichtigste groß, weitere als kleine Zeilen (`src/features/challenges/compact-goal.tsx`).
+      Freunde & Liga: Karte oben im Tab Ranked. Trainingsplan: Knopf im Tab Aktivität.
+- [x] 2. **Tab „Aktivität“** (`app/(tabs)/activity.tsx`, es gab ihn vorher nicht – er ist neu und
+      in `app/(tabs)/_layout.tsx` eingetragen): Läufe der letzten 45 Tage und Schritte der letzten 7
+      Tage aus dem Server (kommen automatisch per Sync aus Health Connect), Zustände: keine Aktivitäten /
+      Verbindung fehlt (Banner + Knopf) / Sync fehlgeschlagen (Banner + „Erneut versuchen“) / Laden /
+      Fehler. Strecke: `app/activity/[recordId].tsx` liest die Strecke per `requestExerciseRoute`
+      (Health Connect fragt je Strecke um Erlaubnis; Anzeige auf der Karte wie bei GPS-Läufen, **nur auf
+      dem Handy, nicht hochgeladen**). „Lauf aufzeichnen“ (eigenes GPS) bleibt im Tab.
+- [x] 3. **Persönliche Ziele mit Einsatz:** Migration `20261130090000_goals_and_ranked_cycles.sql`:
+      Modus `goal`, `create_goal(title, goal_type, target, stake, period)` (Zeitraum Morgen / nächste
+      Woche Mo–So / nächster Monat; Start nie heute; Einsatz wird sofort gebunden; bis zum Start
+      `leave_challenge`, danach nicht mehr). Abrechnung **pro Zeitraum** (`private.settle_goal_window`):
+      alle Ziele mit gleichem `ends_at` werden zusammen abgerechnet, die verfallenen Einsätze gehen an
+      alle, die ihr Ziel erreicht haben, im Verhältnis zum Einsatz (kein Mindestziel), Rundung und
+      Gebühr (`fee_bps`) beim Haus, Spenden-Wahl wie bisher. **Summe je Ziel = 0:** der Anteil eines
+      Gewinners ist eine Haus-Belastung (`payout`, negativ) auf seinem Ziel, die verfallenen Einsätze
+      sind Haus-Gutschriften (`forfeit`/`fee`/`rounding`) auf den verfehlten Zielen. Idempotent
+      (Advisory-Lock je Zeitraum, Status `settling` → `settled`). Die bisherige Pool-Abrechnung
+      heißt jetzt `private.settle_single`, `public.settle_challenge` verteilt. pgTAP `19_goals`,
+      `04_settlement`/`07_weekly`/`11_security`/`12_modes` angepasst. App: Bestätigungs-Fenster mit
+      Einsatz, Rückbuchung und Bindung (`app/challenge/create.tsx`), Detail mit „Topf dieses
+      Zeitraums“ (`get_goal_window`).
+- [x] 4. **Pool und Ranked:** Pool = Gesamtübersicht (`get_pool_overview`: Personen, Ziele, gebundene
+      Credits; nur Summen) + Kurzübersicht der festen Wettbewerbe + „Code eingeben“ für alte
+      Gruppen-Challenges. „Gerade am Laufen“ gibt es **nicht**: GPS-Läufe werden erst nach dem Lauf
+      hochgeladen, es lässt sich nicht feststellen. Ranked = feste Ranglisten täglich/wöchentlich/
+      monatlich für meiste km und meiste Schritte (`create_ranked_cycles`, pg_cron täglich 12:00 UTC,
+      Schlüssel `D…`/`W…`/`M…` + `-km`/`-steps`), Mitmachen ja, **Erstellen entfernt** (Server lehnt
+      `create_challenge` mit `ranked` ab), kein Einsatz, keine Auszahlung; plus Freunde & Liga.
+- [x] 5. **Registrieren / Anmelden getrennt:** Welcome mit zwei Knöpfen; `app/(auth)/sign-up.tsx`
+      (E-Mail + Passwort ×2 → Code → Passwort wird direkt nach der Bestätigung gesetzt; das Passwort
+      liegt nur im Arbeitsspeicher, `signup-draft.ts`). Anmelden: Passwort ist Standard, Code bleibt;
+      Anmelden per Code legt **kein** Konto mehr an (`shouldCreateUser: false`). E-Mail-Versand
+      unverändert; neues Skript `npm run start:cloud` (`scripts/start-cloud.js`) startet Expo mit
+      `.env.production` (in `docs/SETUP.md` 5.12 erklärt).
+- [x] 6. **FAQ und Prüfung:** FAQ an den neuen Ablauf angepasst; Testanleitung in `docs/SETUP.md`
+      5.12 und `docs/TESTING.md` H; Zeitraffer-Skript spielt jetzt auch drei Ziele durch.
+
+## Stand der Prüfungen (Ausbau 3)
+
+`npx tsc --noEmit`, `npx expo lint`, Jest (283 Tests in 41 Dateien) und
+`supabase test db` (19 Dateien, 538 Prüfungen) sind grün. Das Zeitraffer-Skript lief lokal bis zur Abrechnung
+(Summe je Ziel 0, zweiter Aufruf bucht nichts).
+
+## Cloud-Aufgaben nach Ausbau 3 (nichts davon ausgeführt)
+
+1. **Backup** prüfen, dann **`supabase db push`** – neu ist `20261130090000_goals_and_ranked_cycles`
+   (zusätzlich zu den Migrationen aus „Cloud-Aufgaben“ oben). Sie benennt `settle_challenge` um,
+   entfernt `create_weekly_challenge`, ersetzt den Cron-Job `create-weekly-challenge` durch
+   `create-ranked-cycles` und legt sofort die ersten Ranglisten an. Danach im SQL-Editor:
+   `select jobname, schedule from cron.job;`
+2. **Kein neuer Development Build** nötig (keine neuen nativen Bausteine).
+3. Zum Testen mit echten E-Mails: `npm run start:cloud` (Cloud muss vorher migriert sein).
+4. Datenschutzseite ggf. um „Strecken aus Health Connect werden nur auf dem Handy angezeigt“
+   ergänzen (nicht hochgeladen).
+
+## Offene Fragen / getroffene Annahmen (Ausbau 3)
+
+- **Zeitraum-Fenster:** „Zeitraum“ ist fest Morgen / nächste Woche (Mo–So) / nächster Monat, damit
+  viele Ziele denselben Topf teilen. Eigene Zeiträume mit Start/Dauer gibt es für persönliche Ziele
+  nicht mehr (einfachste sinnvolle Lösung). Soll es „heute starten“ geben? Das würde Betrug
+  ermöglichen (erst laufen, dann Ziel setzen), deshalb nein.
+- **Alte Pools mit Einladungscode** bleiben technisch bestehen (Beitritt per Code, Pool-Tab zeigt
+  „Meine Gruppen-Challenges“), Erstellen in der App entfällt.
+- **Fee im Zeitraum:** es gilt das höchste `fee_bps` der Ziele des Zeitraums (alle gleich, solange
+  die Gebühr nicht geändert wird).
+- **Ranglisten-Punkte** für tägliche/wöchentliche/monatliche Ranked-Challenges sind dieselben wie
+  bisher (30/20/10/5); viele tägliche Challenges könnten Punkte schnell hochtreiben – ggf. später
+  skalieren.
+- Ranked-Ranglisten sind ohne Teilnehmer „abgesagt“ (min. 2 Teilnehmer, wie bisher).
+- **Nicht auf dem Gerät getestet:** Aktivität-Tab, Strecken-Anzeige (Health-Connect-Dialog) und
+  `start:cloud` sind nur durch Jest-Mocks bzw. einen Start-Check abgedeckt. iOS liefert keine
+  Strecke (Hinweis im Tab).
+- `compileSdkVersion` bleibt 37. Kein `supabase db push --remote`, kein `eas`.
+
+AUSBAU-3 ERLEDIGT

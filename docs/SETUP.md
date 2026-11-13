@@ -526,21 +526,70 @@ ausprobieren kannst, steht Punkt für Punkt in `docs/TESTING.md`, Abschnitt G. S
 Absturzberichte (Sentry) und die Einladungs-Seite sind optional und brauchen Cloud-Schritte
 (`docs/PUSH.md`, `docs/HANDOFF.md`).
 
+### 5.12 Neu seit Ausbau 3: Ziel setzen, Aktivität, Pool und Ranked
+
+**Kein neuer Build nötig** (keine neuen nativen Bausteine). Einmal die lokale Datenbank
+aktualisieren (neue Migration `20261130…`):
+
+```powershell
+npm run db:reset
+```
+
+**E-Mails: lokal oder echt?** Beim Entwickeln landen die Codes in **Mailpit**
+(<http://127.0.0.1:54324>) – das ist gewollt, denn `npx expo start` nutzt die lokale Datenbank
+aus `.env`. Willst du beim Testen **echte E-Mails** bekommen (die Cloud verschickt sie über
+Resend), starte die App stattdessen so:
+
+```powershell
+npm run start:cloud
+```
+
+Das Skript liest `.env.production` (Cloud-Adresse und Publishable Key, siehe 8.5) und startet
+damit `expo start`. Die Dateien `.env` und `.env.production` bleiben unverändert. Voraussetzung:
+Die Cloud-Migrationen sind hochgeladen (siehe 8.3) – sonst fehlen dort die neuen Funktionen.
+Konten der lokalen Datenbank gibt es in der Cloud nicht, du registrierst dich dort neu.
+
+**Testanleitung**
+
+1. **Registrieren mit Passwort und erneut anmelden:** Abmelden → _Registrieren_ → E-Mail und
+   Passwort (mindestens 8 Zeichen, zweimal) → _Code senden_ → Code aus Mailpit (bzw. dem Postfach
+   bei `start:cloud`) eingeben → Name und Health-Verbindung. Danach abmelden → _Anmelden_ → mit
+   **E-Mail und Passwort** anmelden. Außerdem funktioniert _Anmelden_ → Chip „Code“. Eine E-Mail
+   ohne Konto bekommt beim Anmelden per Code die Meldung, dass man sich zuerst registrieren muss.
+2. **Ziel mit Einsatz setzen:** Home → _Ziel setzen_ → Zieltyp, Zielwert, Zeitraum (Morgen /
+   Nächste Woche / Nächster Monat), Einsatz → _Weiter_. Das Bestätigungs-Fenster nennt die Höhe des
+   Einsatzes, wann er zurückkommt und dass er **ab dem Start gebunden** ist. Erst _… Credits setzen_
+   bucht ab (Wallet prüfen). Im Ziel gibt es bis zum Start _Ziel zurückziehen_ (Einsatz kommt
+   zurück); **ab dem Start gibt es keinen Knopf mehr**. Zum Durchspielen bis zur Abrechnung:
+   Zeitraffer-Skript (`supabase/scripts/simulate_challenge.sql`, jetzt mit drei Zielen).
+3. **Lauf im Aktivität-Tab und Zielfortschritt:** Tab _Aktivität_ → Läufe und Schritte aus Health
+   Connect erscheinen automatisch (Nach unten ziehen = Synchronisieren). Ohne Verbindung zeigt der
+   Tab einen Hinweis mit Knopf, bei einem Fehler _Erneut versuchen_. Bei einem Lauf mit Strecke:
+   _Strecke anzeigen_ (Health Connect fragt einmal pro Strecke um Erlaubnis; die Strecke bleibt auf
+   dem Handy). _Lauf aufzeichnen_ startet das eigene GPS-Tracking. Auf Home steigt der Fortschritt
+   des wichtigsten Ziels; weitere Ziele stehen darunter in der kleinen Übersicht.
+4. **Pool und Ranked:** _Pool_ zeigt gebundene Credits, Personen und Ziele (nur Summen) sowie eine
+   Kurzübersicht der festen Wettbewerbe – kein Erstellen. _Ranked_ zeigt die festen Ranglisten
+   (täglich, wöchentlich, monatlich; meiste km und meiste Schritte) zum Mitmachen, **ohne**
+   Erstellen-Knopf, außerdem _Freunde & Liga_. Die Ranglisten legt der Server täglich an
+   (`create_ranked_cycles`).
+
 ## 6. Befehle im Überblick
 
-| Befehl              | Was er tut                                        |
-| ------------------- | ------------------------------------------------- |
-| `npx expo start`    | Entwicklungsserver für den Development Build      |
-| `npm run typecheck` | prüft die TypeScript-Typen                        |
-| `npm run lint`      | prüft Code-Stil und typische Fehler               |
-| `npm run format`    | formatiert den Code mit Prettier                  |
-| `npm test`          | führt die automatischen Tests aus                 |
-| `npm run db:start`  | startet das lokale Supabase (Docker muss laufen)  |
-| `npm run db:status` | zeigt Adressen und Schlüssel des lokalen Supabase |
-| `npm run db:reset`  | Datenbank neu aufbauen (löscht lokale Testdaten)  |
-| `npm run db:test`   | führt die Datenbank-Tests (pgTAP) aus             |
-| `npm run db:types`  | erzeugt die TypeScript-Typen der Datenbank neu    |
-| `npm run db:stop`   | beendet das lokale Supabase                       |
+| Befehl                | Was er tut                                                                 |
+| --------------------- | -------------------------------------------------------------------------- |
+| `npx expo start`      | Entwicklungsserver für den Development Build                               |
+| `npm run start:cloud` | wie `expo start`, aber mit der Cloud aus `.env.production` (echte E-Mails) |
+| `npm run typecheck`   | prüft die TypeScript-Typen                                                 |
+| `npm run lint`        | prüft Code-Stil und typische Fehler                                        |
+| `npm run format`      | formatiert den Code mit Prettier                                           |
+| `npm test`            | führt die automatischen Tests aus                                          |
+| `npm run db:start`    | startet das lokale Supabase (Docker muss laufen)                           |
+| `npm run db:status`   | zeigt Adressen und Schlüssel des lokalen Supabase                          |
+| `npm run db:reset`    | Datenbank neu aufbauen (löscht lokale Testdaten)                           |
+| `npm run db:test`     | führt die Datenbank-Tests (pgTAP) aus                                      |
+| `npm run db:types`    | erzeugt die TypeScript-Typen der Datenbank neu                             |
+| `npm run db:stop`     | beendet das lokale Supabase                                                |
 
 ---
 

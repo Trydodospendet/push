@@ -1,4 +1,5 @@
--- Plays a pool, a pool for one and a ranked challenge in time-lapse up to the settlement.
+-- Plays a pool, a pool for one, a ranked challenge and three personal goals of one period in
+-- time-lapse up to the settlement.
 -- LOCAL DEVELOPMENT ONLY. Needs the seed users (run `npm run db:reset` first).
 --
 -- Run (see docs/SETUP.md, section 5.9):
@@ -11,6 +12,10 @@
 --       5.00 + 1.66 (1 cent rounding goes to the house). Anna donates her share to NGO 1.
 --   Pool for one "Simulation Solo" (stake 3.00, 10 km in total) by Ben: 5.1 + 4 = 9.1 km → the
 --     3.00 go to the house.
+--   Personal goals for tomorrow ("Ziel"): Anna 5 km (stake 3.00), Ben 10 km (5.00), Clara 5 km
+--     (5.00). Anna reaches hers (6.2 km), Ben (9.1 km) and Clara (nothing) miss. Both missed
+--     stakes (10.00) go to Anna, the only winner of the period: she gets 3.00 + 10.00.
+--     Every goal sums to 0 in the ledger (the winner's share is a house debit).
 --   Ranked "Simulation Rangliste" (no stake, most kilometres): Ben 1st (9.1 km), Anna 2nd → rank points,
 --     no credits move.
 -- Everything is booked by the real functions; the script only moves the clock (dates).
@@ -52,19 +57,39 @@ insert into sim select 'ranked', (public.create_challenge('Simulation 5 km', 'ru
   500, (now() at time zone 'Europe/Berlin')::date + 1, 3, 'public')).id;
 insert into sim select 'solo', (public.create_challenge('Simulation Solo', 'run_total', 10000,
   300, (now() at time zone 'Europe/Berlin')::date + 1, 3, 'private')).id;
-insert into sim select 'rangliste', (public.create_challenge('Simulation Rangliste', 'run_total',
-  5000, 0, (now() at time zone 'Europe/Berlin')::date + 1, 3, 'public', null, 'ranked')).id;
 
 select public.join_challenge((select id from sim where name = 'ranked'));
 select public.join_challenge((select id from sim where name = 'solo'));
-select public.join_challenge((select id from sim where name = 'rangliste'));
 select pg_temp.as_user('anna@example.com');
 select public.join_challenge((select id from sim where name = 'ranked'), 1000);
-select public.join_challenge((select id from sim where name = 'rangliste'));
 select public.set_challenge_donation((select id from sim where name = 'ranked'), true,
   '00000000-0000-4000-a000-000000000001');
 select pg_temp.as_user('clara@example.com');
 select public.join_challenge((select id from sim where name = 'ranked'));
+
+-- Personal goals: the stake is booked at once.
+select pg_temp.as_user('anna@example.com');
+insert into sim select 'ziel_anna', (public.create_goal('Simulation Ziel Anna', 'run_total', 5000, 300, 'day')).id;
+select pg_temp.as_user('ben@example.com');
+insert into sim select 'ziel_ben', (public.create_goal('Simulation Ziel Ben', 'run_total', 10000, 500, 'day')).id;
+select pg_temp.as_user('clara@example.com');
+insert into sim select 'ziel_clara', (public.create_goal('Simulation Ziel Clara', 'run_total', 5000, 500, 'day')).id;
+select set_config('request.jwt.claims', '', true);
+
+-- A ranked challenge (the platform creates them; here one is inserted directly).
+with c as (
+  insert into public.challenges (creator_id, title, goal_type, target_value, stake_cents, fee_bps,
+    starts_at, ends_at, min_participants, visibility, status, mode)
+  values (null, 'Simulation Rangliste', 'run_total', 5000, 0, 0,
+    ((now() at time zone 'Europe/Berlin')::date + 1)::timestamp at time zone 'Europe/Berlin',
+    ((now() at time zone 'Europe/Berlin')::date + 4)::timestamp at time zone 'Europe/Berlin',
+    2, 'public', 'open', 'ranked')
+  returning id)
+insert into sim select 'rangliste', id from c;
+select pg_temp.as_user('ben@example.com');
+select public.join_challenge((select id from sim where name = 'rangliste'));
+select pg_temp.as_user('anna@example.com');
+select public.join_challenge((select id from sim where name = 'rangliste'));
 select set_config('request.jwt.claims', '', true);
 
 select c.title, c.mode, c.status, c.participant_count as teilnehmer, c.pot_cents as topf_cent

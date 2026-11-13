@@ -133,6 +133,16 @@ Voraussetzung: neuer Development Build (siehe SETUP 5.11) und `supabase db reset
   (nur Streckenform, keine Karte).
 - **Widget (17):** nicht gebaut, Begründung in `docs/HANDOFF.md`.
 
+## H. Ausbau 3 – Ziel setzen, Aktivität, Pool, Ranked
+
+Die Schritt-für-Schritt-Anleitung steht in `docs/SETUP.md` 5.12 (Registrieren mit Passwort,
+Ziel mit Einsatz, Aktivität-Tab, Pool/Ranked). Zusätzlich prüfen:
+
+1. **Abrechnung eines Zeitraums:** Mehrere Ziele mit gleichem Zeitraum: Wer sein Ziel schafft,
+   bekommt den Einsatz plus einen Anteil der verfallenen Einsätze (im Verhältnis zum Einsatz), kein
+   Mindestziel. Jedes Ziel summiert sich im Ledger auf 0 (`19_goals`).
+2. **FAQ:** Profil → _Hilfe & Kontakt_ erklärt Ziel setzen, Einsatz-Bindung und Pool/Ranked.
+
 ## Automatische Tests
 
 ```powershell

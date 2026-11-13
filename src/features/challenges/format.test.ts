@@ -8,6 +8,8 @@ import {
   isJoinable,
   modeLabel,
   statusLabel,
+  hasStake,
+  rankedCycle,
   suggestTitle,
 } from './format';
 
@@ -89,5 +91,26 @@ describe('status', () => {
     expect(isJoinable({ status: 'open', starts_at: '2026-11-13T23:00:00Z' }, now)).toBe(true);
     expect(isJoinable({ status: 'open', starts_at: '2026-11-13T11:00:00Z' }, now)).toBe(false);
     expect(isJoinable({ status: 'active', starts_at: '2026-11-13T23:00:00Z' }, now)).toBe(false);
+  });
+});
+
+describe('rankedCycle', () => {
+  it.each([
+    ['D2026-11-14-km', 'day', 'km'],
+    ['W2026-W47-steps', 'week', 'steps'],
+    ['M2026-12-km', 'month', 'km'],
+  ])('reads %s', (key, cycle, metric) => {
+    expect(rankedCycle({ weekly_key: key })).toEqual({ cycle, metric });
+  });
+
+  it('returns null for challenges that are not fixed rankings', () => {
+    expect(rankedCycle({ weekly_key: null })).toBeNull();
+    expect(rankedCycle({ weekly_key: 'something' })).toBeNull();
+  });
+
+  it('knows which modes bind a stake', () => {
+    expect(hasStake({ mode: 'goal' })).toBe(true);
+    expect(hasStake({ mode: 'pool' })).toBe(true);
+    expect(hasStake({ mode: 'ranked' })).toBe(false);
   });
 });

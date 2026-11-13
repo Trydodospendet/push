@@ -1021,8 +1021,20 @@ export const de = {
     mailSubject: 'PUSH – Frage zur App',
     faq: [
       {
+        q: 'Wie funktioniert PUSH?',
+        a: 'Auf Home tippst du „Ziel setzen“: Lauf oder Schritte, Zielwert, Zeitraum und Einsatz. Deine Läufe und Schritte werden automatisch aus Health Connect bzw. Apple Health übernommen (oder du zeichnest einen Lauf im Tab Aktivität auf). Den Fortschritt siehst du auf Home, das Ergebnis nach der Abrechnung.',
+      },
+      {
         q: 'Was sind Credits?',
         a: 'Credits sind die virtuelle Spielwährung der App. Aktuell haben sie keinen Geldwert und können nicht ausgezahlt werden.',
+      },
+      {
+        q: 'Wann ist mein Einsatz gebunden, zurückgebucht oder verfallen?',
+        a: 'Beim Bestätigen wird der Einsatz von deinem Guthaben abgebucht. Bis zum Start kannst du das Ziel zurückziehen und bekommst alles zurück. Ab dem Start ist der Einsatz gebunden: kein Zurückziehen, kein Abbrechen mit Erstattung. Schaffst du dein Ziel, kommt er nach der Abrechnung zurück – plus ein Anteil an den verfallenen Einsätzen. Verfehlst du es, verfällt er in den Pool.',
+      },
+      {
+        q: 'Wie wird der Gewinn berechnet?',
+        a: 'Die verfallenen Einsätze eines Zeitraums werden unter allen aufgeteilt, die ihr Ziel in diesem Zeitraum erreicht haben – im Verhältnis zu ihrem Einsatz. Es gibt kein Mindestziel. Krumme Beträge und eine eventuelle Gebühr gehen an das Haus. Erreicht niemand sein Ziel, verfallen alle Einsätze.',
       },
       {
         q: 'Wie wird geprüft, ob ich mein Ziel geschafft habe?',
@@ -1033,20 +1045,16 @@ export const de = {
         a: 'Der Grund steht direkt beim Lauf: zu schnell (schneller als 2:30 min/km, z. B. Fahrrad), zu langsam (langsamer als 15:00 min/km), von Hand eingetragen, Fake-GPS, Sprünge in der Strecke oder schon über eine andere Quelle gezählt. Wenn du meinst, dass das falsch ist, kannst du Einspruch einlegen.',
       },
       {
-        q: 'Was ist der Unterschied zwischen Ranked und Pool?',
-        a: 'Ranked ist eine Rangliste ohne Einsatz: Wer im Zeitraum am meisten schafft, steht oben und bekommt Punkte. Im Pool zahlt jeder einen Einsatz; wer sein Ziel schafft, bekommt den Einsatz zurück plus einen Anteil der Einsätze derer, die es nicht schaffen.',
-      },
-      {
-        q: 'Was passiert, wenn niemand das Ziel schafft oder ich allein bin?',
-        a: 'Schafft es niemand, verfallen alle Einsätze. Bist du allein im Pool: Ziel geschafft = Einsatz zurück, sonst verfällt er.',
+        q: 'Wofür sind Pool und Ranked da?',
+        a: 'Der Pool zeigt, wie viele Personen gerade mitmachen und wie viele Credits in laufenden Zielen gebunden sind. Ranked sind feste Ranglisten ohne Einsatz (meiste Kilometer, meiste Schritte – täglich, wöchentlich, monatlich) mit Punkten und Abzeichen, dazu Freunde und Liga. Eigene Ranglisten kannst du nicht erstellen.',
       },
       {
         q: 'Kann ich meinen Gewinn spenden?',
-        a: 'Ja. Du kannst deinen Gewinnanteil an eine NGO spenden – als Standard im Profil oder für jede Challenge einzeln bis zur Abrechnung. Deinen Einsatz bekommst du immer zurück. Aktuell sind die NGO-Partner Platzhalter.',
+        a: 'Ja. Du kannst deinen Gewinnanteil an eine NGO spenden – als Standard im Profil oder für jedes Ziel einzeln bis zur Abrechnung. Deinen Einsatz bekommst du immer zurück. Aktuell sind die NGO-Partner Platzhalter.',
       },
       {
         q: 'Kann ich aussteigen?',
-        a: 'Bis zum Start jederzeit; im Pool bekommst du deinen Einsatz zurück. Danach nicht mehr.',
+        a: 'Bis zum Start jederzeit; du bekommst deinen Einsatz zurück. Danach nicht mehr – der Einsatz ist gebunden.',
       },
       {
         q: 'Wer sieht meine Daten?',
