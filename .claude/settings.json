@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "deny": [
+      "Read(/package-lock.json)",
+      "Read(/src/lib/database.types.ts)",
+      "Read(/node_modules/**)",
+      "Read(/.expo/**)",
+      "Read(/android/**)",
+      "Read(/ios/**)"
+    ]
+  }
+}

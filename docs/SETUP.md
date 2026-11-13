@@ -612,7 +612,7 @@ Konten der lokalen Datenbank gibt es in der Cloud nicht, du registrierst dich do
   dich erst nach der Namenswahl weiter.
 - **Verlassen ist endgültig:** Wer eine Challenge vor dem Start verlässt, bekommt den Einsatz
   zurück, kann aber nicht erneut beitreten. Grund: Pro Person und Challenge darf es nur eine
-  Einsatz-Buchung geben (Schutz vor Doppelbuchungen, siehe CLAUDE.md 5.1).
+  Einsatz-Buchung geben (Schutz vor Doppelbuchungen, siehe [MVP-Spezifikation §5.1](SPEC.md#51-tabellen)).
 - **Ranked mit nur einer Person:** Eine Ranked-Challenge braucht beim Start mindestens 2 Personen,
   sonst wird sie abgesagt und der Einsatz erstattet. Die Abrechnung beherrscht auch den Fall „nur
   eine Person“ (gewinnt → Einsatz zurück, verliert → Haus); er tritt aber nur ein, wenn man

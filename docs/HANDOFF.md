@@ -1,237 +1,35 @@
-# Handoff (Stand: Ende der Nacht-Session)
+# Übergabe – Branch `ausbau`
 
 ## Fertig
 
-- **Phase 6** (Design) – in `main`.
-- **Phase 7** (Branch `phase-7-community`, gepusht):
-  1. Lokale Erinnerungen (`src/features/reminders/`): täglich zur gewählten Uhrzeit, „startet morgen“,
-     „Ergebnis ist da“; Profil-Karte mit An/Aus und Uhrzeit (Buttons); Android-13-Berechtigung.
-  2. Wochen-Challenge: `20261118090000_weekly_challenges.sql`, pg_cron jeden Sonntag, pgTAP `07_weekly`,
-     hervorgehobene Karte im Ranked-Tab.
-  3. Feed + Anfeuern: `20261119090000_feed.sql`, pgTAP `08_feed`, `src/features/feed/`.
-  4. Abzeichen + Level: `20261120090000_badges.sql`, pgTAP `09_badges`, `src/features/badges/`
-     (Punkte: 1/km, 1/1.000 Schritte, 50/Sieg), Feier bei neuem Abzeichen.
-- **Phase 8** (Branch `phase-8-gps`, von `phase-7-community`, gepusht):
-  - DB: `20261121090000_gps_runs.sql` (`sync_gps_run` rechnet aus Rohpunkten nach; Fake-GPS, Sprünge,
-    Tempo; Duplikat-Erkennung gegen Health-Läufe; Route nur für den Besitzer, ohne 200 m an den
-    Enden), pgTAP `10_gps`.
-  - App: `src/features/gps/` (Messung, Codec, Recorder, Aufzeichnungsdienst mit Vordergrunddienst,
-    Zwischenspeicher, Upload-Warteschlange), Screens `app/run/index.tsx` und `app/run/[id].tsx`,
-    Karte mit OpenFreeMap (`fiord`, kein Schlüssel), Einstieg über Home.
-  - Datenschutz (App + `docs/legal/privacy.html`), `docs/RELEASE.md` 2.8a (Play Console),
-    `docs/SECURITY_NOTES.md` 8–9, `docs/SETUP.md` 5.9.
+- Phasen 6–8: Design, Community, Erinnerungen, Abzeichen und GPS-Aufzeichnung.
+- Ausbau 1–2: Sicherheitsprüfung, Pool und Ranked, Profil und Anmeldung, Laufstatistik, Einsprüche, Freunde, Trainingspläne und Vorbereitung für Server-Push.
+- Ausbau 3: Persönliche Ziele mit virtuellen Credits und Abrechnung pro Zeitraum, Tab „Aktivität“, feste Ranglisten und getrennte Registrierung/Anmeldung.
+- Projektregeln gekürzt, alte MVP-Spezifikation und bisherige Übergabe unverändert gesichert, Claude-Lesesperren eingerichtet.
+- Typecheck, Lint und 538 lokale Datenbankprüfungen grün. Jest parallel meldete 30 Fehler, seriell mit `npx jest --runInBand` waren alle 283 Tests grün.
+- Alle Details und frühere Prüfergebnisse stehen im [Archiv](HANDOFF_ARCHIV.md).
 
-## Stand der Prüfungen
+## Offen
 
-`npm run typecheck`, `npm run lint`, `npm test` (220) und `supabase test db` (10 Dateien) sind grün.
+- GPS im Hintergrund, Benachrichtigungen, Karte, Aktivität und Health-Connect-Strecken auf echten Geräten prüfen. iOS liefert hier keine Strecken aus Health.
+- Android-Widget zurückgestellt. Rechtstexte vor Veröffentlichung prüfen lassen.
 
-## Nächster Schritt (für dich)
+## Nächster Schritt
 
-1. Neuen Development Build bauen (neue native Bibliotheken): siehe `docs/SETUP.md` 5.9.
-2. Auf dem Handy testen: GPS-Lauf, Erinnerungen (Profil), Karte.
-3. Erst danach entscheiden, ob die neuen Migrationen `20261118…` bis `20261121…` in die Cloud
-   sollen (`supabase db push` – bewusst **nicht** ausgeführt).
+- Gerätetests nach [Setup §5.11–5.12](SETUP.md) und [Testanleitung G–H](TESTING.md). Wer noch einen Build von vor Ausbau 2 hat, braucht wegen der nativen Module einen neuen Development Build. Ausbau 3 und die Doku-Änderung brauchen keinen zusätzlichen Build.
 
-## Offene Fragen / getroffene Annahmen
+## Offene Fragen
 
-- **Nichts auf einem echten Handy getestet.** Karte, Hintergrund-Aufzeichnung, Benachrichtigungen und
-  der Vordergrunddienst sind nur typgeprüft und durch Jest-Mocks abgedeckt. Fehler zeigen sich erst
-  im Development Build.
-- **Hintergrund-Standort nicht angefordert:** Der Lauf startet in der offenen App und läuft als
-  Vordergrunddienst (Android) bzw. Background-Mode (iOS) weiter; dafür braucht `expo-location` keine
-  „immer“-Berechtigung. Dadurch entfällt in der Play Console die Hintergrund-Standort-Erklärung;
-  stattdessen ist das Formular „Vordergrunddienste“ nötig (`docs/RELEASE.md` 2.8a). Soll ein Lauf auch
-  ohne geöffnete App starten können, müsste das geändert werden.
-- **Uhrzeit-Wahl** für Erinnerungen per +/- Buttons (keine zweite native Bibliothek, wie vereinbart).
-- **Erinnerungstexte sind Momentaufnahmen:** „Noch 2,3 km“ stammt vom letzten Sync. Bei Schritt-Zielen
-  steht nur „Tagesziel noch offen“, weil der Server keine Tagesschritte pro Challenge liefert.
-- **Zwischenspeicher** des laufenden GPS-Laufs alle 30 s im verschlüsselten Gerätespeicher; bei
-  einem Absturz gehen höchstens ~30 s verloren, der Lauf wird beim Start zur Fortsetzung angeboten.
-- **iOS:** liefert über `expo-location` kein „mocked“-Flag; dort gelten nur die Plausibilitätsregeln
-  (siehe `docs/SECURITY_NOTES.md` 8). iOS-Code weiterhin nicht auf einem Gerät getestet.
-- Die Kartenkacheln kommen von `tiles.openfreemap.org` (in der Datenschutzerklärung erwähnt).
-- `compileSdkVersion` ist unverändert 37.
+- Android-Widget später mit Gerätetest? Android-App-Links mit Play-Signatur ergänzen?
+- Reicht die monatliche Gesamtliga oder sind Divisionen und andere Ranked-Punkte gewünscht?
+- Sollen Trainingstage wählbar sein? Aktuell gelten Di/Do/Sa und mindestens 80 % der Strecke.
+- Persönliche Ziele starten frühestens morgen und nutzen feste Zeiträume. Alte Gruppen-Pools sind weiter per Code erreichbar. Weitere Annahmen stehen im [Archiv](HANDOFF_ARCHIV.md).
 
----
+## Cloud-Aufgaben
 
-# Ausbau-Auftrag (Branch `ausbau`, von `phase-8-gps`)
-
-## Fortschritt
-
-- [x] 1. Sicherheits-Check: `20261122090000_security_hardening.sql` (Rechte auf zwei Helfer-Funktionen entzogen, Default-Rechte für neue Tabellen/Funktionen geschlossen), `supabase/tests/11_security.test.sql` (prüft ALLE Tabellen/Funktionen generisch, auch spätere).
-- [x] 2. Spielmodell: DB (`20261123090000_pool_ranked_donations.sql`, `20261123100000_my_result.sql`, pgTAP `12_modes`, alte Tests umgebaut) und App (Pool-Tab, Ranked ohne Einsatz, Einsatzwahl beim Beitritt, Spenden-Karten, Ergebnis mit Platz/Punkten). Profil-Einbindung der Spenden-Karten folgt in Teil 3.
-- [x] 3. Profil und Kontrolle: Migration `20261124090000_profile_controls.sql` (Avatar-Bucket privat mit RLS, anonym in Ranglisten per RLS, Datenexport), pgTAP `13_profile` + Storage-Checks in `11_security`; App: `app/settings/*` (Konto, Privatsphäre, Benachrichtigungen, Spenden, Health & GPS, Darstellung, Daten), neues Profil mit Gruppen, Einstellungen Animationen/Haptik (`src/features/preferences`). Passwort-Anmeldung auf dem Login folgt in Teil 4.
-- [x] 4. Anmelde-Bildschirme: animierte Code-Felder (`src/features/auth/code-input.tsx`: Pop, Lime-Glow, Schütteln, Erfolg, Einfügen per Langdruck), Countdown, Anmeldung mit Passwort oder Code, Passwort vergessen per Code; neue dunkle E-Mail-Vorlagen `supabase/templates/sign-in-code.html` und `email-change-code.html` (Config angepasst).
-- [x] 5. Grafiken: eigene SVG-Illustrationen (`src/components/art.tsx`, 17 Motive) in Einführung (5 Seiten), neuer Anleitung (`src/features/intro/guide.tsx`, 8 Schritte) und Leer-Zuständen; Skeleton-Ladezustände, `CountUp`, `Confetti`, `FadeIn`, `GlowBackdrop`, Haptik (Buttons, Chips, Erfolge); alles beachtet "Bewegung reduzieren" + eigenen Schalter.
-- [x] 6. Easter Eggs (geheime Abzeichen, im Profil als "???"): Marathon (Lauf ab 42,195 km), Frühaufsteher (Start 03:00–05:30), Neujahrslauf (Lauf am 1.1.), Glückszahl (7,777 km), Gut getippt (Logo im Profil 7x tippen, `claim_secret_badge`) – Migration `20261125090000_secret_badges.sql`, pgTAP `14_secret_badges`.
-- [x] 7. Qualitätsdurchgang (Teil 1): ErrorBoundary, Kontrast (`textMuted` heller: #8A8A8A, bewusste Abweichung von CLAUDE.md §9), Schriftgrößen-Obergrenze 1,5x, `steps_total` überall (Fortschritt, Aktivitätsliste, Erinnerungen), Simulationsskript auf Pool/Ranked/Spenden umgestellt.
-
-## Cloud-Aufgaben für morgen (nichts davon wurde ausgeführt)
-
-Reihenfolge einhalten. Alles in der Supabase-Cloud bzw. in den Dashboards; ich habe nichts
-hochgeladen, kein `db push`, kein `eas build`, kein `eas env`.
-
-1. **Backup**: Im Supabase-Dashboard unter Database → Backups prüfen, dass ein aktuelles Backup
-   existiert (die Migration `20261123090000` wandelt vorhandene Challenges um: alte „Ranked“-Pools
-   werden „Pool“, alte „Solo“-Ziele werden Pools mit Einladungscode, Wochen-Schlüssel werden
-   gelöscht).
-2. **Migrationen hochladen** (vom Projektordner, mit dem verknüpften Projekt):
-   `supabase db push` – es kommen alle Dateien ab `20261118090000_weekly_challenges.sql` bis zur
-   letzten (siehe Liste in `supabase/migrations/`). Danach im SQL-Editor prüfen:
-   `select jobname, schedule from cron.job;` (Jobs `advance-challenges`, `create-weekly-challenge`).
-3. **Storage**: Nach der Migration muss unter Storage der Bucket **avatars** existieren, **nicht
-   öffentlich**, Limit 512 KB, erlaubte Typen jpeg/png/webp (die Migration legt ihn an). Prüfen, dass
-   unter Policies vier Regeln „avatars: …“ stehen.
-4. **Auth-Einstellungen** (Authentication → Providers → Email / Sign In):
-   - Passwort-Anmeldung zulassen (Email-Provider an), **Minimale Passwortlänge 8**.
-   - **„Secure email change“ / doppelte Bestätigung ausschalten** (die App erwartet einen Code
-     an der neuen Adresse; siehe `supabase/config.toml`: `double_confirm_changes = false`).
-   - OTP-Länge 6 (wie bisher), Ablauf 3600 s.
-5. **E-Mail-Vorlagen** (Authentication → Email Templates), Inhalt aus den Dateien kopieren:
-   - _Confirm signup_ und _Magic Link_: `supabase/templates/sign-in-code.html`, Betreff „Dein Anmeldecode“.
-   - _Change Email Address_: `supabase/templates/email-change-code.html`, Betreff „Neue E-Mail-Adresse bestätigen“.
-     Danach einen Test-Code anfordern und die E-Mail ansehen (dunkel, Lime-Code).
-6. **Neue App-Version**: Die App braucht einen **neuen Development Build** (neue native Bausteine:
-   expo-notifications, expo-location, expo-task-manager, maplibre, expo-image-picker,
-   expo-image-manipulator, expo-haptics, react-native-svg). `eas build` erst nach dem Test mit den
-   lokalen Daten.
-7. **Spenden**: Die drei NGOs sind Platzhalter (Tabelle `ngos`). Sobald es echte Partner gibt:
-   Namen in der Tabelle ändern (Studio → Table Editor), nichts in der App.
-   8a. **Neue Migrationen seit der Liste oben**: `20261126090000_run_analytics`, `20261126100000_run_shapes`, `20261127090000_appeals`, `20261127100000_appeal_gps`, `20261128090000_push_outbox`, `20261129090000_social` (alle mit `supabase db push`, Reihenfolge automatisch).
-   8b. **Einladungs-Seite**: `docs/legal/i.html` zusammen mit den anderen Seiten auf Netlify hochladen (Einladungslinks `https://puschdich.netlify.app/i.html?c=<code>`).
-   8c. **Server-Push**: Schritt-für-Schritt in `docs/PUSH.md` (Firebase-Projekt, `google-services.json` als EAS-Datei, Edge Function `send-push` deployen, Cron-Job anlegen).
-   8d. **Einsprüche entscheiden**: `select private.resolve_appeal('<id>', true, 'Notiz');` im SQL-Editor.
-   8e. **Neue native Bausteine** (neuer Development Build nötig): expo-store-review, @sentry/react-native, react-native-view-shot, expo-sharing, expo-speech.
-8. **Optional Sentry**: `EXPO_PUBLIC_SENTRY_DSN` nur setzen, wenn du Absturzberichte willst (Datenschutz-Text nennt sie bereits).
-9. **Play Console**: Datenschutz-Seite (`docs/legal/privacy.html`) neu veröffentlichen (Feed,
-   GPS, Karten, Benachrichtigungen, Profilbild, Spenden, Freunde/Gruppen, Teilen-Bilder, Server-Push sind ergänzt) und die Hinweise aus `docs/RELEASE.md` 2.8a (Vordergrunddienst-Formular).
-
-**Hinweis Datenschutz:** Die Datenschutzerklärung (App und `docs/legal/privacy.html`) nennt jetzt
-auch Profilbild, Anonymität in Ranglisten, Spenden-Buchungen und den Datenexport. Vor der
-Veröffentlichung wie alle Rechtstexte prüfen lassen.
-
-## Status Ausbau 1
-
-NACHT-AUFTRAG ERLEDIGT
-
----
-
-# Ausbau 2 (gleicher Branch `ausbau`)
-
-## Fortschritt Ausbau 2
-
-- [x] 9. Lauf-Erlebnis: Karte vollflächig hinter den Inhalten mit eigenem dunklem Stil (`src/features/gps/map-style.ts`, aus OpenFreeMap „fiord“ umgefärbt), Strecke als leuchtende Lime-Linie die sich aufbaut, Kamera folgt/gleitet, wegziehbares Werte-Panel (`src/components/draggable-panel.tsx`), Live-Lauf mit großen Zahlen und letztem km, Splits pro km, Höhenprofil, Tempo-Diagramm, persönliche Rekorde, Lauf-Verlauf mit Mini-Karten (nur Form ohne Koordinaten), Wochen-/Monatsstatistik. DB: `20261126090000_run_analytics.sql` (Höhe als 7. Punktwert, Splits, Profil, Rekorde, Periodenstatistik), `20261126100000_run_shapes.sql`; pgTAP `15_run_analytics`.
-- [x] 13. Vertrauen: Einsprüche (`20261127090000_appeals.sql`, `20261127100000_appeal_gps.sql`, pgTAP `16_appeals`; Entscheidung durch den Betreiber per SQL `select private.resolve_appeal('<id>', true, 'Notiz');`, angenommene Einsprüche überstehen neue Syncs), Hilfe/FAQ + Support (`app/help.tsx`, E-Mail kontakt@puschdich.de), Einspruch-Knopf bei nicht zählenden Läufen (Challenge-Läufe und GPS-Lauf).
-- [x] 15. Absturz-Überwachung vorbereitet: `src/lib/monitoring.ts` (Sentry, **nur aktiv mit `EXPO_PUBLIC_SENTRY_DSN`**, ohne Nutzerdaten/Breadcrumbs, Test vorhanden; Datenschutz ergänzt); Akku-Optimierung-Bildschirm `app/battery.tsx` (Samsung, Xiaomi, Huawei, OnePlus, Pixel) mit Link im GPS-Lauf und in den FAQ.
-- [x] 14. In-App-Review: `src/features/review/` (expo-store-review = Google In-App Review), nur nach Sieg oder neuem Rekord, frühestens nach 3 Tagen Nutzung, höchstens alle 90 Tage und 3x insgesamt; Regeln als reine Funktion getestet.
-- [x] 16. Push vom Server vorbereitet: Migration `20261128090000_push_outbox.sql` (Tokens, Outbox, Trigger für Ergebnis und Anfeuern, Einstellungen je Art, Aufräum-Job), pgTAP `17_push`, Edge Function `supabase/functions/send-push`, App-Registrierung + Schalter (Profil → Benachrichtigungen), Link-Öffnen beim Antippen. **Einrichtung durch dich: `docs/PUSH.md`** (Firebase, EAS-Credentials, Function + Cron).
-- [x] 11. Social: Migration `20261129090000_social.sql` (Freundescode, Anfragen, Freunde, Läufe der Freunde nur Distanz/Zeit, Kudos, Kommentare, private Gruppen mit Wochen-/Monatsbrett, Monats-Liga über Ranked-Punkte; Anonymität berücksichtigt), pgTAP `18_social`; App: `app/social.tsx` (Home → „Freunde & Liga“), Deep Links `push://invite/<code>` und `push://join/<code>`, Landing-Seite `docs/legal/i.html` (muss mit hochgeladen werden, Einladungslink `https://puschdich.netlify.app/i.html?c=<code>`), Schalter „Freunde sehen meine Läufe“ in Privatsphäre. **Vereinfachung:** Teams = private Gruppen; Ligen = eine monatliche Saison-Rangliste für alle (keine Divisionen/Aufstieg). Android-App-Links (https öffnet direkt die App) sind nicht eingerichtet – der Link führt über die Landing-Seite mit Knopf „In der App öffnen“.
-- [x] 12. Teilen-Bilder: `src/features/share/` (9:16-Karte 1080 × 1920 mit Lime-Glow, nur Form der Strecke, keine Karte/Name/Standort; `react-native-view-shot` + `expo-sharing` öffnet das Teilen-Menü, z. B. Instagram/TikTok-Story). Knopf „Teilen" im Lauf-Detail und nach einem Sieg. Es wird nichts von PUSH hochgeladen.
-- [x] 10. Sprachansagen und Trainingspläne: `expo-speech` sagt nach jedem Kilometer Gesamtzeit und Zeit des Kilometers an (Profil → Darstellung → „Sprachansagen beim Laufen", standardmäßig aus; `src/features/gps/voice.ts`). Trainingspläne (`src/features/training/`, Seite `app/training.tsx`, Home → „Trainingsplan"): „Einstieg in 4 Wochen", „In 8 Wochen zu 5 km", „In 10 Wochen zu 10 km", je 3 Läufe pro Woche (Di/Do/Sa). Ein Lauf zählt ab 80 % der Strecke in derselben Woche (gültige Läufe vom Server). Der Plan liegt nur auf dem Handy; offene Läufe erscheinen als lokale Erinnerung zur täglichen Erinnerungszeit (Profil → Benachrichtigungen muss an sein).
-- [ ] 17. Android-Widget: **bewusst nicht gebaut**. Begründung: Ein Home-Screen-Widget braucht nativen Android-Code (AppWidgetProvider, Kotlin/Java, eigene Layout-XML) oder eine zusätzliche native Bibliothek mit Config-Plugin (z. B. `react-native-android-widget`). Das lässt sich ohne Gerät/Emulator nicht prüfen, birgt ein hohes Risiko für den Build (compileSdk 37 bleibt) und müsste Fortschrittsdaten außerhalb der App (SharedPreferences) vorhalten – ein zusätzlicher Datenschutz- und Aktualisierungsweg. Vorschlag für später: `react-native-android-widget` einbinden, das Widget zeigt Titel + Fortschrittsbalken der Haupt-Challenge, Daten schreibt die App nach jedem Sync.
-
-## Status Ausbau 2
-
-Alle Punkte 9–16 sind umgesetzt und getestet (typecheck, lint ohne Warnungen, 277 Jest-Tests, 18 pgTAP-Dateien / 515 Prüfungen grün). Punkt 17 (Android-Widget) wurde bewusst nicht gebaut, Begründung oben. Nichts wurde in der Cloud ausgeführt; alle Cloud-Schritte stehen unter „Cloud-Aufgaben“ (Punkte 8a–10). Testanleitung: `docs/TESTING.md` Abschnitt G und `docs/SETUP.md` 5.11. Datenschutz (App + `docs/legal/privacy.html`) um Freunde/Gruppen, Teilen-Bilder, Server-Push, Sprachansagen und Trainingspläne ergänzt.
-
-**Offene Fragen**
-
-1. Android-Widget: soll es später mit `react-native-android-widget` kommen (nur mit Gerätetest)?
-2. Ligen: reicht eine monatliche Gesamtliste, oder sollen Divisionen mit Auf-/Abstieg folgen?
-3. Einladungslinks: sollen Android-App-Links (https öffnet direkt die App) eingerichtet werden? Das braucht die Signatur-Fingerprints aus der Play Console.
-4. Trainingspläne: Tage fest Di/Do/Sa und ab 80 % der Strecke – passt das, oder sollen Tage wählbar sein?
-5. `textMuted` ist bewusst heller (#8A8A8A) als in CLAUDE.md §9 (Kontrast).
-6. Rechtstexte (Datenschutz, Impressum) müssen vor Veröffentlichung juristisch geprüft werden.
-
-AUSBAU-2 ERLEDIGT
-
----
-
-# Ausbau 3 (gleicher Branch `ausbau`)
-
-Ziel: Der wichtigste Weg ist beim ersten Öffnen verständlich – Ziel setzen → Einsatz festlegen →
-Aktivität wird automatisch übernommen → Ergebnis sehen.
-
-## Fortschritt Ausbau 3
-
-- [x] 1. **Home und Einführung:** Zentraler Knopf „Ziel setzen“ (Home zeigt nur noch ihn;
-      „Challenge finden“, „GPS-Lauf starten“, „Freunde & Liga“ und „Trainingsplan“ sind weg).
-      Leerer Zustand mit 4-Schritte-Erklärung; die Einführung (5 Seiten) und die Anleitung erklären den
-      neuen Ablauf und wo man den Fortschritt sieht (Home + Tab Aktivität). Mehrere Ziele: das
-      wichtigste groß, weitere als kleine Zeilen (`src/features/challenges/compact-goal.tsx`).
-      Freunde & Liga: Karte oben im Tab Ranked. Trainingsplan: Knopf im Tab Aktivität.
-- [x] 2. **Tab „Aktivität“** (`app/(tabs)/activity.tsx`, es gab ihn vorher nicht – er ist neu und
-      in `app/(tabs)/_layout.tsx` eingetragen): Läufe der letzten 45 Tage und Schritte der letzten 7
-      Tage aus dem Server (kommen automatisch per Sync aus Health Connect), Zustände: keine Aktivitäten /
-      Verbindung fehlt (Banner + Knopf) / Sync fehlgeschlagen (Banner + „Erneut versuchen“) / Laden /
-      Fehler. Strecke: `app/activity/[recordId].tsx` liest die Strecke per `requestExerciseRoute`
-      (Health Connect fragt je Strecke um Erlaubnis; Anzeige auf der Karte wie bei GPS-Läufen, **nur auf
-      dem Handy, nicht hochgeladen**). „Lauf aufzeichnen“ (eigenes GPS) bleibt im Tab.
-- [x] 3. **Persönliche Ziele mit Einsatz:** Migration `20261130090000_goals_and_ranked_cycles.sql`:
-      Modus `goal`, `create_goal(title, goal_type, target, stake, period)` (Zeitraum Morgen / nächste
-      Woche Mo–So / nächster Monat; Start nie heute; Einsatz wird sofort gebunden; bis zum Start
-      `leave_challenge`, danach nicht mehr). Abrechnung **pro Zeitraum** (`private.settle_goal_window`):
-      alle Ziele mit gleichem `ends_at` werden zusammen abgerechnet, die verfallenen Einsätze gehen an
-      alle, die ihr Ziel erreicht haben, im Verhältnis zum Einsatz (kein Mindestziel), Rundung und
-      Gebühr (`fee_bps`) beim Haus, Spenden-Wahl wie bisher. **Summe je Ziel = 0:** der Anteil eines
-      Gewinners ist eine Haus-Belastung (`payout`, negativ) auf seinem Ziel, die verfallenen Einsätze
-      sind Haus-Gutschriften (`forfeit`/`fee`/`rounding`) auf den verfehlten Zielen. Idempotent
-      (Advisory-Lock je Zeitraum, Status `settling` → `settled`). Die bisherige Pool-Abrechnung
-      heißt jetzt `private.settle_single`, `public.settle_challenge` verteilt. pgTAP `19_goals`,
-      `04_settlement`/`07_weekly`/`11_security`/`12_modes` angepasst. App: Bestätigungs-Fenster mit
-      Einsatz, Rückbuchung und Bindung (`app/challenge/create.tsx`), Detail mit „Topf dieses
-      Zeitraums“ (`get_goal_window`).
-- [x] 4. **Pool und Ranked:** Pool = Gesamtübersicht (`get_pool_overview`: Personen, Ziele, gebundene
-      Credits; nur Summen) + Kurzübersicht der festen Wettbewerbe + „Code eingeben“ für alte
-      Gruppen-Challenges. „Gerade am Laufen“ gibt es **nicht**: GPS-Läufe werden erst nach dem Lauf
-      hochgeladen, es lässt sich nicht feststellen. Ranked = feste Ranglisten täglich/wöchentlich/
-      monatlich für meiste km und meiste Schritte (`create_ranked_cycles`, pg_cron täglich 12:00 UTC,
-      Schlüssel `D…`/`W…`/`M…` + `-km`/`-steps`), Mitmachen ja, **Erstellen entfernt** (Server lehnt
-      `create_challenge` mit `ranked` ab), kein Einsatz, keine Auszahlung; plus Freunde & Liga.
-- [x] 5. **Registrieren / Anmelden getrennt:** Welcome mit zwei Knöpfen; `app/(auth)/sign-up.tsx`
-      (E-Mail + Passwort ×2 → Code → Passwort wird direkt nach der Bestätigung gesetzt; das Passwort
-      liegt nur im Arbeitsspeicher, `signup-draft.ts`). Anmelden: Passwort ist Standard, Code bleibt;
-      Anmelden per Code legt **kein** Konto mehr an (`shouldCreateUser: false`). E-Mail-Versand
-      unverändert; neues Skript `npm run start:cloud` (`scripts/start-cloud.js`) startet Expo mit
-      `.env.production` (in `docs/SETUP.md` 5.12 erklärt).
-- [x] 6. **FAQ und Prüfung:** FAQ an den neuen Ablauf angepasst; Testanleitung in `docs/SETUP.md`
-      5.12 und `docs/TESTING.md` H; Zeitraffer-Skript spielt jetzt auch drei Ziele durch.
-
-## Stand der Prüfungen (Ausbau 3)
-
-`npx tsc --noEmit`, `npx expo lint`, Jest (283 Tests in 41 Dateien) und
-`supabase test db` (19 Dateien, 538 Prüfungen) sind grün. Das Zeitraffer-Skript lief lokal bis zur Abrechnung
-(Summe je Ziel 0, zweiter Aufruf bucht nichts).
-
-## Cloud-Aufgaben nach Ausbau 3 (nichts davon ausgeführt)
-
-1. **Backup** prüfen, dann **`supabase db push`** – neu ist `20261130090000_goals_and_ranked_cycles`
-   (zusätzlich zu den Migrationen aus „Cloud-Aufgaben“ oben). Sie benennt `settle_challenge` um,
-   entfernt `create_weekly_challenge`, ersetzt den Cron-Job `create-weekly-challenge` durch
-   `create-ranked-cycles` und legt sofort die ersten Ranglisten an. Danach im SQL-Editor:
-   `select jobname, schedule from cron.job;`
-2. **Kein neuer Development Build** nötig (keine neuen nativen Bausteine).
-3. Zum Testen mit echten E-Mails: `npm run start:cloud` (Cloud muss vorher migriert sein).
-4. Datenschutzseite ggf. um „Strecken aus Health Connect werden nur auf dem Handy angezeigt“
-   ergänzen (nicht hochgeladen).
-
-## Offene Fragen / getroffene Annahmen (Ausbau 3)
-
-- **Zeitraum-Fenster:** „Zeitraum“ ist fest Morgen / nächste Woche (Mo–So) / nächster Monat, damit
-  viele Ziele denselben Topf teilen. Eigene Zeiträume mit Start/Dauer gibt es für persönliche Ziele
-  nicht mehr (einfachste sinnvolle Lösung). Soll es „heute starten“ geben? Das würde Betrug
-  ermöglichen (erst laufen, dann Ziel setzen), deshalb nein.
-- **Alte Pools mit Einladungscode** bleiben technisch bestehen (Beitritt per Code, Pool-Tab zeigt
-  „Meine Gruppen-Challenges“), Erstellen in der App entfällt.
-- **Fee im Zeitraum:** es gilt das höchste `fee_bps` der Ziele des Zeitraums (alle gleich, solange
-  die Gebühr nicht geändert wird).
-- **Ranglisten-Punkte** für tägliche/wöchentliche/monatliche Ranked-Challenges sind dieselben wie
-  bisher (30/20/10/5); viele tägliche Challenges könnten Punkte schnell hochtreiben – ggf. später
-  skalieren.
-- Ranked-Ranglisten sind ohne Teilnehmer „abgesagt“ (min. 2 Teilnehmer, wie bisher).
-- **Nicht auf dem Gerät getestet:** Aktivität-Tab, Strecken-Anzeige (Health-Connect-Dialog) und
-  `start:cloud` sind nur durch Jest-Mocks bzw. einen Start-Check abgedeckt. iOS liefert keine
-  Strecke (Hinweis im Tab).
-- `compileSdkVersion` bleibt 37. Kein `supabase db push --remote`, kein `eas`.
-
-AUSBAU-3 ERLEDIGT
+1. Nach dem lokalen Test Supabase-Backup prüfen und die ausstehenden Migrationen bis `20261130090000_goals_and_ranked_cycles` einspielen. In `cron.job` die Jobs `advance-challenges` und `create-ranked-cycles` prüfen.
+2. Privaten Bucket `avatars` und seine Regeln prüfen (512 KB, JPEG/PNG/WebP). E-Mail-Login und Passwortlänge 8 setzen, doppelte Bestätigung für E-Mail-Wechsel ausschalten, OTP auf 6 Stellen und 3600 s prüfen.
+3. Vorlagen aus `supabase/templates/` für Anmeldung, Registrierung und E-Mail-Wechsel übernehmen. Anschließend mit `npm run start:cloud` und echten E-Mails testen.
+4. Server-Push nach [PUSH.md](PUSH.md) einrichten (Firebase, EAS-Datei, Edge Function und Cron). Sentry ist optional.
+5. Einladungsseite `docs/legal/i.html` und aktualisierten Datenschutz auf Netlify veröffentlichen. Datenschutz bei Bedarf um die lokale Health-Connect-Streckenanzeige ergänzen und das Vordergrunddienst-Formular der Play Console ausfüllen ([Release §2.8a](RELEASE.md)).
+6. Bei Bedarf die NGO-Platzhalter in Supabase ersetzen und Einsprüche wie im [Archiv](HANDOFF_ARCHIV.md) beschrieben bearbeiten.

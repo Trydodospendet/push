@@ -1,1 +1,1 @@
-Read CLAUDE.md completely before doing anything. It is the binding specification for this project.
+Lies [CLAUDE.md](CLAUDE.md) vollständig und [docs/HANDOFF.md](docs/HANDOFF.md), bevor du am Projekt arbeitest. CLAUDE.md enthält die verbindlichen Arbeitsregeln und den Wegweiser zur MVP-Spezifikation. Lies in [docs/SPEC.md](docs/SPEC.md) nur die für den Auftrag relevanten Abschnitte. Die aktuelle Übergabe dokumentiert spätere Produktentscheidungen und die nächsten Schritte.
