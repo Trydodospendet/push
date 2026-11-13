@@ -65,6 +65,7 @@ export type Database = {
       activity_workouts: {
         Row: {
           activity_type: string;
+          appeal_accepted: boolean;
           distance_m: number;
           duration_s: number;
           end_at: string;
@@ -82,6 +83,7 @@ export type Database = {
         ComputedFields: never;
         Insert: {
           activity_type: string;
+          appeal_accepted?: boolean;
           distance_m: number;
           duration_s: number;
           end_at: string;
@@ -98,6 +100,7 @@ export type Database = {
         };
         Update: {
           activity_type?: string;
+          appeal_accepted?: boolean;
           distance_m?: number;
           duration_s?: number;
           end_at?: string;
@@ -118,6 +121,55 @@ export type Database = {
             columns: ['user_id'];
             isOneToOne: false;
             referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      appeals: {
+        Row: {
+          created_at: string;
+          id: string;
+          message: string;
+          resolution_note: string | null;
+          resolved_at: string | null;
+          status: string;
+          user_id: string;
+          workout_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          created_at?: string;
+          id?: string;
+          message: string;
+          resolution_note?: string | null;
+          resolved_at?: string | null;
+          status?: string;
+          user_id: string;
+          workout_id: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          message?: string;
+          resolution_note?: string | null;
+          resolved_at?: string | null;
+          status?: string;
+          user_id?: string;
+          workout_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'appeals_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'appeals_workout_id_fkey';
+            columns: ['workout_id'];
+            isOneToOne: true;
+            referencedRelation: 'activity_workouts';
             referencedColumns: ['id'];
           },
         ];
@@ -951,6 +1003,25 @@ export type Database = {
       set_donation_defaults: { Args: { p_donate: boolean; p_ngo_id?: string }; Returns: undefined };
       set_ranking_visibility: { Args: { p_anonymous: boolean }; Returns: undefined };
       settle_challenge: { Args: { p_challenge_id: string }; Returns: boolean };
+      submit_appeal: {
+        Args: { p_message: string; p_workout_id: string };
+        Returns: {
+          created_at: string;
+          id: string;
+          message: string;
+          resolution_note: string | null;
+          resolved_at: string | null;
+          status: string;
+          user_id: string;
+          workout_id: string;
+        };
+        SetofOptions: {
+          from: '*';
+          to: 'appeals';
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
       sync_daily_steps: { Args: { p_days: Json }; Returns: number };
       sync_gps_run: {
         Args: { p_run: Json };
