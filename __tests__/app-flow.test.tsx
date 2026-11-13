@@ -270,7 +270,7 @@ describe('app flow', () => {
     expect(screen.getByText('Bitte gib dein Passwort ein.')).toBeOnTheScreen();
     expect(supabaseMock.auth.signInWithPassword).not.toHaveBeenCalled();
 
-    await user.type(screen.getByLabelText('Passwort'), 'geheim123');
+    await user.type(screen.getByLabelText('Dein Passwort'), 'geheim123');
     await user.press(screen.getByRole('button', { name: 'Anmelden' }));
     expect(supabaseMock.auth.signInWithPassword).toHaveBeenCalledWith({
       email: 'anna@example.com',

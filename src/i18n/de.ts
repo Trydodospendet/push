@@ -151,7 +151,7 @@ export const de = {
     modePassword: 'Passwort',
     emailLabel: 'E-Mail-Adresse',
     emailPlaceholder: 'name@beispiel.de',
-    passwordLabel: 'Passwort',
+    passwordLabel: 'Dein Passwort',
     passwordMissing: 'Bitte gib dein Passwort ein.',
     wrongPassword: 'E-Mail-Adresse oder Passwort stimmen nicht.',
     submit: 'Code senden',
