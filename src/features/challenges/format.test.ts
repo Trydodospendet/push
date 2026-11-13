@@ -13,7 +13,7 @@ import {
 
 describe('modes and fees', () => {
   it('labels the two modes', () => {
-    expect(modeLabel('solo')).toBe('Solo');
+    expect(modeLabel('pool')).toBe('Pool');
     expect(modeLabel('ranked')).toBe('Ranked');
   });
 

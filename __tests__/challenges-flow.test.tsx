@@ -48,7 +48,7 @@ function challenge(overrides: Record<string, unknown> = {}) {
     min_participants: 2,
     max_participants: null,
     visibility: 'public',
-    mode: 'ranked',
+    mode: 'pool',
     invite_code: null,
     status: 'open',
     participant_count: 1,
@@ -90,9 +90,9 @@ function mockRpc(handlers: Record<string, RpcHandler> = {}) {
   });
 }
 
-async function openRankedTab(user: ReturnType<typeof userEvent.setup>) {
+async function openPoolTab(user: ReturnType<typeof userEvent.setup>) {
   await renderRouter('./app', { initialUrl: '/' });
-  await user.press(await screen.findByRole('button', { name: 'Ranked' }));
+  await user.press(await screen.findByRole('button', { name: 'Pool' }));
 }
 
 beforeEach(() => {
@@ -189,7 +189,7 @@ describe('challenges', () => {
       },
     });
 
-    await openRankedTab(user);
+    await openPoolTab(user);
     await user.press(await screen.findByRole('button', { name: /^5 km am Stück/ }));
 
     expect(await screen.findByText('Ein Lauf über mindestens 5 km')).toBeOnTheScreen();
@@ -203,7 +203,7 @@ describe('challenges', () => {
     await user.press(screen.getByRole('button', { name: 'Beitreten' }));
     expect(
       await screen.findByText(
-        'Du setzt 10,00 Credits. Erreichst du dein Ziel, bekommst du sie zurück plus deinen Anteil am Topf.',
+        'Du setzt 10,00 Credits. Erreichst du dein Ziel, bekommst du sie zurück plus deinen Anteil an den Einsätzen der anderen.',
       ),
     ).toBeOnTheScreen();
     expect(screen.getByText('Dein Guthaben: 100,00 Credits')).toBeOnTheScreen();
@@ -215,6 +215,7 @@ describe('challenges', () => {
     await user.press(screen.getByRole('button', { name: 'Jetzt beitreten' }));
     expect(supabaseMock.rpc).toHaveBeenCalledWith('join_challenge', {
       p_challenge_id: 'challenge-1',
+      p_stake_cents: 1000,
     });
 
     expect(await screen.findByRole('button', { name: 'Challenge verlassen' })).toBeOnTheScreen();
@@ -236,7 +237,7 @@ describe('challenges', () => {
         : { data: null, error: { code: 'P0001', message: 'insufficient_funds' } },
     );
 
-    await openRankedTab(user);
+    await openPoolTab(user);
     await user.press(await screen.findByRole('button', { name: /^5 km am Stück/ }));
     await user.press(await screen.findByRole('button', { name: 'Beitreten' }));
     await user.press(await screen.findByRole('button', { name: 'Jetzt beitreten' }));
@@ -270,7 +271,7 @@ describe('challenges', () => {
       },
     });
 
-    await openRankedTab(user);
+    await openPoolTab(user);
     await user.press(await screen.findByRole('button', { name: 'Code eingeben' }));
     await user.type(await screen.findByLabelText('Einladungscode'), 'lauf26');
     await user.press(screen.getByRole('button', { name: 'Challenge anzeigen' }));
@@ -282,7 +283,10 @@ describe('challenges', () => {
     await user.press(screen.getByRole('button', { name: 'Beitreten' }));
     await user.press(await screen.findByRole('button', { name: 'Jetzt beitreten' }));
 
-    expect(supabaseMock.rpc).toHaveBeenCalledWith('join_challenge_by_code', { p_code: 'LAUF26' });
+    expect(supabaseMock.rpc).toHaveBeenCalledWith('join_challenge_by_code', {
+      p_code: 'LAUF26',
+      p_stake_cents: 500,
+    });
     expect(await screen.findByText('EINLADUNGSCODE')).toBeOnTheScreen();
     expect(screen.getByRole('button', { name: 'Code teilen' })).toBeOnTheScreen();
   });
@@ -292,7 +296,7 @@ describe('challenges', () => {
     mockDb.set({ challenges: [], challenge_participants: [] });
     mockRpc();
 
-    await openRankedTab(user);
+    await openPoolTab(user);
     await user.press(await screen.findByRole('button', { name: 'Code eingeben' }));
     await user.type(await screen.findByLabelText('Einladungscode'), 'AB-1');
     await user.press(screen.getByRole('button', { name: 'Challenge anzeigen' }));
@@ -320,8 +324,8 @@ describe('challenges', () => {
       },
     });
 
-    await openRankedTab(user);
-    await user.press(await screen.findByRole('button', { name: 'Erstellen' }));
+    await openPoolTab(user);
+    await user.press(await screen.findByRole('button', { name: 'Pool starten' }));
     await user.press(await screen.findByRole('radio', { name: 'Tägliche Schritte' }));
     expect(screen.getByRole('radio', { name: '10.000 Schritte' })).toBeChecked();
     await user.press(screen.getByRole('radio', { name: '14 Tage' }));
@@ -336,7 +340,7 @@ describe('challenges', () => {
       p_start_date: tomorrow,
       p_duration_days: 14,
       p_visibility: 'public',
-      p_mode: 'ranked',
+      p_mode: 'pool',
     });
     expect(
       await screen.findByText(

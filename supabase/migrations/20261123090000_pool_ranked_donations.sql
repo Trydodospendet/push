@@ -876,7 +876,7 @@ $$;
 -- Donations
 ------------------------------------------------------------------------------------------
 
-create function public.set_donation_defaults(p_donate boolean, p_ngo_id uuid)
+create function public.set_donation_defaults(p_donate boolean, p_ngo_id uuid default null)
 returns void
 language plpgsql
 security definer
@@ -899,7 +899,9 @@ end;
 $$;
 
 -- NULL for p_donate = "use my default". Changeable until the settlement is done.
-create function public.set_challenge_donation(p_challenge_id uuid, p_donate boolean, p_ngo_id uuid)
+create function public.set_challenge_donation(
+  p_challenge_id uuid, p_donate boolean default null, p_ngo_id uuid default null
+)
 returns void
 language plpgsql
 security definer

@@ -32,12 +32,18 @@ export function createChallengeSchema(today: string) {
         .regex(/^\P{Cc}*$/u, { error: de.create.invalidTitle }),
       goalType: z.enum(GOAL_TYPES),
       targetValue: z.int(),
-      stakeCents: z.int().min(STAKE_MIN_CENTS).max(STAKE_MAX_CENTS),
+      // Ignored (and sent as 0) for ranked challenges: they have no stake.
+      stakeCents: z.int().min(0).max(STAKE_MAX_CENTS),
       startDate: z.iso.date(),
       durationDays: z.int().min(DURATION_MIN_DAYS).max(DURATION_MAX_DAYS),
       visibility: z.enum(['public', 'private']),
       mode: z.enum(CHALLENGE_MODES),
     })
+    .refine(
+      ({ mode, stakeCents }) =>
+        mode === 'ranked' ? stakeCents === 0 : stakeCents >= STAKE_MIN_CENTS,
+      { error: de.create.invalidInput, path: ['stakeCents'] },
+    )
     .refine(
       ({ goalType, targetValue }) =>
         targetValue >= TARGET_LIMITS[goalType].min && targetValue <= TARGET_LIMITS[goalType].max,

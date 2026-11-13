@@ -38,11 +38,14 @@ export const SIGN_IN_CODE_LENGTH = 6;
 /** Timezone of new profiles and challenges (DB default). */
 export const DEFAULT_TIMEZONE = 'Europe/Berlin';
 
-/** DB: challenges.mode – solo (bet on yourself) or ranked (shared pool against others). */
-export const CHALLENGE_MODES = ['solo', 'ranked'] as const;
+/**
+ * DB: challenges.mode – ranked (pure leaderboard, no stake) or pool (everybody pays a stake into
+ * one pot; those who reach the goal share the stakes of those who do not).
+ */
+export const CHALLENGE_MODES = ['ranked', 'pool'] as const;
 export type ChallengeMode = (typeof CHALLENGE_MODES)[number];
 
-export const GOAL_TYPES = ['run_single', 'run_total', 'steps_daily'] as const;
+export const GOAL_TYPES = ['run_single', 'run_total', 'steps_daily', 'steps_total'] as const;
 export type GoalType = (typeof GOAL_TYPES)[number];
 
 /** DB: challenges.title */
@@ -54,12 +57,14 @@ export const TARGET_LIMITS: Record<GoalType, { min: number; max: number }> = {
   run_single: { min: 1_000, max: 100_000 },
   run_total: { min: 1_000, max: 500_000 },
   steps_daily: { min: 1_000, max: 50_000 },
+  steps_total: { min: 5_000, max: 2_000_000 },
 };
 
 export const TARGET_PRESETS: Record<GoalType, readonly number[]> = {
   run_single: [3_000, 5_000, 10_000, 21_100],
   run_total: [3_000, 5_000, 10_000, 21_100],
   steps_daily: [8_000, 10_000, 12_000],
+  steps_total: [30_000, 70_000, 100_000, 150_000],
 };
 
 /** DB: challenges.stake_cents (1,00 to 50,00 credits). */

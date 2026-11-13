@@ -11,7 +11,7 @@ const valid = {
   startDate: '2026-11-14',
   durationDays: 7,
   visibility: 'public',
-  mode: 'ranked',
+  mode: 'pool',
 } as const;
 
 describe('createChallengeSchema (same limits as public.create_challenge)', () => {
@@ -27,7 +27,8 @@ describe('createChallengeSchema (same limits as public.create_challenge)', () =>
     ['run below 1 km', { targetValue: 999 }],
     ['single run above 100 km', { targetValue: 100_001 }],
     ['steps above 50,000', { goalType: 'steps_daily', targetValue: 50_001 }],
-    ['stake below 1.00', { stakeCents: 99 }],
+    ['pool stake below 1.00', { mode: 'pool', stakeCents: 99 }],
+    ['ranked with a stake', { mode: 'ranked', stakeCents: 500 }],
     ['stake above 50.00', { stakeCents: 5001 }],
     ['stake with fractions', { stakeCents: 100.5 }],
     ['start today', { startDate: today }],
@@ -49,7 +50,8 @@ describe('createChallengeSchema (same limits as public.create_challenge)', () =>
     expect(
       schema.safeParse({ ...valid, goalType: 'run_total', targetValue: 500_000 }).success,
     ).toBe(true);
-    expect(schema.safeParse({ ...valid, mode: 'solo', visibility: 'private' }).success).toBe(true);
+    expect(schema.safeParse({ ...valid, mode: 'pool', visibility: 'private' }).success).toBe(true);
+    expect(schema.safeParse({ ...valid, mode: 'ranked', stakeCents: 0 }).success).toBe(true);
   });
 });
 

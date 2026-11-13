@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { Button, Sheet, Text } from '@/components';
+import { Button, ChipGroup, Sheet, Text, type ChipOption } from '@/components';
+import { STAKE_PRESETS_CENTS } from '@/config/app';
 import { useSession } from '@/features/auth/auth-provider';
 import { useWalletBalance } from '@/features/wallet/api';
 import { de } from '@/i18n/de';
@@ -8,20 +10,24 @@ import { formatAmount } from '@/lib/money';
 import { spacing } from '@/theme';
 
 export type JoinSheetProps = {
+  mode: 'ranked' | 'pool';
+  /** The stake suggested by the challenge (pools only). */
   stakeCents: number;
-  /** Solo goals bet on yourself; the texts differ from joining a ranked pool. */
-  solo?: boolean;
   visible: boolean;
   onClose: () => void;
-  onConfirm: () => void;
+  /** Called with the chosen stake (0 for ranked). */
+  onConfirm: (stakeCents: number) => void;
   joining: boolean;
   error: string | null;
 };
 
-/** The only way to pay a stake: states it and the virtual-credits notice before paying. */
+/**
+ * The only way to join: a pool states the own stake (everybody chooses it) and the
+ * virtual-credits notice before paying; a ranked challenge has no stake at all.
+ */
 export function JoinSheet({
+  mode,
   stakeCents,
-  solo = false,
   visible,
   onClose,
   onConfirm,
@@ -30,24 +36,45 @@ export function JoinSheet({
 }: JoinSheetProps) {
   const session = useSession();
   const balance = useWalletBalance(session.user.id);
-  const stake = formatAmount(stakeCents);
+  const [chosen, setChosen] = useState<number | null>(null);
+  const ranked = mode === 'ranked';
+  const stake = chosen ?? stakeCents;
+
+  const presets = [...new Set([...STAKE_PRESETS_CENTS, stakeCents])].sort((a, b) => a - b);
+  const options: ChipOption<number>[] = presets.map((cents) => ({
+    value: cents,
+    label: formatAmount(cents),
+    accessibilityLabel: `${formatAmount(cents)} ${de.common.credits}`,
+  }));
 
   return (
     <Sheet
       visible={visible}
-      title={solo ? de.joinSheet.soloTitle : de.joinSheet.title}
+      title={ranked ? de.joinSheet.rankedTitle : de.joinSheet.title}
       onClose={onClose}
       closeLabel={de.joinSheet.cancel}
     >
-      <Text>{solo ? de.joinSheet.soloStake(stake) : de.joinSheet.stake(stake)}</Text>
-      {balance.data !== undefined ? (
-        <Text variant="caption" color="textSecondary">
-          {de.joinSheet.balance(formatAmount(balance.data))}
-        </Text>
-      ) : null}
-      <Text variant="caption" color="textMuted">
-        {de.common.virtualCreditsNotice}
-      </Text>
+      {ranked ? (
+        <Text>{de.joinSheet.rankedText}</Text>
+      ) : (
+        <>
+          <ChipGroup
+            label={de.joinSheet.stakeLabel}
+            options={options}
+            value={stake}
+            onChange={setChosen}
+          />
+          <Text>{de.joinSheet.stakeChosen(formatAmount(stake))}</Text>
+          {balance.data !== undefined ? (
+            <Text variant="caption" color="textSecondary">
+              {de.joinSheet.balance(formatAmount(balance.data))}
+            </Text>
+          ) : null}
+          <Text variant="caption" color="textMuted">
+            {de.common.virtualCreditsNotice}
+          </Text>
+        </>
+      )}
       {error ? (
         <Text variant="caption" color="danger" accessibilityRole="alert">
           {error}
@@ -55,8 +82,8 @@ export function JoinSheet({
       ) : null}
       <View style={styles.actions}>
         <Button
-          label={solo ? de.joinSheet.soloConfirm : de.joinSheet.confirm}
-          onPress={onConfirm}
+          label={ranked ? de.joinSheet.rankedConfirm : de.joinSheet.confirm}
+          onPress={() => onConfirm(ranked ? 0 : stake)}
           loading={joining}
         />
         <Button label={de.joinSheet.cancel} variant="secondary" onPress={onClose} />

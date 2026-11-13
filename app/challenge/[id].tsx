@@ -28,12 +28,15 @@ import {
   goalRule,
   isFinished,
   isJoinable,
-  isSolo,
+  isPool,
+  isRanked,
   modeLabel,
   statusLabel,
 } from '@/features/challenges/format';
 import { PotCard } from '@/features/challenges/pot-card';
 import { JoinSheet } from '@/features/challenges/join-sheet';
+import { ChallengeDonationCard } from '@/features/donations/donation-cards';
+import { useMyChallengeResult, type ChallengeResult } from '@/features/donations/api';
 import { ChallengeFeed } from '@/features/feed/challenge-feed';
 import { Leaderboard } from '@/features/challenges/leaderboard';
 import type { Challenge, Participant } from '@/features/challenges/types';
@@ -118,15 +121,16 @@ function ChallengeDetail({
   const me = participants.find((participant) => participant.userId === userId);
   const isParticipant = me !== undefined;
   const isCreator = challenge.creator_id === userId;
-  const solo = isSolo(challenge);
-  // A solo goal is joined when it is created; leaving it is final.
-  const joinable = isJoinable(challenge) && !solo;
+  const ranked = isRanked(challenge);
+  const pool = isPool(challenge);
+  const joinable = isJoinable(challenge);
   const leavable = isJoinable(challenge);
   const showRanking =
-    !solo &&
-    (challenge.status === 'active' ||
-      challenge.status === 'settling' ||
-      challenge.status === 'settled');
+    challenge.status === 'active' ||
+    challenge.status === 'settling' ||
+    challenge.status === 'settled';
+  const finished = isFinished(challenge) || challenge.status === 'settling';
+  const result = useMyChallengeResult(challenge.id, me !== undefined && finished);
   const { firstDay } = challengeDays(challenge);
 
   const rules = [
@@ -135,15 +139,17 @@ function ChallengeDetail({
     de.challenge.ruleOnlyPeriod,
     de.challenge.ruleManual,
     de.challenge.ruleGrace(challenge.sync_grace_hours),
-    ...(solo
-      ? [de.challenge.ruleSoloWin, de.challenge.ruleSoloLose]
+    de.challenge.ruleMinParticipants(challenge.min_participants),
+    ...(ranked
+      ? [de.challenge.ruleRankedNoStake, de.challenge.ruleRankedPoints, de.challenge.ruleRanking]
       : [
-          de.challenge.ruleMinParticipants(challenge.min_participants),
           de.challenge.rulePayout,
           de.challenge.ruleAllWin,
           de.challenge.ruleNobody,
+          de.challenge.ruleAlone,
           ...(challenge.fee_bps > 0 ? [de.challenge.ruleFee(formatFee(challenge.fee_bps))] : []),
           de.challenge.ruleRounding,
+          de.challenge.ruleDonation,
           de.challenge.ruleRanking,
         ]),
     de.challenge.ruleLeave,
@@ -179,7 +185,7 @@ function ChallengeDetail({
         <View style={styles.badges}>
           <Pill label={modeLabel(challenge.mode)} />
           <Pill label={statusLabel(challenge.status)} />
-          {isParticipant && !solo ? <Pill label={de.challenges.joinedBadge} tone="accent" /> : null}
+          {isParticipant ? <Pill label={de.challenges.joinedBadge} tone="accent" /> : null}
         </View>
         <Text variant="title" accessibilityRole="header">
           {challenge.title}
@@ -189,8 +195,12 @@ function ChallengeDetail({
         </Text>
       </View>
 
-      {me && (isFinished(challenge) || challenge.status === 'settling') ? (
-        <ResultCard challenge={challenge} me={me} />
+      {me && finished ? (
+        <ResultCard challenge={challenge} me={me} result={result.data ?? null} />
+      ) : null}
+
+      {pool && isParticipant && !isFinished(challenge) ? (
+        <ChallengeDonationCard challengeId={challenge.id} />
       ) : null}
 
       <PotCard challenge={challenge} />
@@ -248,7 +258,7 @@ function ChallengeDetail({
         <ActivityList challenge={challenge} userId={userId} />
       ) : null}
 
-      {solo ? null : (
+      {
         <View style={styles.section}>
           <Text variant="label" color="textSecondary" accessibilityRole="header">
             {showRanking && isParticipant ? de.challenge.ranking : de.challenge.participantList}
@@ -271,9 +281,9 @@ function ChallengeDetail({
             </Card>
           )}
         </View>
-      )}
+      }
 
-      {solo || !isParticipant ? null : (
+      {!isParticipant ? null : (
         <View style={styles.section}>
           <Text variant="label" color="textSecondary" accessibilityRole="header">
             {de.feed.title}
@@ -305,7 +315,7 @@ function ChallengeDetail({
         {!isParticipant && joinable && !participantsLoading ? (
           <Button label={de.challenge.join} onPress={() => setSheet('join')} />
         ) : null}
-        {!isParticipant && !joinable && !solo ? (
+        {!isParticipant && !joinable ? (
           <Text variant="caption" color="textMuted">
             {de.challenge.notJoinable}
           </Text>
@@ -320,13 +330,17 @@ function ChallengeDetail({
       </View>
 
       <JoinSheet
+        mode={ranked ? 'ranked' : 'pool'}
         stakeCents={challenge.stake_cents}
         visible={sheet === 'join'}
         onClose={closeSheet}
         joining={join.isPending}
         error={join.isError ? toUserMessage(join.error) : null}
-        onConfirm={() =>
-          join.mutate({ challengeId: challenge.id }, { onSuccess: () => setSheet(null) })
+        onConfirm={(stakeCents) =>
+          join.mutate(
+            { challengeId: challenge.id, stakeCents: ranked ? undefined : stakeCents },
+            { onSuccess: () => setSheet(null) },
+          )
         }
       />
 
@@ -336,7 +350,11 @@ function ChallengeDetail({
         onClose={closeSheet}
         closeLabel={de.leaveSheet.cancel}
       >
-        <Text>{de.leaveSheet.text(formatAmount(me?.stakeCents ?? challenge.stake_cents))}</Text>
+        <Text>
+          {ranked
+            ? de.leaveSheet.rankedText
+            : de.leaveSheet.text(formatAmount(me?.stakeCents ?? challenge.stake_cents))}
+        </Text>
         {leave.isError ? (
           <Text variant="caption" color="danger" accessibilityRole="alert">
             {toUserMessage(leave.error)}
@@ -369,23 +387,42 @@ function resultLabel(result: string): string {
   }
 }
 
-/** Own result: waiting for the settlement, won (with payout), lost or refunded. */
-function ResultCard({ challenge, me }: { challenge: Challenge; me: Participant }) {
+/** Own result: waiting for the settlement, rank and points, payout (and donation) or refund. */
+function ResultCard({
+  challenge,
+  me,
+  result,
+}: {
+  challenge: Challenge;
+  me: Participant;
+  result: ChallengeResult | null;
+}) {
   let title: string;
   let text: string | null = null;
   if (challenge.status === 'settling') {
     title = de.challenge.resultPending;
   } else if (challenge.status === 'cancelled' || me.result === 'refunded') {
     title = de.challenge.resultCancelled;
-    text = de.challenge.resultRefundText(formatAmount(me.payoutCents ?? me.stakeCents));
+    text =
+      me.stakeCents > 0
+        ? de.challenge.resultRefundText(formatAmount(me.payoutCents ?? me.stakeCents))
+        : null;
+  } else if (isRanked(challenge)) {
+    title = result?.rank ? de.challenge.resultRanked(result.rank) : de.challenge.resultDone;
+    text = result ? de.challenge.resultRankedPoints(result.rankPoints) : null;
   } else if (me.result === 'success') {
     title = de.challenge.resultWon;
     text = de.challenge.resultWonPayout(formatAmount(me.payoutCents ?? 0));
+    if (result && result.donatedCents > 0) {
+      text += ` ${de.challenge.resultDonated(formatAmount(result.donatedCents))}`;
+    }
   } else {
     title = de.challenge.resultLost;
     text = de.challenge.resultLostText;
   }
-  const won = challenge.status === 'settled' && me.result === 'success';
+  const won =
+    challenge.status === 'settled' &&
+    (me.result === 'success' || (isRanked(challenge) && (result?.rank ?? 99) <= 3));
 
   return (
     <Card style={styles.result}>

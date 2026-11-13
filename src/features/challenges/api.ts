@@ -8,7 +8,7 @@ import type { Challenge, LeaderboardEntry, MyChallenge, Participant } from './ty
 
 export const challengeKeys = {
   all: ['challenges'] as const,
-  open: () => [...challengeKeys.all, 'open'] as const,
+  open: (mode: string) => [...challengeKeys.all, 'open', mode] as const,
   mine: (userId: string) => [...challengeKeys.all, 'mine', userId] as const,
   detail: (id: string) => [...challengeKeys.all, 'detail', id] as const,
   participants: (id: string) => [...challengeKeys.all, 'participants', id] as const,
@@ -25,15 +25,15 @@ function invalidateAfterBooking(queryClient: QueryClient) {
   ]);
 }
 
-/** Public ranked challenges that are open and have not started yet. */
-export function useOpenChallenges() {
+/** Public challenges of one mode that are open and have not started yet. */
+export function useOpenChallenges(mode: 'ranked' | 'pool') {
   return useQuery({
-    queryKey: challengeKeys.open(),
+    queryKey: challengeKeys.open(mode),
     queryFn: async (): Promise<Challenge[]> => {
       const { data, error } = await supabase
         .from('challenges')
         .select('*')
-        .eq('mode', 'ranked')
+        .eq('mode', mode)
         .eq('visibility', 'public')
         .eq('status', 'open')
         .gt('starts_at', new Date().toISOString())
@@ -188,7 +188,6 @@ export function useCreateChallenge() {
       }
       return data;
     },
-    // A solo goal books the stake right away.
     onSuccess: () => invalidateAfterBooking(queryClient),
   });
 }
@@ -196,11 +195,20 @@ export function useCreateChallenge() {
 export function useJoinChallenge() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (target: { challengeId: string } | { code: string }) => {
+    /** `stakeCents` is the own stake in a pool; without it the stake of the challenge applies. */
+    mutationFn: async (
+      target: ({ challengeId: string } | { code: string }) & { stakeCents?: number },
+    ) => {
       const { error } =
         'code' in target
-          ? await supabase.rpc('join_challenge_by_code', { p_code: target.code })
-          : await supabase.rpc('join_challenge', { p_challenge_id: target.challengeId });
+          ? await supabase.rpc('join_challenge_by_code', {
+              p_code: target.code,
+              p_stake_cents: target.stakeCents,
+            })
+          : await supabase.rpc('join_challenge', {
+              p_challenge_id: target.challengeId,
+              p_stake_cents: target.stakeCents,
+            });
       if (error) {
         throw error;
       }

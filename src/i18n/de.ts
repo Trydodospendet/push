@@ -263,23 +263,24 @@ export const de = {
   },
   tabs: {
     home: 'Home',
-    solo: 'Solo',
+    pool: 'Pool',
     ranked: 'Ranked',
     wallet: 'Wallet',
     profile: 'Profil',
   },
   mode: {
-    solo: 'Solo',
+    pool: 'Pool',
     ranked: 'Ranked',
   },
-  solo: {
-    title: 'Solo',
+  pool: {
+    title: 'Pool',
     intro:
-      'Setz dir ein eigenes Ziel und wette auf dich selbst. Schaffst du es, bekommst du deinen Einsatz zurück. Sonst verfällt er.',
-    create: 'Solo-Ziel setzen',
-    current: 'LAUFENDE ZIELE',
+      'Gleiches Ziel, gleicher Zeitraum, ein gemeinsamer Topf. Wer sein Ziel schafft, bekommt den eigenen Einsatz zurück und teilt sich die Einsätze derer, die es nicht schaffen. Du kannst auch allein einen Pool starten.',
+    create: 'Pool starten',
+    mine: 'MEINE POOLS',
+    open: 'OFFENE POOLS',
     finished: 'ABGESCHLOSSEN',
-    error: 'Deine Solo-Ziele konnten nicht geladen werden.',
+    error: 'Deine Pools konnten nicht geladen werden.',
   },
   home: {
     label: 'DEINE CHALLENGES',
@@ -300,7 +301,7 @@ export const de = {
         {
           icon: 'flag' as const,
           title: "So funktioniert's",
-          text: 'Such dir ein Lauf- oder Schrittziel aus und setz Credits darauf. Schaffst du es, bekommst du deinen Einsatz zurück. Bei Ranked-Challenges teilst du dir zusätzlich die Einsätze derer, die es nicht geschafft haben.',
+          text: 'Such dir ein Lauf- oder Schrittziel aus. Im Pool setzt du Credits darauf, in Ranked trittst du ohne Einsatz in einer Rangliste an.',
         },
         {
           icon: 'shield-checkmark' as const,
@@ -310,7 +311,7 @@ export const de = {
         {
           icon: 'wallet' as const,
           title: 'So wird ausgezahlt',
-          text: 'Nach dem Ende rechnet der Server automatisch ab: Wer sein Ziel geschafft hat, bekommt den Einsatz plus den Anteil am Topf gutgeschrieben. Aktuell sind Credits virtuell und können nicht ausgezahlt werden.',
+          text: 'Nach dem Ende rechnet der Server automatisch ab: Wer im Pool sein Ziel geschafft hat, bekommt den Einsatz plus einen Anteil am Topf – oder spendet den Anteil an eine NGO. Aktuell sind Credits virtuell und können nicht ausgezahlt werden.',
         },
       ] as const,
   },
@@ -346,7 +347,7 @@ export const de = {
     potCaption: (count: number) => `${count === 1 ? '1 Person' : `${count} Personen`} im Spiel`,
     possibleWinLabel: 'DEIN MÖGLICHER GEWINN',
     possibleWinHint: 'Höchstens: wenn alle anderen ihr Ziel verfehlen. Dein Einsatz ist inklusive.',
-    possibleWinHintSolo: 'Bei einem Solo-Ziel bekommst du nur deinen Einsatz zurück.',
+    possibleWinHintSolo: 'Allein im Pool bekommst du nur deinen Einsatz zurück.',
     possibleWinSetting: 'Wird berechnet …',
     verified: 'Automatisch geprüft',
     verifiedHint: (source: string) => `Ergebnisse kommen aus ${source}.`,
@@ -357,20 +358,22 @@ export const de = {
       'Sobald du einer Challenge beitrittst, siehst du hier jeden Einsatz und jede Auszahlung.',
     walletAction: 'Challenge finden',
     rankedMineTitle: 'Noch keine Challenge',
-    rankedMineText: 'Tritt einer offenen Challenge bei oder tippe oben auf „Erstellen“.',
-    rankedOpenTitle: 'Keine offenen Challenges',
+    rankedMineText: 'Tritt einer offenen Rangliste bei – ganz ohne Einsatz.',
+    rankedOpenTitle: 'Keine offenen Ranglisten',
     rankedOpenText: 'Erstell die erste und lade andere mit einem Code ein.',
     rankedFinishedTitle: 'Noch nichts abgeschlossen',
     rankedFinishedText: 'Beendete Challenges mit deinem Ergebnis erscheinen hier.',
-    soloCurrentTitle: 'Kein Ziel gesetzt',
-    soloCurrentText: 'Tippe oben auf „Solo-Ziel setzen“ und wette auf dich selbst.',
-    soloFinishedTitle: 'Noch nichts abgeschlossen',
-    soloFinishedText: 'Deine erreichten und verpassten Ziele erscheinen hier.',
+    poolMineTitle: 'Noch kein Pool',
+    poolMineText: 'Starte einen Pool oder tritt einem offenen bei. Du kannst auch allein starten.',
+    poolOpenTitle: 'Keine offenen Pools',
+    poolOpenText: 'Starte den ersten und lade andere mit einem Code ein.',
+    poolFinishedTitle: 'Noch nichts abgeschlossen',
+    poolFinishedText: 'Deine erreichten und verpassten Ziele erscheinen hier.',
   },
   challenges: {
     title: 'Ranked',
     intro:
-      'Tritt gegen andere an. Wer das Ziel schafft, bekommt den Einsatz zurück und teilt sich die Einsätze der anderen.',
+      'Tritt ohne Einsatz gegen andere an. Wer im Zeitraum am meisten schafft, steht oben – dafür gibt es Punkte und Abzeichen.',
     create: 'Erstellen',
     joinByCode: 'Code eingeben',
     mine: 'MEINE CHALLENGES',
@@ -381,18 +384,20 @@ export const de = {
     createdBadge: 'Von dir',
     weekly: 'WOCHEN-CHALLENGE',
     weeklyBadge: 'Diese Woche',
-    weeklyHint: 'Jede Woche neu: gleiche Regeln für alle, gleicher Einsatz.',
+    weeklyHint: 'Jede Woche neu: gleiche Regeln für alle, ohne Einsatz.',
   },
   goal: {
     typeLabel: {
       run_single: 'Ein Lauf',
       run_total: 'Gesamtstrecke',
       steps_daily: 'Tägliche Schritte',
+      steps_total: 'Meiste Schritte',
     },
     description: {
       run_single: (target: string) => `Ein Lauf über mindestens ${target}`,
       run_total: (target: string) => `Insgesamt ${target} laufen`,
       steps_daily: (target: string) => `Jeden Tag ${target}`,
+      steps_total: (target: string) => `Insgesamt ${target} gehen`,
     },
     rule: {
       run_single: (target: string) =>
@@ -401,6 +406,8 @@ export const de = {
         `Alle deine Läufe im Zeitraum zusammen müssen mindestens ${target} ergeben.`,
       steps_daily: (target: string) =>
         `Du musst an jedem einzelnen Tag im Zeitraum mindestens ${target} gehen.`,
+      steps_total: (target: string) =>
+        `Alle deine Schritte im Zeitraum zusammen müssen mindestens ${target} ergeben.`,
     },
     steps: (formatted: string) => `${formatted} Schritte`,
   },
@@ -435,15 +442,20 @@ export const de = {
     ruleMinParticipants: (min: number) =>
       `Sind beim Start weniger als ${min} Personen dabei, wird die Challenge abgesagt und alle bekommen ihren Einsatz zurück.`,
     rulePayout:
-      'Wer das Ziel schafft, bekommt den Einsatz zurück und teilt sich zu gleichen Teilen die Einsätze der anderen.',
+      'Jeder zahlt seinen eigenen Einsatz in den Topf. Wer das Ziel schafft, bekommt den Einsatz zurück und teilt sich die Einsätze der anderen im Verhältnis zum eigenen Einsatz.',
     ruleAllWin: 'Schaffen es alle, bekommen alle genau ihren Einsatz zurück.',
     ruleNobody: 'Schafft es niemand, verfallen alle Einsätze.',
+    ruleAlone: 'Bist du allein im Pool: Ziel geschafft = Einsatz zurück, sonst verfällt er.',
     ruleFee: (percent: string) => `Von den verlorenen Einsätzen gehen ${percent} Gebühr ab.`,
     ruleRounding: 'Lässt sich der Topf nicht in ganze Cent teilen, verfällt der Rest.',
+    ruleDonation:
+      'Deinen Gewinnanteil kannst du an eine NGO spenden. Deinen Einsatz bekommst du immer zurück.',
     ruleRanking: 'Die Rangliste zeigt nur die Reihenfolge – ausgezahlt wird nicht nach Platz.',
-    ruleSoloWin: 'Schaffst du dein Ziel, bekommst du deinen Einsatz vollständig zurück.',
-    ruleSoloLose: 'Schaffst du es nicht, verfällt dein Einsatz.',
-    ruleLeave: 'Bis zum Start kannst du jederzeit aussteigen und bekommst deinen Einsatz zurück.',
+    ruleRankedNoStake: 'In einer Rangliste gibt es keinen Einsatz und keine Credits-Bewegung.',
+    ruleRankedPoints:
+      'Für die Plätze gibt es Punkte (Platz 1: 30, 2: 20, 3: 10, danach 5) und Abzeichen.',
+    ruleLeave:
+      'Bis zum Start kannst du jederzeit aussteigen (im Pool bekommst du deinen Einsatz zurück).',
     ranking: 'RANGLISTE',
     rankingEmpty: 'Die Rangliste erscheint, sobald die Challenge läuft.',
     rankingError: 'Die Rangliste konnte nicht geladen werden.',
@@ -453,6 +465,10 @@ export const de = {
     resultWonPayout: (amount: string) => `Dir wurden ${amount} Credits gutgeschrieben.`,
     resultLost: 'Ziel nicht geschafft.',
     resultLostText: 'Dein Einsatz ist verfallen.',
+    resultRanked: (rank: number) => `Platz ${rank}`,
+    resultRankedPoints: (points: number) =>
+      points === 1 ? '1 Punkt für dein Level.' : `${points} Punkte für dein Level.`,
+    resultDonated: (amount: string) => `Davon hast du ${amount} Credits gespendet.`,
     resultCancelled: 'Challenge abgesagt.',
     resultRefundText: (amount: string) => `Dein Einsatz von ${amount} Credits wurde erstattet.`,
     resultPending: 'Die Auswertung läuft. Das Ergebnis erscheint nach der Synchronisierungsfrist.',
@@ -480,23 +496,27 @@ export const de = {
     balance: (amount: string) => `Dein Guthaben: ${amount} Credits`,
     confirm: 'Jetzt beitreten',
     cancel: 'Abbrechen',
-    soloTitle: 'Solo-Ziel setzen',
-    soloStake: (amount: string) =>
-      `Du setzt ${amount} Credits auf dich selbst. Erreichst du dein Ziel, bekommst du sie zurück. Sonst verfallen sie.`,
-    soloConfirm: 'Einsatz setzen',
+    rankedTitle: 'Rangliste beitreten',
+    rankedText: 'Hier gibt es keinen Einsatz. Du trittst gegen die anderen an und sammelst Punkte.',
+    rankedConfirm: 'Mitmachen',
+    stakeLabel: 'DEIN EINSATZ',
+    stakeChosen: (amount: string) =>
+      `Du setzt ${amount} Credits. Erreichst du dein Ziel, bekommst du sie zurück plus deinen Anteil an den Einsätzen der anderen.`,
   },
   leaveSheet: {
     title: 'Challenge verlassen?',
     text: (amount: string) =>
       `Du bekommst deinen Einsatz von ${amount} Credits zurück. Danach kannst du dieser Challenge nicht erneut beitreten.`,
+    rankedText: 'Du kannst jederzeit bis zum Start aussteigen. Es wurde kein Einsatz gebucht.',
     confirm: 'Verlassen',
     cancel: 'Dabei bleiben',
   },
   create: {
     title: 'Challenge erstellen',
-    soloTitle: 'Solo-Ziel',
-    soloSubmit: 'Weiter zum Einsatz',
-    soloHint: 'Nur du machst mit. Der Einsatz wird beim Setzen des Ziels abgebucht.',
+    titleRanked: 'Rangliste erstellen',
+    titlePool: 'Pool starten',
+    stakeHint: 'Der Vorschlag für alle. Jeder kann beim Beitritt seinen eigenen Einsatz wählen.',
+    rankedHint: 'Ranglisten haben keinen Einsatz. Es gewinnt, wer im Zeitraum am meisten schafft.',
     goalType: 'ZIELTYP',
     target: 'ZIEL',
     start: 'START',
@@ -515,7 +535,7 @@ export const de = {
     summary: (start: string, end: string) => `Vom ${start} bis einschließlich ${end}`,
     submit: 'Challenge erstellen',
     afterCreateHint:
-      'Der Ersteller tritt nicht automatisch bei. Danach kannst du selbst beitreten.',
+      'Der Ersteller tritt nicht automatisch bei. Danach kannst du selbst beitreten und deinen Einsatz festlegen.',
     invalidTitle: 'Der Titel muss 3 bis 60 Zeichen lang sein.',
     invalidInput: 'Bitte prüfe deine Angaben.',
   },
@@ -540,6 +560,7 @@ export const de = {
       fee: 'Gebühr',
       rounding: 'Rundung',
       forfeit: 'Verfallener Einsatz',
+      donation: 'Spende',
     },
     unknownChallenge: 'Challenge',
   },
@@ -555,6 +576,10 @@ export const de = {
     invalid_mode: 'Diese Art von Challenge gibt es nicht.',
     already_cheered: 'Du hast diesen Eintrag schon angefeuert.',
     cannot_cheer_self: 'Du kannst dich nicht selbst anfeuern.',
+    invalid_stake: 'Der Einsatz muss zwischen 1,00 und 50,00 Credits liegen.',
+    donation_locked: 'Die Challenge ist abgerechnet. Die Wahl lässt sich nicht mehr ändern.',
+    ngo_not_found: 'Diese NGO gibt es nicht.',
+    invalid_donation_setting: 'Diese Einstellung ist ungültig.',
     feed_entry_not_found: 'Diesen Eintrag gibt es nicht oder du bist nicht dabei.',
   },
   profile: {
@@ -675,6 +700,27 @@ export const de = {
     error: 'Die Aktivität konnte nicht geladen werden.',
     visibilityHint:
       'Nur Teilnehmer sehen diese Liste. Es werden nur Name, Distanz und Erfolge gezeigt.',
+  },
+  donations: {
+    label: 'SPENDEN',
+    defaultToggle: 'Gewinnanteil spenden',
+    defaultHint:
+      'Standard für alle Pools: Dein Anteil an den Einsätzen der anderen geht an eine NGO. Deinen Einsatz bekommst du immer zurück.',
+    ngo: 'NGO',
+    placeholderNote: 'Die NGO-Partner sind vorerst Platzhalter.',
+    error: 'Die Spenden-Einstellung konnte nicht geladen werden.',
+    challengeLabel: 'GEWINNANTEIL SPENDEN?',
+    challengeText:
+      'Wenn du das Ziel schaffst: behältst du deinen Anteil oder spendest du ihn? Du kannst das bis zur Abrechnung ändern.',
+    choice: 'DEINE WAHL',
+    useDefault: 'Standard',
+    donate: 'Spenden',
+    keep: 'Behalten',
+    nowDonating: 'Aktuell: Dein Anteil wird gespendet.',
+    nowKeeping: 'Aktuell: Du behältst deinen Anteil.',
+    overviewLabel: 'MEINE SPENDEN',
+    overviewEmpty: 'Noch keine Spende. Sie erscheint hier, sobald du einen Gewinnanteil spendest.',
+    total: 'Insgesamt gespendet',
   },
   reminders: {
     label: 'ERINNERUNGEN',

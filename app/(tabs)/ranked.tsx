@@ -6,7 +6,7 @@ import { useSession } from '@/features/auth/auth-provider';
 import { useMyChallenges, useOpenChallenges } from '@/features/challenges/api';
 import { ChallengeSection } from '@/features/challenges/challenge-section';
 import { ChallengeCard } from '@/features/challenges/challenge-card';
-import { isFinished, isSolo, isWeekly } from '@/features/challenges/format';
+import { isFinished, isRanked, isWeekly } from '@/features/challenges/format';
 import { de } from '@/i18n/de';
 import { colors, spacing } from '@/theme';
 
@@ -15,7 +15,7 @@ export default function RankedScreen() {
   const router = useRouter();
   const session = useSession();
   const mine = useMyChallenges(session.user.id);
-  const open = useOpenChallenges();
+  const open = useOpenChallenges('ranked');
 
   const refreshing = mine.isRefetching || open.isRefetching;
   const refresh = () => {
@@ -23,7 +23,7 @@ export default function RankedScreen() {
     void open.refetch();
   };
 
-  const myRanked = mine.data?.filter((challenge) => !isSolo(challenge));
+  const myRanked = mine.data?.filter(isRanked);
   const myIds = new Set(myRanked?.filter((c) => c.isParticipant).map((c) => c.id));
   const createdIds = new Set(myRanked?.filter((c) => c.isCreator).map((c) => c.id));
   // The weekly challenge: the one people can still join, otherwise the one I am part of.

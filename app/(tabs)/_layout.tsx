@@ -38,10 +38,10 @@ export default function TabsLayout() {
           }}
         />
         <Tabs.Screen
-          name="solo"
+          name="pool"
           options={{
-            title: de.tabs.solo,
-            tabBarAccessibilityLabel: de.tabs.solo,
+            title: de.tabs.pool,
+            tabBarAccessibilityLabel: de.tabs.pool,
             tabBarIcon: tabIcon('flag-outline', 'flag'),
           }}
         />

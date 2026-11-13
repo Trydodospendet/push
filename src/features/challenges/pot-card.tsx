@@ -7,18 +7,19 @@ import { de } from '@/i18n/de';
 import { formatAmount } from '@/lib/money';
 import { colors, layout, radius, spacing } from '@/theme';
 
-import { isFinished, isSolo } from './format';
+import { isFinished, isPool, isRanked } from './format';
 import type { Challenge } from './types';
 
-/** Big pot (ranked), the most the user can win, and the "automatically checked" badge. */
+/** Big pot (pool), the most the user can win, and the "automatically checked" badge. */
 export function PotCard({ challenge }: { challenge: Challenge }) {
-  const solo = isSolo(challenge);
+  const pool = isPool(challenge);
+  const alone = pool && challenge.participant_count <= 1;
   const over = isFinished(challenge) || challenge.status === 'settling';
   const potential = usePotentialWin(challenge.id, !over);
 
   return (
     <Card style={styles.card}>
-      {solo ? null : (
+      {pool ? (
         <View
           style={styles.pot}
           accessible
@@ -34,9 +35,9 @@ export function PotCard({ challenge }: { challenge: Challenge }) {
             {`${de.common.credits} · ${de.detail.potCaption(challenge.participant_count)}`}
           </Text>
         </View>
-      )}
+      ) : null}
 
-      {over ? null : (
+      {over || isRanked(challenge) ? null : (
         <View
           style={styles.win}
           accessible
@@ -57,7 +58,7 @@ export function PotCard({ challenge }: { challenge: Challenge }) {
             </Text>
           )}
           <Text variant="caption" color="textMuted">
-            {solo ? de.detail.possibleWinHintSolo : de.detail.possibleWinHint}
+            {alone ? de.detail.possibleWinHintSolo : de.detail.possibleWinHint}
           </Text>
         </View>
       )}

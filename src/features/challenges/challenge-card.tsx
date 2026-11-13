@@ -6,7 +6,7 @@ import { de } from '@/i18n/de';
 import { formatAmount } from '@/lib/money';
 import { colors, layout, opacity, radius, spacing } from '@/theme';
 
-import { describeGoal, formatPeriod, isSolo, isWeekly, modeLabel, statusLabel } from './format';
+import { describeGoal, formatPeriod, isRanked, isWeekly, modeLabel, statusLabel } from './format';
 import type { Challenge } from './types';
 
 export type ChallengeCardProps = {
@@ -30,10 +30,9 @@ export function ChallengeCard({
   const goal = describeGoal(challenge.goal_type, challenge.target_value);
   const period = formatPeriod(challenge);
   const stake = `${formatAmount(challenge.stake_cents)} ${de.common.credits}`;
-  const solo = isSolo(challenge);
-  const details = solo
-    ? [period, stake]
-    : [period, stake, de.challenge.participantCount(challenge.participant_count)];
+  const ranked = isRanked(challenge);
+  const people = de.challenge.participantCount(challenge.participant_count);
+  const details = ranked ? [period, people] : [period, stake, people];
 
   return (
     <Pressable
@@ -47,7 +46,7 @@ export function ChallengeCard({
           {isWeekly(challenge) ? <Pill label={de.challenges.weeklyBadge} tone="accent" /> : null}
           <Pill label={modeLabel(challenge.mode)} />
           <Pill label={statusLabel(challenge.status)} />
-          {joined && !solo ? <Pill label={de.challenges.joinedBadge} tone="accent" /> : null}
+          {joined ? <Pill label={de.challenges.joinedBadge} tone="accent" /> : null}
           {!joined && created ? <Pill label={de.challenges.createdBadge} /> : null}
         </View>
         <Text variant="heading" numberOfLines={2}>

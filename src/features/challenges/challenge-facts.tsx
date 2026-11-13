@@ -5,7 +5,7 @@ import { de } from '@/i18n/de';
 import { formatAmount } from '@/lib/money';
 import { spacing } from '@/theme';
 
-import { formatPeriod, isSolo } from './format';
+import { formatPeriod, isRanked } from './format';
 import type { Challenge } from './types';
 
 function Fact({ label, value }: { label: string; value: string }) {
@@ -22,24 +22,16 @@ function Fact({ label, value }: { label: string; value: string }) {
 /** Period, stake, participants and pot – all values as computed by the server. */
 export function ChallengeFacts({ challenge }: { challenge: Challenge }) {
   const participants = de.challenge.participantCount(challenge.participant_count);
-  if (isSolo(challenge)) {
-    return (
-      <Card style={styles.card}>
-        <Fact label={de.challenge.period} value={formatPeriod(challenge)} />
+  const ranked = isRanked(challenge);
+  return (
+    <Card style={styles.card}>
+      <Fact label={de.challenge.period} value={formatPeriod(challenge)} />
+      {ranked ? null : (
         <Fact
           label={de.challenge.stake}
           value={`${formatAmount(challenge.stake_cents)} ${de.common.credits}`}
         />
-      </Card>
-    );
-  }
-  return (
-    <Card style={styles.card}>
-      <Fact label={de.challenge.period} value={formatPeriod(challenge)} />
-      <Fact
-        label={de.challenge.stake}
-        value={`${formatAmount(challenge.stake_cents)} ${de.common.credits}`}
-      />
+      )}
       <Fact
         label={de.challenge.participants}
         value={

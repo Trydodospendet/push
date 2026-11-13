@@ -727,6 +727,15 @@ export type Database = {
           ngo_id: string;
         }[];
       };
+      get_my_challenge_result: {
+        Args: { p_challenge_id: string };
+        Returns: {
+          donated_cents: number;
+          payout_cents: number;
+          rank: number;
+          rank_points: number;
+        }[];
+      };
       get_my_donation_totals: {
         Args: Record<PropertyKey, never>;
         Returns: {
@@ -863,7 +872,7 @@ export type Database = {
       mark_badge_seen: { Args: { p_badge: string }; Returns: undefined };
       recompute_progress: { Args: { p_challenge_id: string }; Returns: undefined };
       set_challenge_donation: {
-        Args: { p_challenge_id: string; p_donate: boolean; p_ngo_id: string };
+        Args: { p_challenge_id: string; p_donate?: boolean; p_ngo_id?: string };
         Returns: undefined;
       };
       set_display_name: {
@@ -884,7 +893,7 @@ export type Database = {
           isSetofReturn: false;
         };
       };
-      set_donation_defaults: { Args: { p_donate: boolean; p_ngo_id: string }; Returns: undefined };
+      set_donation_defaults: { Args: { p_donate: boolean; p_ngo_id?: string }; Returns: undefined };
       settle_challenge: { Args: { p_challenge_id: string }; Returns: boolean };
       sync_daily_steps: { Args: { p_days: Json }; Returns: number };
       sync_gps_run: {

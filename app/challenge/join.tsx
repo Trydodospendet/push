@@ -34,13 +34,13 @@ export default function JoinByCodeScreen() {
     setCode(result.data);
   };
 
-  const handleConfirm = () => {
+  const handleConfirm = (stakeCents: number) => {
     if (!code || !preview.data) {
       return;
     }
     const challengeId = preview.data.id;
     join.mutate(
-      { code },
+      { code, stakeCents: preview.data.mode === 'ranked' ? undefined : stakeCents },
       {
         onSuccess: () => {
           setSheetVisible(false);
@@ -85,6 +85,7 @@ export default function JoinByCodeScreen() {
           <ChallengeFacts challenge={preview.data} />
           <Button label={de.challenge.join} onPress={() => setSheetVisible(true)} />
           <JoinSheet
+            mode={preview.data.mode === 'ranked' ? 'ranked' : 'pool'}
             stakeCents={preview.data.stake_cents}
             visible={sheetVisible}
             onClose={() => {

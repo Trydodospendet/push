@@ -22,7 +22,9 @@ export function formatSteps(steps: number): string {
 }
 
 export function formatTarget(goalType: GoalType, value: number): string {
-  return goalType === 'steps_daily' ? formatSteps(value) : formatDistance(value);
+  return goalType === 'steps_daily' || goalType === 'steps_total'
+    ? formatSteps(value)
+    : formatDistance(value);
 }
 
 /** One line describing the goal, e.g. 'Ein Lauf über mindestens 5 km'. */
@@ -51,6 +53,8 @@ export function suggestTitle(goalType: GoalType, value: number): string {
       return `${target} insgesamt`;
     case 'steps_daily':
       return `${target} täglich`;
+    case 'steps_total':
+      return `Meiste Schritte (Ziel ${target})`;
   }
 }
 
@@ -80,8 +84,14 @@ export function statusLabel(status: string): string {
   return status in de.status ? de.status[status as ChallengeStatus] : status;
 }
 
-export function isSolo(challenge: Pick<Challenge, 'mode'>): boolean {
-  return challenge.mode === 'solo';
+/** Pure leaderboard without any stake. */
+export function isRanked(challenge: Pick<Challenge, 'mode'>): boolean {
+  return challenge.mode === 'ranked';
+}
+
+/** Everybody pays a stake into one pot. */
+export function isPool(challenge: Pick<Challenge, 'mode'>): boolean {
+  return challenge.mode === 'pool';
 }
 
 /** The platform's weekly challenge (created every Sunday by the server). */
@@ -90,7 +100,7 @@ export function isWeekly(challenge: Pick<Challenge, 'weekly_key'>): boolean {
 }
 
 export function modeLabel(mode: string): string {
-  return mode === 'solo' ? de.mode.solo : de.mode.ranked;
+  return mode === 'pool' ? de.mode.pool : de.mode.ranked;
 }
 
 /** Settled or cancelled: nothing changes anymore. */

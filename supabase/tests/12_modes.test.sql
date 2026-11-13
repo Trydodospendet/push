@@ -2,7 +2,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 
-select plan(50);
+select plan(53);
 
 -- Helpers ------------------------------------------------------------------------------
 
@@ -483,6 +483,25 @@ select is(
   0,
   'in a pool winners get at least the stake back and losers nothing'
 );
+
+-- Own result ---------------------------------------------------------------------------------------------
+
+select pg_temp.login(pg_temp.u(2));
+select results_eq(
+  $$ select rank, rank_points, payout_cents, donated_cents from public.get_my_challenge_result(pg_temp.c('ranked')) $$,
+  $$ values (1, 30, null::bigint, 0::bigint) $$,
+  'the own ranked result shows rank, points and no payout'
+);
+select results_eq(
+  $$ select payout_cents, donated_cents from public.get_my_challenge_result(pg_temp.c('donate')) $$,
+  $$ values (4200::bigint, 1200::bigint) $$,
+  'the own pool result shows the payout and how much of it was donated'
+);
+select is(
+  (select count(*)::int from public.get_my_challenge_result(pg_temp.c('alone_win'))), 0,
+  'someone who did not take part gets no result'
+);
+select pg_temp.logout();
 
 -- Rights ------------------------------------------------------------------------------------------------
 

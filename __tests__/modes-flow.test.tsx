@@ -46,7 +46,7 @@ function challenge(overrides: Record<string, unknown> = {}) {
     min_participants: 2,
     max_participants: null,
     visibility: 'public',
-    mode: 'ranked',
+    mode: 'pool',
     invite_code: null,
     status: 'open',
     participant_count: 1,
@@ -94,8 +94,19 @@ function mockRpc(handlers: Record<string, RpcHandler> = {}) {
     if (fn === 'get_my_profile') {
       return { data: profile, error: null };
     }
-    if (fn === 'get_my_progress' && !handlers[fn]) {
+    if (
+      !handlers[fn] &&
+      [
+        'get_my_progress',
+        'get_leaderboard',
+        'get_challenge_feed',
+        'get_my_challenge_result',
+      ].includes(fn)
+    ) {
       return { data: [], error: null };
+    }
+    if (!handlers[fn] && fn === 'get_potential_win') {
+      return { data: null, error: null };
     }
     const handler = handlers[fn];
     if (!handler) {
@@ -105,7 +116,7 @@ function mockRpc(handlers: Record<string, RpcHandler> = {}) {
   });
 }
 
-async function openTab(user: ReturnType<typeof userEvent.setup>, name: 'Solo' | 'Ranked') {
+async function openTab(user: ReturnType<typeof userEvent.setup>, name: 'Pool' | 'Ranked') {
   await renderRouter('./app', { initialUrl: '/' });
   await user.press(await screen.findByRole('button', { name }));
 }
@@ -117,51 +128,33 @@ beforeEach(() => {
   mockAuth.setInitialSession(createMockSession(USER_ID, 'anna@example.com'));
 });
 
-describe('solo', () => {
-  it('sets a solo goal only after confirming the stake', async () => {
+describe('pool', () => {
+  it('starts a pool with the chosen stake and joins it in a second step', async () => {
     const user = userEvent.setup();
     const created = challenge({
-      id: 'solo-1',
+      id: 'pool-1',
       creator_id: USER_ID,
       title: '5 km am Stück',
       stake_cents: 500,
-      mode: 'solo',
-      visibility: 'private',
-      min_participants: 1,
-      max_participants: 1,
-      pot_cents: 500,
+      pot_cents: 0,
+      participant_count: 0,
     });
     mockDb.set({ challenges: [], challenge_participants: [], wallets: { balance_cents: 10000 } });
     mockRpc({
       create_challenge: () => {
-        mockDb.set({
-          challenges: [created],
-          challenge_participants: [participant(created, USER_ID, 'Anna Lauf')],
-          wallets: { balance_cents: 9500 },
-        });
+        mockDb.set({ challenges: [created], challenge_participants: [] });
         return created;
       },
     });
 
-    await openTab(user, 'Solo');
-    expect(await screen.findByText('Kein Ziel gesetzt')).toBeOnTheScreen();
+    await openTab(user, 'Pool');
+    expect(await screen.findByText('Noch kein Pool')).toBeOnTheScreen();
 
-    await user.press(screen.getByRole('button', { name: 'Solo-Ziel setzen' }));
+    await user.press(screen.getByRole('button', { name: 'Pool starten' }));
     await user.press(await screen.findByRole('radio', { name: '5,00 Credits' }));
-    expect(screen.queryByRole('radio', { name: 'Öffentlich' })).toBeNull();
+    expect(screen.getByRole('radio', { name: 'Öffentlich' })).toBeOnTheScreen();
+    await user.press(screen.getByRole('button', { name: 'Challenge erstellen' }));
 
-    await user.press(screen.getByRole('button', { name: 'Weiter zum Einsatz' }));
-    expect(
-      await screen.findByText(
-        'Du setzt 5,00 Credits auf dich selbst. Erreichst du dein Ziel, bekommst du sie zurück. Sonst verfallen sie.',
-      ),
-    ).toBeOnTheScreen();
-    expect(
-      screen.getByText('Testphase: Credits sind virtuell und können nicht ausgezahlt werden.'),
-    ).toBeOnTheScreen();
-    expect(supabaseMock.rpc).not.toHaveBeenCalledWith('create_challenge', expect.anything());
-
-    await user.press(screen.getByRole('button', { name: 'Einsatz setzen' }));
     expect(supabaseMock.rpc).toHaveBeenCalledWith('create_challenge', {
       p_title: '5 km am Stück',
       p_goal_type: 'run_single',
@@ -169,29 +162,50 @@ describe('solo', () => {
       p_stake_cents: 500,
       p_start_date: tomorrow,
       p_duration_days: 7,
-      p_visibility: 'private',
-      p_mode: 'solo',
+      p_visibility: 'public',
+      p_mode: 'pool',
     });
-
+    // Creating books nothing: the creator joins (and chooses the stake) in the detail screen.
     expect(
-      await screen.findByText('• Schaffst du es nicht, verfällt dein Einsatz.'),
+      await screen.findByText(
+        'Du hast diese Challenge erstellt. Tritt selbst bei, um mitzumachen.',
+      ),
     ).toBeOnTheScreen();
-    expect(screen.queryByText('WER IST DABEI')).toBeNull();
-    expect(screen.queryByText('TOPF')).toBeNull();
-    expect(screen.getByRole('button', { name: 'Challenge verlassen' })).toBeOnTheScreen();
+    expect(screen.getByRole('button', { name: 'Beitreten' })).toBeOnTheScreen();
   });
 
-  it('lists a missed solo goal as finished and shows the lost stake', async () => {
+  it('lets everybody choose the own stake when joining', async () => {
+    const user = userEvent.setup();
+    const open = challenge({ stake_cents: 500 });
+    mockDb.set({
+      challenges: [open],
+      challenge_participants: [participant(open, 'user-2', 'Ben')],
+      wallets: { balance_cents: 10000 },
+    });
+    mockRpc({ join_challenge: () => ({}) });
+
+    await renderRouter('./app', { initialUrl: '/pool' });
+    await user.press(await screen.findByRole('button', { name: /^5 km am Stück/ }));
+    await user.press(await screen.findByRole('button', { name: 'Beitreten' }));
+    await user.press(await screen.findByRole('radio', { name: '20,00 Credits' }));
+    expect(screen.getByText(/^Du setzt 20,00 Credits\./)).toBeOnTheScreen();
+    await user.press(screen.getByRole('button', { name: 'Jetzt beitreten' }));
+
+    expect(supabaseMock.rpc).toHaveBeenCalledWith('join_challenge', {
+      p_challenge_id: 'challenge-1',
+      p_stake_cents: 2000,
+    });
+  });
+
+  it('lists a missed pool as finished and shows the lost stake', async () => {
     const user = userEvent.setup();
     const missed = settled({
-      id: 'solo-2',
+      id: 'pool-2',
       creator_id: USER_ID,
       title: 'Mein 10-km-Lauf',
       target_value: 10000,
-      mode: 'solo',
-      visibility: 'private',
       min_participants: 1,
-      max_participants: 1,
+      participant_count: 1,
     });
     mockDb.set({
       challenges: [missed],
@@ -199,25 +213,29 @@ describe('solo', () => {
     });
     mockRpc({ get_my_progress: () => [{ challenge_id: missed.id, progress_value: 7200 }] });
 
-    await openTab(user, 'Solo');
-    expect(await screen.findByText('Kein Ziel gesetzt')).toBeOnTheScreen();
-    await user.press(screen.getByRole('button', { name: /^Mein 10-km-Lauf/ }));
+    await openTab(user, 'Pool');
+    expect(await screen.findByText('ABGESCHLOSSEN')).toBeOnTheScreen();
+    await user.press(await screen.findByRole('button', { name: /^Mein 10-km-Lauf/ }));
 
     expect(await screen.findByText('Ziel nicht geschafft.')).toBeOnTheScreen();
     expect(screen.getByText('Dein Einsatz ist verfallen.')).toBeOnTheScreen();
-    expect(supabaseMock.rpc).not.toHaveBeenCalledWith('get_leaderboard', expect.anything());
   });
 });
 
 describe('ranked', () => {
-  it('shows the ranking and the payout after the settlement', async () => {
+  it('shows rank, points and the ranking without any money after the settlement', async () => {
     const user = userEvent.setup();
-    const done = settled({ fee_bps: 1000, participant_count: 2, pot_cents: 2000 });
+    const done = settled({
+      mode: 'ranked',
+      stake_cents: 0,
+      participant_count: 2,
+      pot_cents: 0,
+    });
     mockDb.set({
       challenges: [done],
       challenge_participants: [
-        participant(done, USER_ID, 'Anna Lauf', 'success', 1900),
-        participant(done, 'user-2', 'Ben', 'failed', 0),
+        participant(done, USER_ID, 'Anna Lauf', 'success', null),
+        participant(done, 'user-2', 'Ben', 'failed', null),
       ],
     });
     mockRpc({
@@ -225,50 +243,49 @@ describe('ranked', () => {
         { rank: 1, user_id: USER_ID, display_name: 'Anna Lauf', is_me: true, goal_reached: true },
         { rank: 2, user_id: 'user-2', display_name: 'Ben', is_me: false, goal_reached: false },
       ],
+      get_my_challenge_result: () => [
+        { rank: 1, rank_points: 30, payout_cents: null, donated_cents: 0 },
+      ],
     });
 
     await openTab(user, 'Ranked');
     expect(await screen.findByText('ABGESCHLOSSEN')).toBeOnTheScreen();
     expect(
-      screen.getByText('Tritt einer offenen Challenge bei oder tippe oben auf „Erstellen“.'),
+      screen.getByText('Tritt einer offenen Rangliste bei – ganz ohne Einsatz.'),
     ).toBeOnTheScreen();
     await user.press(await screen.findByRole('button', { name: /^5 km am Stück/ }));
 
-    expect(await screen.findByText('Ziel geschafft!')).toBeOnTheScreen();
-    expect(screen.getByText('Dir wurden 19,00 Credits gutgeschrieben.')).toBeOnTheScreen();
+    expect(await screen.findByText('Platz 1')).toBeOnTheScreen();
+    expect(screen.getByText('30 Punkte für dein Level.')).toBeOnTheScreen();
     expect(await screen.findByText('RANGLISTE')).toBeOnTheScreen();
     expect(await screen.findByLabelText('1. Anna Lauf (du): geschafft')).toBeOnTheScreen();
     expect(screen.getByLabelText('2. Ben: nicht geschafft')).toBeOnTheScreen();
-    expect(supabaseMock.rpc).toHaveBeenCalledWith('get_leaderboard', {
-      p_challenge_id: done.id,
-    });
     expect(
-      screen.getByText(/^• Von den verlorenen Einsätzen gehen 10\s%\sGebühr ab\.$/),
+      screen.getByText('• In einer Rangliste gibt es keinen Einsatz und keine Credits-Bewegung.'),
     ).toBeOnTheScreen();
-    expect(
-      screen.getByText(
-        '• Die Rangliste zeigt nur die Reihenfolge – ausgezahlt wird nicht nach Platz.',
-      ),
-    ).toBeOnTheScreen();
+    expect(screen.queryByText('TOPF')).toBeNull();
   });
 
-  it('keeps solo goals out of the ranked area and lists only ranked ones', async () => {
+  it('keeps pools out of the ranked area and lists only ranked ones', async () => {
     const user = userEvent.setup();
-    const ranked = challenge({ id: 'ranked-1', title: 'Team-Lauf' });
-    const solo = challenge({
-      id: 'solo-1',
+    const ranked = challenge({
+      id: 'ranked-1',
+      title: 'Team-Lauf',
+      mode: 'ranked',
+      stake_cents: 0,
+    });
+    const pool = challenge({
+      id: 'pool-1',
       creator_id: USER_ID,
       title: 'Nur für mich',
-      mode: 'solo',
       visibility: 'private',
       min_participants: 1,
-      max_participants: 1,
     });
     mockDb.set({
-      challenges: [ranked, solo],
+      challenges: [ranked, pool],
       challenge_participants: [
         participant(ranked, USER_ID, 'Anna Lauf'),
-        participant(solo, USER_ID, 'Anna Lauf'),
+        participant(pool, USER_ID, 'Anna Lauf'),
       ],
     });
     mockRpc();
@@ -279,7 +296,7 @@ describe('ranked', () => {
     expect(await screen.findAllByRole('button', { name: /^Team-Lauf, / })).toHaveLength(2);
     expect(screen.queryByRole('button', { name: /^Nur für mich, / })).toBeNull();
 
-    await user.press(screen.getByRole('button', { name: 'Solo' }));
+    await user.press(screen.getByRole('button', { name: 'Pool' }));
     expect(await screen.findByRole('button', { name: /^Nur für mich, / })).toBeOnTheScreen();
   });
 });

@@ -17,12 +17,7 @@ import { useMyProfile } from '@/features/auth/api';
 import { useSession } from '@/features/auth/auth-provider';
 import { useCreateChallenge } from '@/features/challenges/api';
 import { formatTarget, suggestTitle } from '@/features/challenges/format';
-import { JoinSheet } from '@/features/challenges/join-sheet';
-import {
-  createChallengeSchema,
-  lastDayOf,
-  type CreateChallengeInput,
-} from '@/features/challenges/schemas';
+import { createChallengeSchema, lastDayOf } from '@/features/challenges/schemas';
 import { de } from '@/i18n/de';
 import { addDays, formatDayLabel, toLocalDate } from '@/lib/dates';
 import { toUserMessage } from '@/lib/errors';
@@ -33,6 +28,7 @@ const DEFAULT_TARGET: Record<GoalType, number> = {
   run_single: 5_000,
   run_total: 10_000,
   steps_daily: 10_000,
+  steps_total: 70_000,
 };
 
 function startLabel(daysAhead: number, date: string): string {
@@ -48,19 +44,19 @@ function startLabel(daysAhead: number, date: string): string {
 export default function CreateChallengeScreen() {
   const router = useRouter();
   const params = useLocalSearchParams<{ mode?: string }>();
-  const mode: ChallengeMode = params.mode === 'solo' ? 'solo' : 'ranked';
-  const solo = mode === 'solo';
+  const mode: ChallengeMode = params.mode === 'ranked' ? 'ranked' : 'pool';
+  const ranked = mode === 'ranked';
   const session = useSession();
   const profile = useMyProfile(session.user.id);
   const create = useCreateChallenge();
-  // Validated input of a solo goal while the stake confirmation sheet is open.
-  const [pendingSolo, setPendingSolo] = useState<CreateChallengeInput | null>(null);
 
   const timezone = profile.data?.timezone ?? DEFAULT_TIMEZONE;
   const today = toLocalDate(new Date(), timezone);
 
-  const [goalType, setGoalType] = useState<GoalType>('run_single');
-  const [targetValue, setTargetValue] = useState(DEFAULT_TARGET.run_single);
+  const [goalType, setGoalType] = useState<GoalType>(ranked ? 'run_total' : 'run_single');
+  const [targetValue, setTargetValue] = useState(
+    DEFAULT_TARGET[ranked ? 'run_total' : 'run_single'],
+  );
   const [daysAhead, setDaysAhead] = useState<number>(START_PRESET_DAYS_AHEAD[0]);
   const [durationDays, setDurationDays] = useState<number>(7);
   const [stakeCents, setStakeCents] = useState<number>(1_000);
@@ -72,7 +68,11 @@ export default function CreateChallengeScreen() {
   const startDate = addDays(today, daysAhead);
   const title = customTitle ?? suggestTitle(goalType, targetValue);
 
-  const goalOptions: ChipOption<GoalType>[] = GOAL_TYPES.map((type) => ({
+  // A leaderboard ranks by the most kilometres or the most steps; daily goals and single runs
+  // are for pools.
+  const goalOptions: ChipOption<GoalType>[] = GOAL_TYPES.filter(
+    (type) => !ranked || type === 'run_total' || type === 'steps_total',
+  ).map((type) => ({
     value: type,
     label: de.goal.typeLabel[type],
   }));
@@ -103,28 +103,15 @@ export default function CreateChallengeScreen() {
     setTargetValue(DEFAULT_TARGET[type]);
   };
 
-  const submit = (input: CreateChallengeInput) =>
-    create.mutate(input, {
-      onSuccess: (challenge) => {
-        setPendingSolo(null);
-        router.replace({ pathname: '/challenge/[id]', params: { id: challenge.id } });
-      },
-      onError: (mutationError) => {
-        if (!solo) {
-          setError(toUserMessage(mutationError));
-        }
-      },
-    });
-
   const handleSubmit = () => {
     const result = createChallengeSchema(today).safeParse({
       title,
       goalType,
       targetValue,
-      stakeCents,
+      stakeCents: ranked ? 0 : stakeCents,
       startDate,
       durationDays,
-      visibility: solo ? 'private' : visibility,
+      visibility,
       mode,
     });
     if (!result.success) {
@@ -132,17 +119,17 @@ export default function CreateChallengeScreen() {
       return;
     }
     setError(null);
-    if (solo) {
-      // A solo goal books the stake right away: confirm it first.
-      setPendingSolo(result.data);
-      return;
-    }
-    submit(result.data);
+    create.mutate(result.data, {
+      onSuccess: (challenge) => {
+        router.replace({ pathname: '/challenge/[id]', params: { id: challenge.id } });
+      },
+      onError: (mutationError) => setError(toUserMessage(mutationError)),
+    });
   };
 
   return (
     <Screen scroll edges={['bottom', 'left', 'right']} contentStyle={styles.content}>
-      <Stack.Screen options={{ title: solo ? de.create.soloTitle : de.create.title }} />
+      <Stack.Screen options={{ title: ranked ? de.create.titleRanked : de.create.titlePool }} />
       <ChipGroup
         label={de.create.goalType}
         options={goalOptions}
@@ -173,25 +160,34 @@ export default function CreateChallengeScreen() {
           formatDayLabel(lastDayOf(startDate, durationDays)),
         )}
       </Text>
-      <ChipGroup
-        label={de.create.stake}
-        options={stakeOptions}
-        value={stakeCents}
-        onChange={setStakeCents}
-      />
-      {solo ? null : (
+      {ranked ? (
+        <Text variant="caption" color="textMuted">
+          {de.create.rankedHint}
+        </Text>
+      ) : (
         <View style={styles.group}>
           <ChipGroup
-            label={de.create.visibility}
-            options={visibilityOptions}
-            value={visibility}
-            onChange={setVisibility}
+            label={de.create.stake}
+            options={stakeOptions}
+            value={stakeCents}
+            onChange={setStakeCents}
           />
           <Text variant="caption" color="textMuted">
-            {visibility === 'public' ? de.create.publicHint : de.create.privateHint}
+            {de.create.stakeHint}
           </Text>
         </View>
       )}
+      <View style={styles.group}>
+        <ChipGroup
+          label={de.create.visibility}
+          options={visibilityOptions}
+          value={visibility}
+          onChange={setVisibility}
+        />
+        <Text variant="caption" color="textMuted">
+          {visibility === 'public' ? de.create.publicHint : de.create.privateHint}
+        </Text>
+      </View>
       <TextField
         label={de.create.titleLabel}
         hint={de.create.titleHint}
@@ -207,32 +203,10 @@ export default function CreateChallengeScreen() {
           </Text>
         ) : null}
         <Text variant="caption" color="textMuted">
-          {solo ? de.create.soloHint : de.create.afterCreateHint}
+          {de.create.afterCreateHint}
         </Text>
-        <Button
-          label={solo ? de.create.soloSubmit : de.create.submit}
-          onPress={handleSubmit}
-          loading={!solo && create.isPending}
-        />
+        <Button label={de.create.submit} onPress={handleSubmit} loading={create.isPending} />
       </View>
-      {solo ? (
-        <JoinSheet
-          solo
-          stakeCents={stakeCents}
-          visible={pendingSolo !== null}
-          onClose={() => {
-            setPendingSolo(null);
-            create.reset();
-          }}
-          onConfirm={() => {
-            if (pendingSolo) {
-              submit(pendingSolo);
-            }
-          }}
-          joining={create.isPending}
-          error={create.isError ? toUserMessage(create.error) : null}
-        />
-      ) : null}
     </Screen>
   );
 }
