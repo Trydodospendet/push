@@ -2,15 +2,22 @@ import { useRouter } from 'expo-router';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Card, Pill, ProgressBar, Text } from '@/components';
-import { isGoalType, modeLabel } from '@/features/challenges/format';
-import { challengeDays } from '@/features/challenges/format';
+import { challengeDays, isGoalType, modeLabel } from '@/features/challenges/format';
 import type { Challenge } from '@/features/challenges/types';
 import { progressNumbers, progressRatio } from '@/features/health/progress';
 import { de } from '@/i18n/de';
 import { opacity, spacing } from '@/theme';
 
 /** A small row of the overview of further goals: title, bar and the numbers. */
-export function CompactGoal({ challenge, value, now }: { challenge: Challenge; value: number; now: Date }) {
+export function CompactGoal({
+  challenge,
+  value,
+  now,
+}: {
+  challenge: Challenge;
+  value: number;
+  now: Date;
+}) {
   const router = useRouter();
   if (!isGoalType(challenge.goal_type)) {
     return null;

@@ -6,12 +6,7 @@ import { useSession } from '@/features/auth/auth-provider';
 import { useMyChallenges, useOpenChallenges } from '@/features/challenges/api';
 import { ChallengeCard } from '@/features/challenges/challenge-card';
 import { ChallengeSection } from '@/features/challenges/challenge-section';
-import {
-  isFinished,
-  isRanked,
-  rankedCycle,
-  type RankedCycle,
-} from '@/features/challenges/format';
+import { isFinished, isRanked, rankedCycle, type RankedCycle } from '@/features/challenges/format';
 import type { Challenge } from '@/features/challenges/types';
 import { de } from '@/i18n/de';
 import { colors, spacing } from '@/theme';

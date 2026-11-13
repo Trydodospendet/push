@@ -63,7 +63,7 @@ describe('app flow', () => {
     }
     await user.press(screen.getByRole('button', { name: "Los geht's" }));
 
-    expect(await screen.findByText('Noch keine Challenge')).toBeOnTheScreen();
+    expect(await screen.findByText('Noch kein Ziel')).toBeOnTheScreen();
     expect(saveIntroSeen).toHaveBeenCalledWith('user-1');
   });
 
@@ -84,16 +84,26 @@ describe('app flow', () => {
 
     expect(await screen.findByRole('header', { name: 'PUSH' })).toHaveTextContent('PUSH.');
     expect(screen.getByText('YOUR GOALS. YOUR STAKES.')).toBeOnTheScreen();
-    await user.press(screen.getByRole('button', { name: 'Loslegen' }));
+    await user.press(screen.getByRole('button', { name: 'Registrieren' }));
 
     const emailField = await screen.findByLabelText('E-Mail-Adresse');
     await user.type(emailField, 'keine-mail');
+    await user.type(screen.getByLabelText('Passwort'), 'geheim123');
+    await user.type(screen.getByLabelText('Passwort wiederholen'), 'geheim123');
     await user.press(screen.getByRole('button', { name: 'Code senden' }));
     expect(screen.getByText('Bitte gib eine gültige E-Mail-Adresse ein.')).toBeOnTheScreen();
     expect(supabaseMock.auth.signInWithOtp).not.toHaveBeenCalled();
 
     await user.clear(emailField);
     await user.type(emailField, ' Anna@Example.com ');
+    await user.clear(screen.getByLabelText('Passwort wiederholen'));
+    await user.type(screen.getByLabelText('Passwort wiederholen'), 'anders123');
+    await user.press(screen.getByRole('button', { name: 'Code senden' }));
+    expect(screen.getByText('Die beiden Passwörter stimmen nicht überein.')).toBeOnTheScreen();
+    expect(supabaseMock.auth.signInWithOtp).not.toHaveBeenCalled();
+
+    await user.clear(screen.getByLabelText('Passwort wiederholen'));
+    await user.type(screen.getByLabelText('Passwort wiederholen'), 'geheim123');
     await user.press(screen.getByRole('button', { name: 'Code senden' }));
     expect(supabaseMock.auth.signInWithOtp).toHaveBeenCalledWith({
       email: 'anna@example.com',
@@ -109,6 +119,10 @@ describe('app flow', () => {
       token: '123456',
       type: 'email',
     });
+    // The first password is set right after the e-mail is confirmed.
+    await waitFor(() =>
+      expect(supabaseMock.auth.updateUser).toHaveBeenCalledWith({ password: 'geheim123' }),
+    );
 
     const nameField = await screen.findByLabelText('Anzeigename');
     await user.type(nameField, 'Al');
@@ -129,7 +143,7 @@ describe('app flow', () => {
     await user.press(screen.getByRole('button', { name: 'Apple Health verbinden' }));
     expect(mockAdapter.authorize).toHaveBeenCalledTimes(1);
 
-    expect(await screen.findByText('Noch keine Challenge')).toBeOnTheScreen();
+    expect(await screen.findByText('Noch kein Ziel')).toBeOnTheScreen();
     expect(saveHealthState).toHaveBeenCalledWith(
       'user-1',
       expect.objectContaining({ introDone: true, connected: true }),
@@ -147,7 +161,7 @@ describe('app flow', () => {
     expect(await screen.findByText('Automatisch geprüft statt behauptet')).toBeOnTheScreen();
     await user.press(screen.getByRole('button', { name: 'Später' }));
 
-    expect(await screen.findByText('Noch keine Challenge')).toBeOnTheScreen();
+    expect(await screen.findByText('Noch kein Ziel')).toBeOnTheScreen();
     expect(mockAdapter.authorize).not.toHaveBeenCalled();
     expect(saveHealthState).toHaveBeenCalledWith(
       'user-1',
@@ -165,7 +179,7 @@ describe('app flow', () => {
     await renderRouter('./app', { initialUrl: '/' });
     await user.press(await screen.findByRole('button', { name: 'Apple Health verbinden' }));
 
-    expect(await screen.findByText('Noch keine Challenge')).toBeOnTheScreen();
+    expect(await screen.findByText('Noch kein Ziel')).toBeOnTheScreen();
     expect(saveHealthState).toHaveBeenCalledWith(
       'user-1',
       expect.objectContaining({ introDone: true, connected: false }),
@@ -180,7 +194,7 @@ describe('app flow', () => {
 
     await renderRouter('./app', { initialUrl: '/' });
 
-    expect(await screen.findByText('Noch keine Challenge')).toBeOnTheScreen();
+    expect(await screen.findByText('Noch kein Ziel')).toBeOnTheScreen();
 
     await user.press(screen.getByRole('button', { name: 'Wallet' }));
     expect(await screen.findByLabelText('Guthaben: 100,00 Credits')).toBeOnTheScreen();
@@ -194,7 +208,7 @@ describe('app flow', () => {
     expect(screen.getByText('anna@example.com')).toBeOnTheScreen();
 
     await user.press(screen.getByRole('button', { name: 'Abmelden' }));
-    expect(await screen.findByRole('button', { name: 'Loslegen' })).toBeOnTheScreen();
+    expect(await screen.findByRole('button', { name: 'Registrieren' })).toBeOnTheScreen();
   });
 
   it('deletes the account only after confirmation and returns to the welcome screen', async () => {
@@ -220,7 +234,7 @@ describe('app flow', () => {
     await user.press(screen.getByRole('button', { name: 'Konto löschen' }));
     await user.press(await screen.findByRole('button', { name: 'Endgültig löschen' }));
 
-    expect(await screen.findByRole('button', { name: 'Loslegen' })).toBeOnTheScreen();
+    expect(await screen.findByRole('button', { name: 'Registrieren' })).toBeOnTheScreen();
     expect(supabaseMock.rpc).toHaveBeenCalledWith('delete_my_account');
     expect(clearHealthState).toHaveBeenCalledWith('user-1');
     expect(supabaseMock.auth.signOut).toHaveBeenCalledWith({ scope: 'local' });
@@ -287,9 +301,10 @@ describe('app flow', () => {
     await user.type(screen.getByLabelText('E-Mail-Adresse'), 'anna@example.com');
     await user.press(screen.getByRole('button', { name: 'Passwort vergessen – Code senden' }));
 
+    // Signing in never creates an account.
     expect(supabaseMock.auth.signInWithOtp).toHaveBeenCalledWith({
       email: 'anna@example.com',
-      options: { shouldCreateUser: true },
+      options: { shouldCreateUser: false },
     });
     expect(await screen.findByText(/Nach der Anmeldung kannst du unter Profil/)).toBeOnTheScreen();
   });

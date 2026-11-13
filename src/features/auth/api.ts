@@ -1,6 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { removeAllAvatars } from '@/features/account/api';
+import { takeSignupPassword } from '@/features/auth/signup-draft';
 import { clearHealthState } from '@/features/health/storage';
 import { clearReminderSettings } from '@/features/reminders/storage';
 import { clearGpsStorage } from '@/features/gps/storage';
@@ -38,6 +39,13 @@ export function useVerifySignInCode() {
       const { error } = await supabase.auth.verifyOtp({ email, token: code, type: 'email' });
       if (error) {
         throw error;
+      }
+      // Registering: the first password is set as soon as the e-mail is confirmed. This happens
+      // here (not in a screen callback) because the screen is already gone once the session
+      // exists. A failure is not fatal: the password can be set in the profile.
+      const password = takeSignupPassword(email);
+      if (password) {
+        await supabase.auth.updateUser({ password }).catch(() => undefined);
       }
     },
   });

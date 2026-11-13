@@ -130,7 +130,11 @@ export default function PoolScreen() {
       {myPools && myPools.length > 0 ? (
         <ChallengeSection
           label={de.pool.mine}
-          empty={{ icon: 'flag-outline', title: de.emptyStates.poolMineTitle, text: de.emptyStates.poolMineText }}
+          empty={{
+            icon: 'flag-outline',
+            title: de.emptyStates.poolMineTitle,
+            text: de.emptyStates.poolMineText,
+          }}
           errorText={de.pool.error}
           items={myPools.map((challenge) => ({
             challenge,

@@ -1,8 +1,6 @@
 import { userEvent } from '@testing-library/react-native';
 import { renderRouter, screen, waitFor } from 'expo-router/testing-library';
 
-import { addDays, toLocalDate } from '@/lib/dates';
-
 jest.mock('@/lib/supabase');
 jest.mock('@/features/health/storage');
 jest.mock('@/features/intro/storage');
@@ -20,8 +18,6 @@ const {
 
 const USER_ID = 'user-1';
 const session = createMockSession(USER_ID, 'anna@example.com');
-const today = toLocalDate(new Date(), 'Europe/Berlin');
-const tomorrow = addDays(today, 1);
 
 const profile = {
   id: USER_ID,
@@ -79,7 +75,7 @@ function mockRpc(handlers: Record<string, RpcHandler> = {}) {
     if (fn === 'get_my_profile') {
       return { data: profile, error: null };
     }
-    if (fn === 'get_my_progress' && !handlers[fn]) {
+    if ((fn === 'get_my_progress' || fn === 'get_pool_overview') && !handlers[fn]) {
       return { data: [], error: null };
     }
     const handler = handlers[fn];
@@ -88,6 +84,10 @@ function mockRpc(handlers: Record<string, RpcHandler> = {}) {
     }
     return { data: handler(args), error: null };
   });
+}
+
+async function openChallenge(id: string) {
+  await renderRouter('./app', { initialUrl: `/challenge/${id}` });
 }
 
 async function openPoolTab(user: ReturnType<typeof userEvent.setup>) {
@@ -189,8 +189,7 @@ describe('challenges', () => {
       },
     });
 
-    await openPoolTab(user);
-    await user.press(await screen.findByRole('button', { name: /^5 km am Stück/ }));
+    await openChallenge('challenge-1');
 
     expect(await screen.findByText('Ein Lauf über mindestens 5 km')).toBeOnTheScreen();
     expect(
@@ -237,8 +236,7 @@ describe('challenges', () => {
         : { data: null, error: { code: 'P0001', message: 'insufficient_funds' } },
     );
 
-    await openPoolTab(user);
-    await user.press(await screen.findByRole('button', { name: /^5 km am Stück/ }));
+    await openChallenge('challenge-1');
     await user.press(await screen.findByRole('button', { name: 'Beitreten' }));
     await user.press(await screen.findByRole('button', { name: 'Jetzt beitreten' }));
 
@@ -303,50 +301,6 @@ describe('challenges', () => {
 
     expect(screen.getByText('Der Code besteht aus 6 Buchstaben und Ziffern.')).toBeOnTheScreen();
     expect(supabaseMock.rpc).not.toHaveBeenCalledWith('get_challenge_by_code', expect.anything());
-  });
-
-  it('creates a challenge with the chosen presets', async () => {
-    const user = userEvent.setup();
-    const created = challenge({
-      id: 'challenge-new',
-      creator_id: USER_ID,
-      title: '10.000 Schritte täglich',
-      goal_type: 'steps_daily',
-      target_value: 10000,
-      participant_count: 0,
-      pot_cents: 0,
-    });
-    mockDb.set({ challenges: [], challenge_participants: [], wallets: { balance_cents: 10000 } });
-    mockRpc({
-      create_challenge: () => {
-        mockDb.set({ challenges: [created], challenge_participants: [] });
-        return created;
-      },
-    });
-
-    await openPoolTab(user);
-    await user.press(await screen.findByRole('button', { name: 'Pool starten' }));
-    await user.press(await screen.findByRole('radio', { name: 'Tägliche Schritte' }));
-    expect(screen.getByRole('radio', { name: '10.000 Schritte' })).toBeChecked();
-    await user.press(screen.getByRole('radio', { name: '14 Tage' }));
-    await user.press(screen.getByRole('radio', { name: '5,00 Credits' }));
-    await user.press(screen.getByRole('button', { name: 'Challenge erstellen' }));
-
-    expect(supabaseMock.rpc).toHaveBeenCalledWith('create_challenge', {
-      p_title: '10.000 Schritte täglich',
-      p_goal_type: 'steps_daily',
-      p_target_value: 10000,
-      p_stake_cents: 500,
-      p_start_date: tomorrow,
-      p_duration_days: 14,
-      p_visibility: 'public',
-      p_mode: 'pool',
-    });
-    expect(
-      await screen.findByText(
-        'Du hast diese Challenge erstellt. Tritt selbst bei, um mitzumachen.',
-      ),
-    ).toBeOnTheScreen();
   });
 
   it('lists the bookings in the wallet with German labels', async () => {

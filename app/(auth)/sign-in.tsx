@@ -41,12 +41,12 @@ export default function SignInScreen() {
     requestCode.mutate(
       { email: result.value },
       {
-      onSuccess: () =>
-        router.push({
-          pathname: '/verify',
-          params: reset ? { email: result.value, reset: '1' } : { email: result.value },
-        }),
-      onError: (mutationError) => fail(toUserMessage(mutationError)),
+        onSuccess: () =>
+          router.push({
+            pathname: '/verify',
+            params: reset ? { email: result.value, reset: '1' } : { email: result.value },
+          }),
+        onError: (mutationError) => fail(toUserMessage(mutationError)),
       },
     );
   };

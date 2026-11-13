@@ -155,15 +155,15 @@ function ChallengeDetail({
       : ranked
         ? [de.challenge.ruleRankedNoStake, de.challenge.ruleRankedPoints, de.challenge.ruleRanking]
         : [
-          de.challenge.rulePayout,
-          de.challenge.ruleAllWin,
-          de.challenge.ruleNobody,
-          de.challenge.ruleAlone,
-          ...(challenge.fee_bps > 0 ? [de.challenge.ruleFee(formatFee(challenge.fee_bps))] : []),
-          de.challenge.ruleRounding,
-          de.challenge.ruleDonation,
-          de.challenge.ruleRanking,
-        ]),
+            de.challenge.rulePayout,
+            de.challenge.ruleAllWin,
+            de.challenge.ruleNobody,
+            de.challenge.ruleAlone,
+            ...(challenge.fee_bps > 0 ? [de.challenge.ruleFee(formatFee(challenge.fee_bps))] : []),
+            de.challenge.ruleRounding,
+            de.challenge.ruleDonation,
+            de.challenge.ruleRanking,
+          ]),
     ...(goal ? [] : [de.challenge.ruleLeave]),
   ];
 
@@ -366,8 +366,8 @@ function ChallengeDetail({
           {goal
             ? de.leaveSheet.goalText(formatAmount(me?.stakeCents ?? challenge.stake_cents))
             : ranked
-            ? de.leaveSheet.rankedText
-            : de.leaveSheet.text(formatAmount(me?.stakeCents ?? challenge.stake_cents))}
+              ? de.leaveSheet.rankedText
+              : de.leaveSheet.text(formatAmount(me?.stakeCents ?? challenge.stake_cents))}
         </Text>
         {goal ? <Text color="textSecondary">{de.leaveSheet.goalBound}</Text> : null}
         {leave.isError ? (

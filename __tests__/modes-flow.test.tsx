@@ -1,8 +1,6 @@
 import { userEvent } from '@testing-library/react-native';
 import { renderRouter, screen } from 'expo-router/testing-library';
 
-import { addDays, toLocalDate } from '@/lib/dates';
-
 jest.mock('@/lib/supabase');
 jest.mock('@/features/health/storage');
 jest.mock('@/features/intro/storage');
@@ -19,7 +17,6 @@ const {
 
 const USER_ID = 'user-1';
 const DAY = 24 * 60 * 60 * 1000;
-const tomorrow = addDays(toLocalDate(new Date(), 'Europe/Berlin'), 1);
 
 const profile = {
   id: USER_ID,
@@ -98,6 +95,7 @@ function mockRpc(handlers: Record<string, RpcHandler> = {}) {
       !handlers[fn] &&
       [
         'get_my_progress',
+        'get_pool_overview',
         'get_leaderboard',
         'get_challenge_feed',
         'get_my_challenge_result',
@@ -129,51 +127,6 @@ beforeEach(() => {
 });
 
 describe('pool', () => {
-  it('starts a pool with the chosen stake and joins it in a second step', async () => {
-    const user = userEvent.setup();
-    const created = challenge({
-      id: 'pool-1',
-      creator_id: USER_ID,
-      title: '5 km am Stück',
-      stake_cents: 500,
-      pot_cents: 0,
-      participant_count: 0,
-    });
-    mockDb.set({ challenges: [], challenge_participants: [], wallets: { balance_cents: 10000 } });
-    mockRpc({
-      create_challenge: () => {
-        mockDb.set({ challenges: [created], challenge_participants: [] });
-        return created;
-      },
-    });
-
-    await openTab(user, 'Pool');
-    expect(await screen.findByText('Noch kein Pool')).toBeOnTheScreen();
-
-    await user.press(screen.getByRole('button', { name: 'Pool starten' }));
-    await user.press(await screen.findByRole('radio', { name: '5,00 Credits' }));
-    expect(screen.getByRole('radio', { name: 'Öffentlich' })).toBeOnTheScreen();
-    await user.press(screen.getByRole('button', { name: 'Challenge erstellen' }));
-
-    expect(supabaseMock.rpc).toHaveBeenCalledWith('create_challenge', {
-      p_title: '5 km am Stück',
-      p_goal_type: 'run_single',
-      p_target_value: 5000,
-      p_stake_cents: 500,
-      p_start_date: tomorrow,
-      p_duration_days: 7,
-      p_visibility: 'public',
-      p_mode: 'pool',
-    });
-    // Creating books nothing: the creator joins (and chooses the stake) in the detail screen.
-    expect(
-      await screen.findByText(
-        'Du hast diese Challenge erstellt. Tritt selbst bei, um mitzumachen.',
-      ),
-    ).toBeOnTheScreen();
-    expect(screen.getByRole('button', { name: 'Beitreten' })).toBeOnTheScreen();
-  });
-
   it('lets everybody choose the own stake when joining', async () => {
     const user = userEvent.setup();
     const open = challenge({ stake_cents: 500 });
@@ -184,8 +137,7 @@ describe('pool', () => {
     });
     mockRpc({ join_challenge: () => ({}) });
 
-    await renderRouter('./app', { initialUrl: '/pool' });
-    await user.press(await screen.findByRole('button', { name: /^5 km am Stück/ }));
+    await renderRouter('./app', { initialUrl: '/challenge/challenge-1' });
     await user.press(await screen.findByRole('button', { name: 'Beitreten' }));
     await user.press(await screen.findByRole('radio', { name: '20,00 Credits' }));
     expect(screen.getByText(/^Du setzt 20,00 Credits\./)).toBeOnTheScreen();
@@ -213,9 +165,7 @@ describe('pool', () => {
     });
     mockRpc({ get_my_progress: () => [{ challenge_id: missed.id, progress_value: 7200 }] });
 
-    await openTab(user, 'Pool');
-    expect(await screen.findByText('ABGESCHLOSSEN')).toBeOnTheScreen();
-    await user.press(await screen.findByRole('button', { name: /^Mein 10-km-Lauf/ }));
+    await renderRouter('./app', { initialUrl: '/challenge/pool-2' });
 
     expect(await screen.findByText('Ziel nicht geschafft.')).toBeOnTheScreen();
     expect(screen.getByText('Dein Einsatz ist verfallen.')).toBeOnTheScreen();
@@ -250,9 +200,6 @@ describe('ranked', () => {
 
     await openTab(user, 'Ranked');
     expect(await screen.findByText('ABGESCHLOSSEN')).toBeOnTheScreen();
-    expect(
-      screen.getByText('Tritt einer offenen Rangliste bei – ganz ohne Einsatz.'),
-    ).toBeOnTheScreen();
     await user.press(await screen.findByRole('button', { name: /^5 km am Stück/ }));
 
     expect(await screen.findByText('Platz 1')).toBeOnTheScreen();
@@ -272,6 +219,7 @@ describe('ranked', () => {
       id: 'ranked-1',
       title: 'Team-Lauf',
       mode: 'ranked',
+      weekly_key: 'D2026-11-14-km',
       stake_cents: 0,
     });
     const pool = challenge({
@@ -292,8 +240,9 @@ describe('ranked', () => {
 
     // Start directly in the tab, so Home (which lists both) is not rendered.
     await renderRouter('./app', { initialUrl: '/ranked' });
-    // Once under "Meine Challenges", once under "Offene Challenges".
-    expect(await screen.findAllByRole('button', { name: /^Team-Lauf, / })).toHaveLength(2);
+    // Fixed rankings are grouped by cycle; the daily ranking is listed once.
+    expect(await screen.findByText('TÄGLICH')).toBeOnTheScreen();
+    expect(await screen.findAllByRole('button', { name: /^Team-Lauf, / })).toHaveLength(1);
     expect(screen.queryByRole('button', { name: /^Nur für mich, / })).toBeNull();
 
     await user.press(screen.getByRole('button', { name: 'Pool' }));

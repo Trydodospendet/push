@@ -6,7 +6,14 @@ import { de } from '@/i18n/de';
 import { formatAmount } from '@/lib/money';
 import { colors, layout, opacity, radius, spacing } from '@/theme';
 
-import { describeGoal, formatPeriod, isRanked, modeLabel, rankedCycle, statusLabel } from './format';
+import {
+  describeGoal,
+  formatPeriod,
+  isRanked,
+  modeLabel,
+  rankedCycle,
+  statusLabel,
+} from './format';
 import type { Challenge } from './types';
 
 export type ChallengeCardProps = {

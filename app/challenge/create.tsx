@@ -142,7 +142,9 @@ export default function SetGoalScreen() {
         value={period}
         onChange={setPeriod}
       />
-      <Text color="textSecondary">{de.create.summary(formatDayLabel(first), formatDayLabel(last))}</Text>
+      <Text color="textSecondary">
+        {de.create.summary(formatDayLabel(first), formatDayLabel(last))}
+      </Text>
       <View style={styles.group}>
         <ChipGroup
           label={de.create.stake}
@@ -192,7 +194,11 @@ export default function SetGoalScreen() {
           </Text>
         ) : null}
         <View style={styles.group}>
-          <Button label={de.create.confirmSubmit(stake)} onPress={confirm} loading={create.isPending} />
+          <Button
+            label={de.create.confirmSubmit(stake)}
+            onPress={confirm}
+            loading={create.isPending}
+          />
           <Button
             label={de.create.confirmCancel}
             variant="secondary"

@@ -4,9 +4,7 @@ import { StyleSheet, View } from 'react-native';
 
 import { Button, ErrorState, FadeIn, GlowBackdrop, Screen, Text } from '@/components';
 import { SIGN_IN_CODE_LENGTH } from '@/config/app';
-import { useSetPassword } from '@/features/account/api';
 import { useRequestSignInCode, useVerifySignInCode } from '@/features/auth/api';
-import { takeSignupPassword } from '@/features/auth/signup-draft';
 import { CodeInput, type CodeInputState } from '@/features/auth/code-input';
 import { signInCodeSchema, validate } from '@/features/auth/schemas';
 import { useCountdown } from '@/features/auth/use-countdown';
@@ -24,7 +22,6 @@ export default function VerifyScreen() {
     reset?: string;
     signup?: string;
   }>();
-  const setPassword = useSetPassword();
   const verifyCode = useVerifySignInCode();
   const resendCode = useRequestSignInCode();
   const countdown = useCountdown(RESEND_SECONDS);
@@ -70,11 +67,6 @@ export default function VerifyScreen() {
         onSuccess: () => {
           setState('success');
           hapticSuccess();
-          // Registering: the first password is set right after the e-mail is confirmed.
-          const password = signup ? takeSignupPassword(email) : null;
-          if (password) {
-            setPassword.mutate(password);
-          }
         },
         onError: (mutationError) => wrong(toUserMessage(mutationError)),
       },
@@ -98,11 +90,11 @@ export default function VerifyScreen() {
     resendCode.mutate(
       { email, createUser: Boolean(signup) },
       {
-      onSuccess: () => {
-        setNotice(de.verify.resent);
-        countdown.restart();
-      },
-      onError: (mutationError) => wrong(toUserMessage(mutationError)),
+        onSuccess: () => {
+          setNotice(de.verify.resent);
+          countdown.restart();
+        },
+        onError: (mutationError) => wrong(toUserMessage(mutationError)),
       },
     );
   };

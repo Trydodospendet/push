@@ -196,7 +196,8 @@ export const de = {
     pasteHint: 'Tipp: Halte ein Feld gedrückt, um einen kopierten Code einzufügen.',
     resetHint:
       'Nach der Anmeldung kannst du unter Profil → Konto & Sicherheit ein neues Passwort festlegen.',
-    signupHint: 'Nach dem Code ist dein Passwort gesetzt – damit kannst du dich künftig auch anmelden.',
+    signupHint:
+      'Nach dem Code ist dein Passwort gesetzt – damit kannst du dich künftig auch anmelden.',
     changeEmail: 'Andere E-Mail-Adresse',
     invalidCode: `Der Code besteht aus ${SIGN_IN_CODE_LENGTH} Ziffern.`,
     wrongCode: 'Der Code ist falsch oder abgelaufen. Fordere bei Bedarf einen neuen an.',
@@ -317,8 +318,7 @@ export const de = {
     routeTitle: 'Strecke',
     routeLocal: 'Die Strecke wird nur auf deinem Handy angezeigt und nicht hochgeladen.',
     routeNone: 'Zu diesem Lauf liefert Health Connect keine Strecke.',
-    routeDenied:
-      'Ohne deine Erlaubnis in Health Connect kann die Strecke nicht angezeigt werden.',
+    routeDenied: 'Ohne deine Erlaubnis in Health Connect kann die Strecke nicht angezeigt werden.',
     routeUnsupported: 'Strecken aus der Gesundheits-App gibt es nur unter Android.',
     routeError: 'Die Strecke konnte nicht geladen werden.',
   },
@@ -513,7 +513,8 @@ export const de = {
     rankedMineTitle: 'Noch keine Challenge',
     rankedMineText: 'Tritt einer offenen Rangliste bei – ganz ohne Einsatz.',
     rankedOpenTitle: 'Noch keine Ranglisten',
-    rankedOpenText: 'Die festen Ranglisten werden täglich neu angelegt. Schau später noch einmal vorbei.',
+    rankedOpenText:
+      'Die festen Ranglisten werden täglich neu angelegt. Schau später noch einmal vorbei.',
     rankedFinishedTitle: 'Noch nichts abgeschlossen',
     rankedFinishedText: 'Beendete Challenges mit deinem Ergebnis erscheinen hier.',
     poolMineTitle: 'Noch kein Pool',
@@ -703,7 +704,8 @@ export const de = {
     confirmCancel: 'Abbrechen',
     invalidTitle: 'Der Titel muss 3 bis 60 Zeichen lang sein.',
     invalidInput: 'Bitte prüfe deine Angaben.',
-    tooManyGoals: 'Du hast schon 10 offene oder laufende Ziele. Warte, bis eines abgeschlossen ist.',
+    tooManyGoals:
+      'Du hast schon 10 offene oder laufende Ziele. Warte, bis eines abgeschlossen ist.',
   },
   joinByCode: {
     title: 'Mit Code beitreten',
