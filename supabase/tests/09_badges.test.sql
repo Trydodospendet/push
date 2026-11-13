@@ -54,7 +54,7 @@ begin
   insert into public.challenges (creator_id, title, goal_type, target_value, stake_cents,
     starts_at, ends_at, min_participants, visibility, status, mode)
   values (p_user, p_title, 'run_total', 5000, 500,
-    now() - interval '10 days', now() - interval '5 days', 2, 'public', p_status, 'ranked')
+    now() - interval '10 days', now() - interval '5 days', 2, 'public', p_status, 'pool')
   returning id into v_id;
   insert into public.challenge_participants (challenge_id, user_id, stake_cents)
   values (v_id, p_user, 500);

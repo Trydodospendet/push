@@ -253,7 +253,7 @@ select pg_temp.logout();
 insert into public.challenges (creator_id, title, goal_type, target_value, stake_cents,
   starts_at, ends_at, min_participants, visibility, status, mode)
 values ('aaaaaaaa-0000-0000-0000-000000000001', 'GPS-Test', 'run_total', 5000, 500,
-  now() - interval '3 days', now() + interval '4 days', 2, 'public', 'active', 'ranked');
+  now() - interval '3 days', now() + interval '4 days', 2, 'public', 'active', 'pool');
 insert into public.challenge_participants (challenge_id, user_id, stake_cents)
 select id, 'aaaaaaaa-0000-0000-0000-000000000001', 500 from public.challenges where title = 'GPS-Test';
 

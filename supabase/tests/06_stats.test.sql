@@ -137,8 +137,8 @@ insert into ids select 'pub', (public.create_challenge('Offen', 'run_total', 500
 insert into ids select 'priv', (public.create_challenge('Privat', 'run_total', 5000, 500,
   pg_temp.today() + 1, 7, 'private')).id;
 insert into ids select 'solo', (public.create_challenge('Allein', 'run_total', 5000, 500,
-  pg_temp.today() + 1, 7, 'private', null, 'solo')).id;
-select public.join_challenge(id) from ids where name in ('pub', 'priv');
+  pg_temp.today() + 1, 7, 'private')).id;
+select public.join_challenge(id) from ids where name in ('pub', 'priv', 'solo');
 select pg_temp.logout();
 
 select pg_temp.login('bbbbbbbb-0000-0000-0000-000000000002');
@@ -156,7 +156,7 @@ select is(
 select is(
   public.get_potential_win((select id from ids where name = 'solo')),
   500::bigint,
-  'solo: the possible win is just the stake back'
+  'alone in a pool: the possible win is just the stake back'
 );
 select pg_temp.logout();
 

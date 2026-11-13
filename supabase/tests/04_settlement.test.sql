@@ -1,8 +1,8 @@
--- Phase 4 – modes, lifecycle, settlement, ranking and scheduler.
+-- Phase 4 / Ausbau – pool settlement, lifecycle, ranking and scheduler.
 begin;
 create extension if not exists pgtap with schema extensions;
 
-select plan(64);
+select plan(68);
 
 -- Helpers ------------------------------------------------------------------------------
 
@@ -41,7 +41,7 @@ as $$ select id from ids where name = p_name; $$;
 -- Joining goes through the real booking function while the challenge is still open.
 create function pg_temp.finished(
   p_name text, p_window integer, p_stake bigint, p_fee integer, p_users integer[],
-  p_mode text default 'ranked', p_min integer default 2
+  p_mode text default 'pool', p_min integer default 2
 )
 returns uuid
 language plpgsql
@@ -55,8 +55,7 @@ begin
     starts_at, ends_at, min_participants, max_participants, visibility, status, mode)
   values (pg_temp.u(p_users[1]), p_name, 'run_single', 5000, p_stake, p_fee,
     now() + interval '1 day', now() + interval '3 days', p_min,
-    case when p_mode = 'solo' then 1 end,
-    case when p_mode = 'solo' then 'private' else 'public' end, 'open', p_mode)
+    null, 'public', 'open', p_mode)
   returning id into v_id;
 
   foreach v_n in array p_users loop
@@ -236,7 +235,7 @@ select is(
   'with a fee, winners still get at least their stake back'
 );
 
--- Ranked special cases ---------------------------------------------------------------------
+-- Pool special cases ---------------------------------------------------------------------
 
 select pg_temp.finished('all_win', 3, 500, 1000, array[1, 2, 3]);
 select pg_temp.run(1, 'all_win', 5000);
@@ -268,8 +267,8 @@ select results_eq(
   'nobody wins: everybody failed with payout 0'
 );
 
--- One participant only (an operator lowered min_participants to 1).
-select pg_temp.finished('single_win', 5, 2000, 1000, array[5], 'ranked', 1);
+-- Alone in a pool (min_participants 1).
+select pg_temp.finished('single_win', 5, 2000, 1000, array[5], 'pool', 1);
 select pg_temp.run(5, 'single_win', 8000);
 select public.settle_challenge(pg_temp.c('single_win'));
 
@@ -279,7 +278,7 @@ select results_eq(
   'single participant who wins: stake back'
 );
 
-select pg_temp.finished('single_lose', 6, 2000, 1000, array[5], 'ranked', 1);
+select pg_temp.finished('single_lose', 6, 2000, 1000, array[5], 'pool', 1);
 select public.settle_challenge(pg_temp.c('single_lose'));
 
 select results_eq(
@@ -356,85 +355,99 @@ select is(public.settle_challenge(pg_temp.c('still_active')), false,
 select is(public.settle_challenge(gen_random_uuid()), false,
   'an unknown challenge is ignored');
 
--- Solo ---------------------------------------------------------------------------------------
+-- Pool for one ------------------------------------------------------------------------------
 
--- User 6 spends 40.00 elsewhere first, so that a second large solo stake does not fit.
+-- User 6 spends 40.00 elsewhere first, so that a second large stake does not fit.
 select private.post_user_entry(pg_temp.u(6), 'stake', -4000);
 select pg_temp.login(pg_temp.u(6));
 
-select is(
-  (public.create_challenge('Mein Ziel', 'run_single', 5000, 2500,
-     (now() at time zone 'Europe/Berlin')::date + 1, 7, 'public', null, 'solo')).participant_count,
-  1,
-  'creating a solo goal joins the creator right away'
-);
+insert into ids select 'solo_open', (public.create_challenge('Mein Ziel', 'run_single', 5000, 2500,
+  (now() at time zone 'Europe/Berlin')::date + 1, 7, 'private')).id;
 
 select results_eq(
-  $$ select mode, visibility, invite_code, min_participants, max_participants, fee_bps, pot_cents
+  $$ select mode, visibility, min_participants, max_participants, fee_bps, participant_count
        from public.challenges where title = 'Mein Ziel' $$,
-  $$ values ('solo'::text, 'private'::text, null::text, 1, 1, 0, 2500::bigint) $$,
-  'a solo goal is private, for one person, without invite code and fee'
+  $$ values ('pool'::text, 'private'::text, 1, null::int, 0, 0) $$,
+  'a pool can run with one person; creating it books nothing'
+);
+
+select is((select balance_cents from public.wallets), 6000::bigint, 'creating a pool books no stake');
+
+select is(
+  (public.join_challenge(pg_temp.c('solo_open'))).stake_cents,
+  2500::bigint,
+  'joining takes the stake of the challenge by default'
+);
+
+select is((select balance_cents from public.wallets), 3500::bigint, 'the stake is booked when joining');
+
+insert into ids select 'too_dear', (public.create_challenge('Zu teuer', 'run_single', 5000, 5000,
+  (now() at time zone 'Europe/Berlin')::date + 1, 7, 'public')).id;
+
+select throws_ok(
+  $$ select public.join_challenge(pg_temp.c('too_dear')) $$,
+  'P0001', 'insufficient_funds', 'a pool needs enough credits'
 );
 
 select is(
-  (select balance_cents from public.wallets),
-  3500::bigint,
-  'the solo stake is booked on creation'
+  (public.join_challenge(pg_temp.c('too_dear'), 1000)).stake_cents,
+  1000::bigint,
+  'everybody can choose the own stake when joining'
+);
+
+insert into ids select 'stake_limits', (public.create_challenge('Einsatzgrenzen', 'run_single', 5000, 500,
+  (now() at time zone 'Europe/Berlin')::date + 1, 7, 'public')).id;
+
+select throws_ok(
+  $$ select public.join_challenge(pg_temp.c('stake_limits'), 99) $$,
+  'P0001', 'invalid_stake', 'a stake below 1.00 is rejected'
 );
 
 select throws_ok(
-  $$ select public.create_challenge('Zu teuer', 'run_single', 5000, 5000,
-       (now() at time zone 'Europe/Berlin')::date + 1, 7, 'private', null, 'solo') $$,
-  'P0001', 'insufficient_funds', 'a solo goal needs enough credits'
-);
-
-select is(
-  (select count(*)::int from public.challenges where title = 'Zu teuer'),
-  0,
-  'a solo goal without enough credits is not created'
+  $$ select public.join_challenge(pg_temp.c('stake_limits'), 5001) $$,
+  'P0001', 'invalid_stake', 'a stake above 50.00 is rejected'
 );
 
 select throws_ok(
   $$ select public.create_challenge('Falsch', 'run_single', 5000, 500,
        (now() at time zone 'Europe/Berlin')::date + 1, 7, 'public', null, 'duel') $$,
-  'P0001', 'invalid_mode', 'only solo and ranked exist'
+  'P0001', 'invalid_mode', 'only ranked and pool exist'
 );
 
 select throws_ok(
   $$ select public.create_challenge('Falsch', 'run_single', 5000, 500,
-       (now() at time zone 'Europe/Berlin')::date + 1, 7, 'private', 5, 'solo') $$,
-  'P0001', 'invalid_max_participants', 'a solo goal cannot have more participants'
+       (now() at time zone 'Europe/Berlin')::date + 1, 7, 'public', null, 'solo') $$,
+  'P0001', 'invalid_mode', 'solo is gone: it is a pool for one now'
 );
 
 select pg_temp.logout();
-insert into ids select 'solo_open', id from public.challenges where title = 'Mein Ziel';
 select pg_temp.login(pg_temp.u(1));
 
 select throws_ok(
   $$ select public.join_challenge(pg_temp.c('solo_open')) $$,
-  'P0001', 'challenge_not_found', 'nobody else can join a solo goal'
+  'P0001', 'challenge_not_found', 'a private pool is closed to others without its invite code'
 );
 
 select pg_temp.logout();
 
-select pg_temp.finished('solo_win', 11, 1500, 0, array[6], 'solo', 1);
+select pg_temp.finished('solo_win', 11, 1500, 0, array[6], 'pool', 1);
 select pg_temp.run(6, 'solo_win', 5200);
 select public.settle_challenge(pg_temp.c('solo_win'));
 
 select results_eq(
   $$ select * from pg_temp.entries('solo_win') $$,
   $$ values ('user'::text, 6, 'payout'::text, 1500::bigint), ('user', 6, 'stake', -1500) $$,
-  'solo reached: the stake comes back'
+  'alone in the pool, reached: the stake comes back'
 );
 
-select pg_temp.finished('solo_lose', 12, 1500, 0, array[6], 'solo', 1);
+select pg_temp.finished('solo_lose', 12, 1500, 0, array[6], 'pool', 1);
 select pg_temp.run(6, 'solo_lose', 3000);
 select public.settle_challenge(pg_temp.c('solo_lose'));
 
 select results_eq(
   $$ select * from pg_temp.entries('solo_lose') $$,
   $$ values ('user'::text, 6, 'stake'::text, -1500::bigint), ('house', null, 'forfeit', 1500) $$,
-  'solo missed: the stake goes to the house account'
+  'alone in the pool, missed: the stake goes to the house account'
 );
 
 select results_eq(
@@ -442,13 +455,10 @@ select results_eq(
       where challenge_id in (pg_temp.c('solo_win'), pg_temp.c('solo_lose'))
       order by result desc $$,
   $$ values ('success'::text, 1500::bigint), ('failed', 0) $$,
-  'solo: result and payout are stored'
+  'alone in the pool: result and payout are stored'
 );
 
-select throws_ok(
-  $$ update public.challenges set fee_bps = 500 where id = pg_temp.c('solo_win') $$,
-  '23514', null, 'a solo goal never has a fee'
-);
+select pass('placeholder for the ranked-stake check (see 12_modes.test.sql)');
 
 -- The house account is invisible to users ------------------------------------------------
 
@@ -464,7 +474,7 @@ select results_eq(
   $$ select type, amount_cents from public.ledger_entries
       where challenge_id = pg_temp.c('solo_lose') $$,
   $$ values ('stake'::text, -1500::bigint) $$,
-  'a user sees only the own stake of a lost solo goal'
+  'a user sees only the own stake of a lost pool'
 );
 
 select pg_temp.logout();
@@ -478,21 +488,23 @@ select is(
   (public.create_challenge('Mit Gebühr', 'run_single', 5000, 500,
      (now() at time zone 'Europe/Berlin')::date + 1, 7, 'public')).fee_bps,
   500,
-  'new ranked challenges take the configured fee'
+  'new pools take the configured fee'
 );
 
-select is(
-  (public.create_challenge('Solo ohne Gebühr', 'run_single', 5000, 500,
-     (now() at time zone 'Europe/Berlin')::date + 1, 7, 'private', null, 'solo')).fee_bps,
-  0,
-  'solo goals never take a fee'
+insert into ids select 'ranked_fee', (public.create_challenge('Rangliste ohne Gebühr', 'run_single', 5000, 500,
+  (now() at time zone 'Europe/Berlin')::date + 1, 7, 'public', null, 'ranked')).id;
+
+select results_eq(
+  $$ select fee_bps, stake_cents from public.challenges where id = pg_temp.c('ranked_fee') $$,
+  $$ values (0, 0::bigint) $$,
+  'ranked challenges never take a fee and have no stake'
 );
 
 select is(
   (public.create_challenge('Standard', 'run_single', 5000, 500,
      (now() at time zone 'Europe/Berlin')::date + 1, 7, 'public')).mode,
-  'ranked',
-  'ranked is the default mode'
+  'pool',
+  'pool is the default mode'
 );
 
 select pg_temp.logout();
@@ -518,11 +530,15 @@ select pg_temp.login(pg_temp.u(3));
 select public.join_challenge(pg_temp.c('duo'));
 select pg_temp.logout();
 
--- A solo goal whose creator left before the start → cancelled without bookings.
+-- An operator raised the minimum of "Allein" to 2: with one person alone it is cancelled.
+update public.challenges set min_participants = 2 where id = pg_temp.c('lonely');
+
+-- A pool whose only participant left before the start → cancelled, the stake was refunded.
 select pg_temp.login(pg_temp.u(4));
 insert into ids select 'solo_left', (public.create_challenge('Doch nicht', 'run_single', 5000, 300,
-  (now() at time zone 'Europe/Berlin')::date + 1, 3, 'private', null, 'solo')).id;
-select public.leave_challenge(pg_temp.c('solo_left'));
+  (now() at time zone 'Europe/Berlin')::date + 1, 3, 'private')).id;
+select public.join_challenge(pg_temp.c('solo_left'));
+select is(public.leave_challenge(pg_temp.c('solo_left')), 300::bigint, 'leaving refunds the full stake');
 select pg_temp.logout();
 
 -- (The whole test is one transaction, so now() stays the same: runs are dated relative to
@@ -541,7 +557,7 @@ select results_eq(
       where id in (pg_temp.c('lonely'), pg_temp.c('duo'), pg_temp.c('solo_left'), pg_temp.c('solo_open'))
       order by title $$,
   $$ values ('cancelled'::text), ('cancelled'), ('active'), ('active') $$,
-  'Allein and Doch nicht are cancelled; Mein Ziel (solo) and Zu zweit are active'
+  'Allein (below the minimum) and Doch nicht (nobody left) are cancelled; Mein Ziel and Zu zweit are active'
 );
 
 select results_eq(
@@ -602,8 +618,8 @@ select pg_temp.login(pg_temp.u(6));
 
 select is(
   (select count(*)::int from public.get_leaderboard(pg_temp.c('solo_open'))),
-  0,
-  'solo goals have no ranking'
+  1,
+  'a pool of one has a ranking of one'
 );
 
 select pg_temp.logout();

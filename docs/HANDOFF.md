@@ -58,3 +58,4 @@
 
 ## Fortschritt
 - [x] 1. Sicherheits-Check: `20261122090000_security_hardening.sql` (Rechte auf zwei Helfer-Funktionen entzogen, Default-Rechte für neue Tabellen/Funktionen geschlossen), `supabase/tests/11_security.test.sql` (prüft ALLE Tabellen/Funktionen generisch, auch spätere).
+- [~] 2. Spielmodell – DB fertig (`20261123090000_pool_ranked_donations.sql`, pgTAP `12_modes`, alte Tests 02/04/05/06/07/08/09/10 umgebaut, Seed angepasst); App-Umbau folgt (siehe unten).

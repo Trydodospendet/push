@@ -171,10 +171,15 @@ export type Database = {
       challenge_participants: {
         Row: {
           challenge_id: string;
+          donate: boolean | null;
+          donated_cents: number;
           id: string;
           joined_at: string;
+          ngo_id: string | null;
           payout_cents: number | null;
           progress_value: number;
+          rank: number | null;
+          rank_points: number;
           result: string;
           stake_cents: number;
           user_id: string | null;
@@ -182,20 +187,30 @@ export type Database = {
         ComputedFields: never;
         Insert: {
           challenge_id: string;
+          donate?: boolean | null;
+          donated_cents?: number;
           id?: string;
           joined_at?: string;
+          ngo_id?: string | null;
           payout_cents?: number | null;
           progress_value?: number;
+          rank?: number | null;
+          rank_points?: number;
           result?: string;
           stake_cents: number;
           user_id?: string | null;
         };
         Update: {
           challenge_id?: string;
+          donate?: boolean | null;
+          donated_cents?: number;
           id?: string;
           joined_at?: string;
+          ngo_id?: string | null;
           payout_cents?: number | null;
           progress_value?: number;
+          rank?: number | null;
+          rank_points?: number;
           result?: string;
           stake_cents?: number;
           user_id?: string | null;
@@ -206,6 +221,13 @@ export type Database = {
             columns: ['challenge_id'];
             isOneToOne: false;
             referencedRelation: 'challenges';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'challenge_participants_ngo_id_fkey';
+            columns: ['ngo_id'];
+            isOneToOne: false;
+            referencedRelation: 'ngos';
             referencedColumns: ['id'];
           },
           {
@@ -409,6 +431,7 @@ export type Database = {
           challenge_id: string | null;
           created_at: string;
           id: string;
+          ngo_id: string | null;
           type: string;
           user_id: string | null;
         };
@@ -419,6 +442,7 @@ export type Database = {
           challenge_id?: string | null;
           created_at?: string;
           id?: string;
+          ngo_id?: string | null;
           type: string;
           user_id?: string | null;
         };
@@ -428,6 +452,7 @@ export type Database = {
           challenge_id?: string | null;
           created_at?: string;
           id?: string;
+          ngo_id?: string | null;
           type?: string;
           user_id?: string | null;
         };
@@ -440,6 +465,13 @@ export type Database = {
             referencedColumns: ['id'];
           },
           {
+            foreignKeyName: 'ledger_entries_ngo_id_fkey';
+            columns: ['ngo_id'];
+            isOneToOne: false;
+            referencedRelation: 'ngos';
+            referencedColumns: ['id'];
+          },
+          {
             foreignKeyName: 'ledger_entries_user_id_fkey';
             columns: ['user_id'];
             isOneToOne: false;
@@ -448,10 +480,37 @@ export type Database = {
           },
         ];
       };
+      ngos: {
+        Row: {
+          active: boolean;
+          id: string;
+          name: string;
+          slug: string;
+          sort_order: number;
+        };
+        ComputedFields: never;
+        Insert: {
+          active?: boolean;
+          id?: string;
+          name: string;
+          slug: string;
+          sort_order: number;
+        };
+        Update: {
+          active?: boolean;
+          id?: string;
+          name?: string;
+          slug?: string;
+          sort_order?: number;
+        };
+        Relationships: [];
+      };
       profiles: {
         Row: {
           created_at: string;
+          default_ngo_id: string | null;
           display_name: string;
+          donate_default: boolean;
           id: string;
           onboarded_at: string | null;
           timezone: string;
@@ -459,19 +518,31 @@ export type Database = {
         ComputedFields: never;
         Insert: {
           created_at?: string;
+          default_ngo_id?: string | null;
           display_name: string;
+          donate_default?: boolean;
           id: string;
           onboarded_at?: string | null;
           timezone?: string;
         };
         Update: {
           created_at?: string;
+          default_ngo_id?: string | null;
           display_name?: string;
+          donate_default?: boolean;
           id?: string;
           onboarded_at?: string | null;
           timezone?: string;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: 'profiles_default_ngo_id_fkey';
+            columns: ['default_ngo_id'];
+            isOneToOne: false;
+            referencedRelation: 'ngos';
+            referencedColumns: ['id'];
+          },
+        ];
       };
       user_badges: {
         Row: {
@@ -647,6 +718,35 @@ export type Database = {
           user_id: string;
         }[];
       };
+      get_my_challenge_donation: {
+        Args: { p_challenge_id: string };
+        Returns: {
+          donate: boolean;
+          effective_donate: boolean;
+          effective_ngo_id: string;
+          ngo_id: string;
+        }[];
+      };
+      get_my_donation_totals: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          donations: number;
+          ngo_id: string;
+          ngo_name: string;
+          total_cents: number;
+        }[];
+      };
+      get_my_donations: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          amount_cents: number;
+          challenge_id: string;
+          created_at: string;
+          ngo_id: string;
+          ngo_name: string;
+          title: string;
+        }[];
+      };
       get_my_gps_runs: {
         Args: { p_limit?: number };
         Returns: {
@@ -673,7 +773,9 @@ export type Database = {
         Args: Record<PropertyKey, never>;
         Returns: {
           created_at: string;
+          default_ngo_id: string | null;
           display_name: string;
+          donate_default: boolean;
           id: string;
           onboarded_at: string | null;
           timezone: string;
@@ -710,13 +812,18 @@ export type Database = {
       };
       get_potential_win: { Args: { p_challenge_id: string }; Returns: number };
       join_challenge: {
-        Args: { p_challenge_id: string };
+        Args: { p_challenge_id: string; p_stake_cents?: number };
         Returns: {
           challenge_id: string;
+          donate: boolean | null;
+          donated_cents: number;
           id: string;
           joined_at: string;
+          ngo_id: string | null;
           payout_cents: number | null;
           progress_value: number;
+          rank: number | null;
+          rank_points: number;
           result: string;
           stake_cents: number;
           user_id: string | null;
@@ -729,13 +836,18 @@ export type Database = {
         };
       };
       join_challenge_by_code: {
-        Args: { p_code: string };
+        Args: { p_code: string; p_stake_cents?: number };
         Returns: {
           challenge_id: string;
+          donate: boolean | null;
+          donated_cents: number;
           id: string;
           joined_at: string;
+          ngo_id: string | null;
           payout_cents: number | null;
           progress_value: number;
+          rank: number | null;
+          rank_points: number;
           result: string;
           stake_cents: number;
           user_id: string | null;
@@ -747,31 +859,20 @@ export type Database = {
           isSetofReturn: false;
         };
       };
-      leave_challenge: {
-        Args: { p_challenge_id: string };
-        Returns: {
-          account: string;
-          amount_cents: number;
-          challenge_id: string | null;
-          created_at: string;
-          id: string;
-          type: string;
-          user_id: string | null;
-        };
-        SetofOptions: {
-          from: '*';
-          to: 'ledger_entries';
-          isOneToOne: true;
-          isSetofReturn: false;
-        };
-      };
+      leave_challenge: { Args: { p_challenge_id: string }; Returns: number };
       mark_badge_seen: { Args: { p_badge: string }; Returns: undefined };
       recompute_progress: { Args: { p_challenge_id: string }; Returns: undefined };
+      set_challenge_donation: {
+        Args: { p_challenge_id: string; p_donate: boolean; p_ngo_id: string };
+        Returns: undefined;
+      };
       set_display_name: {
         Args: { p_display_name: string };
         Returns: {
           created_at: string;
+          default_ngo_id: string | null;
           display_name: string;
+          donate_default: boolean;
           id: string;
           onboarded_at: string | null;
           timezone: string;
@@ -783,6 +884,7 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      set_donation_defaults: { Args: { p_donate: boolean; p_ngo_id: string }; Returns: undefined };
       settle_challenge: { Args: { p_challenge_id: string }; Returns: boolean };
       sync_daily_steps: { Args: { p_days: Json }; Returns: number };
       sync_gps_run: {

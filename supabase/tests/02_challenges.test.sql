@@ -385,7 +385,7 @@ select is(
 select pg_temp.login('bbbbbbbb-0000-0000-0000-000000000002');
 
 select is(
-  (public.leave_challenge((select id from ids where name = 'public'))).amount_cents,
+  public.leave_challenge((select id from ids where name = 'public')),
   1000::bigint,
   'leaving books a refund of the full stake'
 );

@@ -106,9 +106,25 @@ select public.join_challenge_by_code('LAUF26');
 select pg_temp.as_user('c0000000-0000-4000-8000-000000000003');
 select public.join_challenge((select id from seed_challenges where name = 'half'));
 
--- Solo: Ben bets 5.00 on himself (the stake is booked when the solo goal is created).
+-- Pool for one: Ben bets 5.00 on himself (he is alone; the pool can still be shared by code).
 select pg_temp.as_user('b0000000-0000-4000-8000-000000000002');
-select public.create_challenge('Mein 10-km-Lauf', 'run_single', 10000, 500,
-  (now() at time zone 'Europe/Berlin')::date + 1, 7, 'private', null, 'solo');
+insert into seed_challenges
+select 'own_pool', (public.create_challenge('Mein 10-km-Lauf', 'run_single', 10000, 500,
+  (now() at time zone 'Europe/Berlin')::date + 1, 7, 'private')).id;
+select public.join_challenge((select id from seed_challenges where name = 'own_pool'));
+
+-- Ranked (no stake): a leaderboard for the most kilometres, and one for the most steps.
+select pg_temp.as_user('c0000000-0000-4000-8000-000000000003');
+insert into seed_challenges
+select 'ranked_km', (public.create_challenge('Meiste Kilometer', 'run_total', 20000, 0,
+  (now() at time zone 'Europe/Berlin')::date + 1, 7, 'public', null, 'ranked')).id;
+insert into seed_challenges
+select 'ranked_steps', (public.create_challenge('Meiste Schritte', 'steps_total', 70000, 0,
+  (now() at time zone 'Europe/Berlin')::date + 2, 7, 'public', null, 'ranked')).id;
+
+select pg_temp.as_user('a0000000-0000-4000-8000-000000000001');
+select public.join_challenge((select id from seed_challenges where name = 'ranked_km'));
+select pg_temp.as_user('b0000000-0000-4000-8000-000000000002');
+select public.join_challenge((select id from seed_challenges where name = 'ranked_km'));
 
 select set_config('request.jwt.claims', '', false);

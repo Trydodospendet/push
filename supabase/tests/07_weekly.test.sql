@@ -32,9 +32,9 @@ select results_eq(
   $$ select title, goal_type, target_value, stake_cents, mode, visibility, status,
             creator_id is null, weekly_key, min_participants
        from public.challenges where weekly_key = '2026-W47' $$,
-  $$ values ('10 km diese Woche', 'run_total', 10000, 500::bigint, 'ranked', 'public', 'open',
+  $$ values ('10 km diese Woche', 'run_total', 10000, 0::bigint, 'ranked', 'public', 'open',
              true, '2026-W47', 2) $$,
-  'it is a public ranked 10 km challenge with a 5.00 credit stake'
+  'it is a public ranked 10 km challenge without any stake'
 );
 
 select results_eq(

@@ -46,7 +46,7 @@ grant all on ids to authenticated;
 insert into public.challenges (creator_id, title, goal_type, target_value, stake_cents,
   starts_at, ends_at, min_participants, visibility, status, mode)
 values ('aaaaaaaa-0000-0000-0000-000000000001', 'Feed-Test', 'run_total', 5000, 500,
-  now() - interval '2 days', now() + interval '5 days', 2, 'public', 'active', 'ranked');
+  now() - interval '2 days', now() + interval '5 days', 2, 'public', 'active', 'pool');
 insert into ids select 'ch', id from public.challenges where title = 'Feed-Test';
 
 insert into public.challenge_participants (challenge_id, user_id, stake_cents)
@@ -54,13 +54,13 @@ select (select id from ids where name = 'ch'), u, 500
   from unnest(array['aaaaaaaa-0000-0000-0000-000000000001',
                     'bbbbbbbb-0000-0000-0000-000000000002']::uuid[]) as u;
 
--- A solo challenge never gets a feed.
-insert into public.challenges (creator_id, title, goal_type, target_value, stake_cents,
-  starts_at, ends_at, min_participants, max_participants, visibility, status, mode)
-values ('cccccccc-0000-0000-0000-000000000003', 'Allein', 'run_total', 5000, 500,
-  now() - interval '2 days', now() + interval '5 days', 1, 1, 'private', 'active', 'solo');
+-- A ranked challenge (no stake) has a feed as well.
+insert into public.challenges (creator_id, title, goal_type, target_value, stake_cents, fee_bps,
+  starts_at, ends_at, min_participants, visibility, status, mode)
+values ('cccccccc-0000-0000-0000-000000000003', 'Rangliste', 'run_total', 5000, 0, 0,
+  now() - interval '2 days', now() + interval '5 days', 2, 'public', 'active', 'ranked');
 insert into public.challenge_participants (challenge_id, user_id, stake_cents)
-select id, 'cccccccc-0000-0000-0000-000000000003', 500 from public.challenges where title = 'Allein';
+select id, 'cccccccc-0000-0000-0000-000000000003', 0 from public.challenges where title = 'Rangliste';
 
 select is(
   (select count(*)::integer from public.challenge_feed where kind = 'joined'
@@ -70,9 +70,9 @@ select is(
 );
 select is(
   (select count(*)::integer from public.challenge_feed
-    where challenge_id = (select id from public.challenges where title = 'Allein')),
-  0,
-  'solo challenges have no feed'
+    where challenge_id = (select id from public.challenges where title = 'Rangliste')),
+  1,
+  'ranked challenges have a feed too'
 );
 
 -- Visibility -----------------------------------------------------------------------------------
@@ -84,7 +84,7 @@ select is(
   'an outsider reads nothing through get_challenge_feed'
 );
 select is(
-  (select count(*)::integer from public.challenge_feed),
+  (select count(*)::integer from public.challenge_feed where challenge_id = (select id from ids where name = 'ch')),
   0,
   'an outsider reads nothing directly either (RLS)'
 );

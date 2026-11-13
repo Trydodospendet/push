@@ -2,7 +2,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 
-select plan(27);
+select plan(26);
 
 -- Helpers ------------------------------------------------------------------------------
 
@@ -50,8 +50,7 @@ begin
   values (pg_temp.u(p_creator), p_name, 'run_single', 5000, 1000,
     now() + interval '1 day', now() + interval '3 days',
     case when p_mode = 'solo' then 1 else 2 end,
-    case when p_mode = 'solo' then 1 end,
-    case when p_mode = 'solo' then 'private' else 'public' end, 'open', p_mode)
+    null, 'public', 'open', 'pool')
   returning id into v_id;
 
   foreach v_n in array p_users loop
@@ -79,7 +78,7 @@ select pg_temp.u(n), 'user' || n || '@pgtap.test', 'authenticated', 'authenticat
 
 -- User 1 is involved in every kind of challenge:
 --   open_ranked    open, user 1 and 2 joined                → refund, participation removed
---   open_solo      open solo of user 1                      → refund, cancelled
+--   open_solo      open pool of user 1 alone                → refund, participation removed
 --   running_ranked settling, users 1–3 joined, user 2 ran   → stake forfeited into the pot
 --   running_solo   active solo of user 1                    → stake forfeited
 --   created_only   open, created by user 1, only user 3     → keeps running without creator
@@ -163,13 +162,11 @@ select is(
 select is(pg_temp.ledger_sum('open_ranked'), -1000::bigint,
   'open ranked: the stake of user 1 was refunded (only user 2 is still in)');
 
--- Open solo: refund, cancelled.
-select is((select status from public.challenges where id = pg_temp.c('open_solo')), 'cancelled',
-  'open solo: the challenge is cancelled');
+-- Open pool of one: refund, the empty pool is cancelled at its start.
 select is(
-  (select result from public.challenge_participants where challenge_id = pg_temp.c('open_solo')),
-  'refunded', 'open solo: the participation is marked refunded');
-select is(pg_temp.ledger_sum('open_solo'), 0::bigint, 'open solo: the stake was refunded');
+  (select participant_count from public.challenges where id = pg_temp.c('open_solo')), 0,
+  'open pool of one: user 1 left the pool');
+select is(pg_temp.ledger_sum('open_solo'), 0::bigint, 'open pool of one: the stake was refunded');
 
 -- Created challenge keeps running for the others.
 select results_eq(
