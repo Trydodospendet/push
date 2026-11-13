@@ -109,3 +109,37 @@ describe('planReminders', () => {
     expect(times).toEqual([...times].sort((a, b) => a - b));
   });
 });
+
+describe('planReminders: training sessions', () => {
+  const settings = { enabled: true, hour: 18, minute: 0 };
+  const now = new Date(2026, 10, 16, 9, 0);
+
+  it('reminds at the daily time on days with an open session', () => {
+    const planned = planReminders([], {}, settings, now, [
+      { date: '2026-11-17', distanceM: 3500 },
+      { date: '2026-11-30', distanceM: 5000 },
+    ]);
+    expect(planned).toHaveLength(1);
+    expect(planned[0]).toMatchObject({
+      key: 'training-2026-11-17',
+      body: 'Laut Plan: 3,5 km. Du schaffst das.',
+    });
+    expect(planned[0].at).toEqual(new Date(2026, 10, 17, 18, 0));
+  });
+
+  it('plans nothing when reminders are off or the time has passed', () => {
+    expect(
+      planReminders([], {}, { ...settings, enabled: false }, now, [
+        { date: '2026-11-17', distanceM: 3000 },
+      ]),
+    ).toEqual([]);
+    expect(
+      planReminders([], {}, settings, now, [{ date: '2026-11-16', distanceM: 3000 }]).length,
+    ).toBe(1);
+    expect(
+      planReminders([], {}, settings, new Date(2026, 10, 16, 19, 0), [
+        { date: '2026-11-16', distanceM: 3000 },
+      ]),
+    ).toEqual([]);
+  });
+});

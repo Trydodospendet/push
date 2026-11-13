@@ -29,6 +29,11 @@ export type ReminderChallenge = {
   syncGraceHours: number;
 };
 
+/** An open training session (see features/training); the reminder is sent at the daily time. */
+export type TrainingReminder = { date: string; distanceM: number };
+
+const TRAINING_HORIZON_DAYS = 7;
+
 export type PlannedReminder = {
   /** Stable key, so the same reminder is always the same notification. */
   key: string;
@@ -62,6 +67,7 @@ export function planReminders(
   progress: Readonly<Record<string, number>>,
   settings: ReminderSettings,
   now: Date,
+  trainingSessions: readonly TrainingReminder[] = [],
 ): PlannedReminder[] {
   if (!settings.enabled) {
     return [];
@@ -128,6 +134,19 @@ export function planReminders(
           });
         }
       }
+    }
+  }
+
+  for (const session of trainingSessions) {
+    const [year, month, day] = session.date.split('-').map(Number);
+    const at = atTime(new Date(year, month - 1, day), settings);
+    if (at > now && at.getTime() - now.getTime() <= TRAINING_HORIZON_DAYS * 24 * HOUR_MS) {
+      planned.push({
+        key: `training-${session.date}`,
+        title: de.training.reminderTitle,
+        body: de.training.reminderBody(kmFormat.format(session.distanceM / 1000)),
+        at,
+      });
     }
   }
 

@@ -751,6 +751,47 @@ export const de = {
     privacyHint:
       'Das Bild zeigt nur die Form der Strecke – keine Karte, keinen Start und kein Ziel.',
   },
+  training: {
+    title: 'Trainingsplan',
+    homeButton: 'Trainingsplan',
+    intro:
+      'Ein fester Plan bringt dich Schritt für Schritt zum Ziel. Ein Lauf zählt, wenn er mindestens 80 % der geplanten Strecke hat – an welchem Tag der Woche du läufst, ist egal.',
+    plansLabel: 'PLAN WÄHLEN',
+    plans: {
+      start_4w: {
+        name: 'Einstieg in 4 Wochen',
+        text: 'Für Einsteiger: dreimal pro Woche, bis 3,5 km am Stück.',
+      },
+      '5k_8w': {
+        name: 'In 8 Wochen zu 5 km',
+        text: 'Dreimal pro Woche, am Ende läufst du 5 km am Stück.',
+      },
+      '10k_10w': {
+        name: 'In 10 Wochen zu 10 km',
+        text: 'Für alle, die schon 5 km laufen: dreimal pro Woche bis 10 km.',
+      },
+    },
+    weeks: (n: number) => `${n} Wochen`,
+    start: 'Plan starten',
+    startsOn: (date: string) => `Startet am ${date}`,
+    startHint: 'Der Plan beginnt am nächsten Montag. Heute ist ein Montag? Dann geht es heute los.',
+    activeLabel: 'DEIN PLAN',
+    week: (n: number, total: number) => `Woche ${n} von ${total}`,
+    done: 'Geschafft',
+    open: 'Offen',
+    long: 'Langer Lauf',
+    easy: 'Lockerer Lauf',
+    summary: (done: number, total: number) => `${done} von ${total} Läufen geschafft`,
+    stop: 'Plan beenden',
+    stopTitle: 'Plan beenden?',
+    stopText: 'Dein Fortschritt im Plan geht verloren. Deine Läufe bleiben erhalten.',
+    stopConfirm: 'Beenden',
+    cancel: 'Abbrechen',
+    finished: 'Plan abgeschlossen. Stark gemacht!',
+    error: 'Dein Trainingsplan konnte nicht geladen werden.',
+    reminderTitle: 'Heute steht ein Lauf an',
+    reminderBody: (km: string) => `Laut Plan: ${km} km. Du schaffst das.`,
+  },
   social: {
     title: 'Freunde & Liga',
     error: 'Das konnte nicht geladen werden.',
@@ -1154,6 +1195,13 @@ export const de = {
     openSettings: 'Standort in den Einstellungen verwalten',
     startRun: 'GPS-Lauf starten',
   },
+  voice: {
+    hours: (n: number) => (n === 1 ? 'eine Stunde' : `${n} Stunden`),
+    minutes: (n: number) => (n === 1 ? 'eine Minute' : `${n} Minuten`),
+    seconds: (n: number) => (n === 1 ? 'eine Sekunde' : `${n} Sekunden`),
+    announcement: (km: number, total: string, split: string) =>
+      `Kilometer ${km}. Gesamtzeit ${total}. Dieser Kilometer: ${split}.`,
+  },
   appearance: {
     title: 'Darstellung',
     label: 'BEWEGUNG & FEEDBACK',
@@ -1162,6 +1210,9 @@ export const de = {
       'Übergänge, Konfetti und hochzählende Zahlen. Die Systemeinstellung „Bewegung reduzieren“ wird immer beachtet.',
     haptics: 'Haptisches Feedback',
     hapticsHint: 'Kurze Vibration bei Erfolgen, Fehlern und Auswahl.',
+    voice: 'Sprachansagen beim Laufen',
+    voiceHint:
+      'Nach jedem Kilometer sagt dein Handy Zeit und Tempo an. Du hörst es über Lautsprecher oder Kopfhörer.',
   },
   dataSettings: {
     title: 'Daten & Datenschutz',

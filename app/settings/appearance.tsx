@@ -38,6 +38,15 @@ export default function AppearanceScreen() {
             }
           }}
         />
+        <SwitchRow
+          label={de.appearance.voice}
+          hint={de.appearance.voiceHint}
+          value={preferences.voice}
+          onChange={(value) => {
+            hapticSelect();
+            void setPreference('voice', value);
+          }}
+        />
       </Card>
     </Screen>
   );

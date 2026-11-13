@@ -10,11 +10,17 @@ import { secureStorage } from '@/lib/secure-storage';
 const preferencesSchema = z.object({
   animations: z.boolean(),
   haptics: z.boolean(),
+  /** Spoken kilometre announcements while running (off until the runner switches it on). */
+  voice: z.boolean().default(false),
 });
 
 export type Preferences = z.infer<typeof preferencesSchema>;
 
-export const defaultPreferences: Preferences = { animations: true, haptics: true };
+export const defaultPreferences: Preferences = {
+  animations: true,
+  haptics: true,
+  voice: false,
+};
 
 const STORAGE_KEY = 'push.preferences';
 

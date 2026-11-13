@@ -27,6 +27,7 @@ import {
   type ReminderChallenge,
   type ReminderSettings,
 } from './plan';
+import { useActivePlan, useTrainingSessions } from '@/features/training/api';
 import { loadReminderSettings, saveReminderSettings } from './storage';
 
 type ReminderContextValue = {
@@ -137,9 +138,12 @@ export function ReminderProvider({
 function ReminderScheduler({ userId, settings }: { userId: string; settings: ReminderSettings }) {
   const challenges = useMyChallenges(userId);
   const progress = useMyProgress(userId);
+  const plan = useActivePlan(userId);
+  const training = useTrainingSessions(userId, plan.data);
 
   const mine = challenges.data;
   const progressData = progress.data;
+  const trainingSessions = training.sessions;
 
   useEffect(() => {
     if (!settings.enabled) {
@@ -161,10 +165,16 @@ function ReminderScheduler({ userId, settings }: { userId: string; settings: Rem
         endsAt: challenge.ends_at,
         syncGraceHours: challenge.sync_grace_hours,
       }));
-    void applyPlan(planReminders(joined, progressData, settings, new Date())).catch(
-      () => undefined,
-    );
-  }, [mine, progressData, settings]);
+    void applyPlan(
+      planReminders(
+        joined,
+        progressData,
+        settings,
+        new Date(),
+        (trainingSessions ?? []).filter((entry) => !entry.done),
+      ),
+    ).catch(() => undefined);
+  }, [mine, progressData, settings, trainingSessions]);
 
   return null;
 }

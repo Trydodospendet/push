@@ -19,6 +19,8 @@ import { RecordsCard } from '@/features/gps/records-card';
 import { RouteMap } from '@/features/gps/route-map';
 import { RunList } from '@/features/gps/run-list';
 import { useClock } from '@/features/gps/use-clock';
+import { useKilometerAnnouncements } from '@/features/gps/voice';
+import { usePreferences } from '@/features/preferences/store';
 import { de } from '@/i18n/de';
 import { colors, layout, radius, spacing } from '@/theme';
 
@@ -204,6 +206,8 @@ function ActiveRun({ onInset }: { onInset: (height: number) => void }) {
   const sinceLast = !paused && last ? Math.min(10, Math.max(0, (now - last.t) / 1000)) : 0;
   const elapsed = stats.elapsedS + sinceLast;
   const pace = paceSecondsPerKm(stats.distanceM, stats.elapsedS);
+  const { voice } = usePreferences();
+  useKilometerAnnouncements(recorder.points, stats.elapsedS, voice && !paused);
 
   const act = (task: () => Promise<unknown>) => {
     setBusy(true);

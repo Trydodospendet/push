@@ -76,6 +76,11 @@ export default function HomeScreen() {
           variant="secondary"
           onPress={() => router.push('/run/index')}
         />
+        <Button
+          label={de.training.homeButton}
+          variant="secondary"
+          onPress={() => router.push('/training')}
+        />
         <StreakAndWeek userId={session.user.id} />
         <RecentWins userId={session.user.id} timezone={timezone} />
       </Screen>
@@ -114,6 +119,11 @@ export default function HomeScreen() {
         label={de.run.homeButton}
         variant="secondary"
         onPress={() => router.push('/run/index')}
+      />
+      <Button
+        label={de.training.homeButton}
+        variant="secondary"
+        onPress={() => router.push('/training')}
       />
       {primary ? (
         <>
