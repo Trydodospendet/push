@@ -145,7 +145,10 @@ Ziel mit Einsatz, Aktivität-Tab, Pool/Ranked). Zusätzlich prüfen:
    Mindestziel. Jedes Ziel summiert sich im Ledger auf 0 (`19_goals`).
 3. **Ranked-Demovorschau:** Development Build → Tab _Ranked_ → unten stehen 20 fiktive Profile
    mit Beispielbildern und je 400 Credits Guthaben. Keine davon ist ein echtes Konto oder ein Einsatz.
-4. **FAQ:** Profil → _Hilfe & Kontakt_ erklärt Ziel setzen, Einsatz-Bindung und Pool/Ranked.
+4. **Start-Animation:** Ein Ziel erstellen oder einer noch offenen Challenge beitreten. Die App zeigt
+   einmalig eine kurze Animation mit Motivationsspruch. Eine abgelaufene Einladung zeigt stattdessen
+   einen Hinweis und bietet keinen Beitritt an.
+5. **FAQ:** Profil → _Hilfe & Kontakt_ erklärt Ziel setzen, Einsatz-Bindung und Pool/Ranked.
 
 ## Automatische Tests
 

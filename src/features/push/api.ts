@@ -3,7 +3,7 @@ import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 
-import { profileQueryKey } from '@/features/auth/api';
+import { profileQueryKey } from '@/features/auth/profile-query-key';
 import { requestPermission } from '@/features/reminders/notifications';
 import { supabase } from '@/lib/supabase';
 

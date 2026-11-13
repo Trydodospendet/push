@@ -10,6 +10,8 @@
 - Typecheck, Lint, 283 Jest-Tests und 540 lokale pgTAP-Prüfungen grün. Jest meldet nur doppelte manuelle Mock-Namen für `storage`.
 - Zielbild erneut geprüft (13.11.2026): Home führt über „Ziel setzen“, erklärt den Ablauf beim ersten Öffnen und zeigt ein wichtigstes plus weitere Ziele. Freunde/Liga sind unter Ranked; Aktivität ist als Tab erreichbar, zeigt Health-Daten und GPS-Läufe und bietet Android-Strecken an. Ziele binden Credits ab Start; die Fensterabrechnung verteilt verfallene Einsätze anteilig, zieht `fee_bps` ab und bucht Rundungsreste ans Haus.
 - Gerätestart mit `npm run start:cloud` bestätigt. Veraltete Stack-Routen für `invite/[code]` und `join/[code]` korrigiert. Ranked zeigt nur im Development Build eine lokale Vorschau mit 20 fiktiven Profilbildern und 400 Credits Beispiel-Guthaben je Person; keine Demo-Konten oder Einsätze werden gespeichert.
+- Beitritt per Einladungscode blendet Challenge-Starts und -Enden vorab aus. Nach erfolgreichem Setzen eines Ziels oder Beitreten erscheint eine kurze animierte Begrüßung mit wechselndem Motivationsspruch.
+- Profil-Query-Key in eigenes Modul verschoben; damit ist der Auth-/Account-Importzyklus behoben.
 - Tagesziele starten ab Bestätigung bis zur lokalen Mitternacht. Bereits erfasste Schritte des Tages zählen mit; der Einsatz ist sofort gebunden. Migrationen `20261130100000_goal_today` und `20261130110000_goal_same_day_duration` ergänzen Funktion und Laufzeitregel.
 - Alle Details und frühere Prüfergebnisse stehen im [Archiv](HANDOFF_ARCHIV.md).
 

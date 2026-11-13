@@ -6,7 +6,7 @@ import { Button, Card, ErrorState, LoadingState, Screen, Text, TextField } from 
 import { INVITE_CODE_LENGTH } from '@/config/app';
 import { useChallengeByCode, useJoinChallenge } from '@/features/challenges/api';
 import { ChallengeFacts } from '@/features/challenges/challenge-facts';
-import { describeGoal } from '@/features/challenges/format';
+import { describeGoal, isJoinable } from '@/features/challenges/format';
 import { JoinSheet } from '@/features/challenges/join-sheet';
 import { inviteCodeSchema } from '@/features/challenges/schemas';
 import { de } from '@/i18n/de';
@@ -25,6 +25,8 @@ export default function JoinByCodeScreen() {
   const [sheetVisible, setSheetVisible] = useState(false);
   const preview = useChallengeByCode(code);
   const join = useJoinChallenge();
+  const canJoin =
+    preview.data !== undefined && preview.data.mode !== 'goal' && isJoinable(preview.data);
 
   const handleShow = () => {
     const result = inviteCodeSchema.safeParse(input);
@@ -38,7 +40,7 @@ export default function JoinByCodeScreen() {
   };
 
   const handleConfirm = (stakeCents: number) => {
-    if (!code || !preview.data) {
+    if (!code || !preview.data || !canJoin) {
       return;
     }
     const challengeId = preview.data.id;
@@ -47,7 +49,10 @@ export default function JoinByCodeScreen() {
       {
         onSuccess: () => {
           setSheetVisible(false);
-          router.replace({ pathname: '/challenge/[id]', params: { id: challengeId } });
+          router.replace({
+            pathname: '/challenge/[id]',
+            params: { id: challengeId, started: '1' },
+          });
         },
       },
     );
@@ -86,7 +91,15 @@ export default function JoinByCodeScreen() {
             </Text>
           </Card>
           <ChallengeFacts challenge={preview.data} />
-          <Button label={de.challenge.join} onPress={() => setSheetVisible(true)} />
+          {canJoin ? (
+            <Button label={de.challenge.join} onPress={() => setSheetVisible(true)} />
+          ) : (
+            <Text color="textMuted">
+              {preview.data.mode === 'goal'
+                ? de.challenge.goalNotJoinable
+                : de.challenge.notJoinable}
+            </Text>
+          )}
           <JoinSheet
             mode={preview.data.mode === 'ranked' ? 'ranked' : 'pool'}
             stakeCents={preview.data.stake_cents}

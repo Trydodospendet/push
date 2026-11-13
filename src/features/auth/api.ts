@@ -2,6 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 import { removeAllAvatars } from '@/features/account/api';
 import { takeSignupPassword } from '@/features/auth/signup-draft';
+import { profileQueryKey } from '@/features/auth/profile-query-key';
 import { clearHealthState } from '@/features/health/storage';
 import { clearReminderSettings } from '@/features/reminders/storage';
 import { clearGpsStorage } from '@/features/gps/storage';
@@ -11,8 +12,6 @@ import type { Database } from '@/lib/database.types';
 import { supabase } from '@/lib/supabase';
 
 export type MyProfile = Database['public']['Functions']['get_my_profile']['Returns'];
-
-export const profileQueryKey = (userId: string) => ['profile', userId] as const;
 
 /**
  * Sends a 6-digit code. Only registering (`createUser`) may create an account; signing in with

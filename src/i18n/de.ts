@@ -653,6 +653,7 @@ export const de = {
     join: 'Beitreten',
     joined: 'Du bist dabei',
     notJoinable: 'Beitreten ist nur vor dem Start möglich.',
+    goalNotJoinable: 'Persönliche Ziele kannst du nicht mit einem Einladungscode beitreten.',
     leave: 'Challenge verlassen',
     leaveGoal: 'Ziel zurückziehen',
     deletedAccount: 'Gelöschtes Konto',
@@ -671,6 +672,18 @@ export const de = {
     stakeLabel: 'DEIN EINSATZ',
     stakeChosen: (amount: string) =>
       `Du setzt ${amount} Credits. Erreichst du dein Ziel, bekommst du sie zurück plus deinen Anteil an den Einsätzen der anderen.`,
+  },
+  challengeStart: {
+    title: 'Dein Start ist gesetzt!',
+    subtitle: 'Du hast den ersten Schritt gemacht. Jetzt zählt jeder einzelne.',
+    quotes: [
+      'Du musst nicht perfekt starten. Du musst nur anfangen.',
+      'Ein Ziel. Ein Schritt. Dann der nächste.',
+      'Dein Tempo, dein Ziel. Bleib dran.',
+      'Der erste Schritt ist gesetzt. Mach weiter.',
+      'Heute entscheidest du, worauf du morgen stolz bist.',
+    ],
+    close: 'Los geht’s',
   },
   leaveSheet: {
     title: 'Challenge verlassen?',

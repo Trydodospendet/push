@@ -109,7 +109,7 @@ export default function SetGoalScreen() {
     create.mutate(result.data, {
       onSuccess: (challenge) => {
         setConfirming(false);
-        router.replace({ pathname: '/challenge/[id]', params: { id: challenge.id } });
+        router.replace({ pathname: '/challenge/[id]', params: { id: challenge.id, started: '1' } });
       },
       onError: (mutationError) => setError(toUserMessage(mutationError)),
     });

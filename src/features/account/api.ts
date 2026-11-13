@@ -2,7 +2,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import * as ImageManipulator from 'expo-image-manipulator';
 import * as ImagePicker from 'expo-image-picker';
 
-import { profileQueryKey } from '@/features/auth/api';
+import { profileQueryKey } from '@/features/auth/profile-query-key';
 import { supabase } from '@/lib/supabase';
 
 export const accountKeys = {

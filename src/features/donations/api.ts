@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
-import { profileQueryKey } from '@/features/auth/api';
+import { profileQueryKey } from '@/features/auth/profile-query-key';
 import { supabase } from '@/lib/supabase';
 
 export const donationKeys = {

@@ -1,4 +1,4 @@
-import { useLocalSearchParams } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useState } from 'react';
 import { RefreshControl, Share, StyleSheet, View } from 'react-native';
 
@@ -21,6 +21,7 @@ import {
   useParticipants,
 } from '@/features/challenges/api';
 import { ChallengeFacts } from '@/features/challenges/challenge-facts';
+import { ChallengeStartCelebration } from '@/features/challenges/challenge-start-celebration';
 import {
   challengeDays,
   describeGoal,
@@ -55,7 +56,8 @@ import { colors, spacing } from '@/theme';
 const SCREEN_EDGES = ['bottom', 'left', 'right'] as const;
 
 export default function ChallengeDetailScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+  const { id, started } = useLocalSearchParams<{ id: string; started?: string }>();
+  const router = useRouter();
   const session = useSession();
   const challenge = useChallenge(id);
   const participants = useParticipants(id);
@@ -91,6 +93,8 @@ export default function ChallengeDetailScreen() {
         void challenge.refetch();
         void participants.refetch();
       }}
+      started={started === '1'}
+      clearStarted={() => router.setParams({ started: undefined })}
     />
   );
 }
@@ -102,6 +106,8 @@ type ChallengeDetailProps = {
   userId: string;
   refreshing: boolean;
   onRefresh: () => void;
+  started: boolean;
+  clearStarted: () => void;
 };
 
 function ChallengeDetail({
@@ -111,6 +117,8 @@ function ChallengeDetail({
   userId,
   refreshing,
   onRefresh,
+  started,
+  clearStarted,
 }: ChallengeDetailProps) {
   const join = useJoinChallenge();
   const leave = useLeaveChallenge();
@@ -118,6 +126,7 @@ function ChallengeDetail({
   const progress = useMyProgress(userId);
   const lastSync = useLastSyncText(challenge.timezone);
   const [sheet, setSheet] = useState<'join' | 'leave' | null>(null);
+  const [showStartCelebration, setShowStartCelebration] = useState(started);
 
   const me = participants.find((participant) => participant.userId === userId);
   const isParticipant = me !== undefined;
@@ -351,9 +360,22 @@ function ChallengeDetail({
         onConfirm={(stakeCents) =>
           join.mutate(
             { challengeId: challenge.id, stakeCents: ranked ? undefined : stakeCents },
-            { onSuccess: () => setSheet(null) },
+            {
+              onSuccess: () => {
+                setSheet(null);
+                setShowStartCelebration(true);
+              },
+            },
           )
         }
+      />
+
+      <ChallengeStartCelebration
+        visible={showStartCelebration}
+        onClose={() => {
+          setShowStartCelebration(false);
+          clearStarted();
+        }}
       />
 
       <Sheet
