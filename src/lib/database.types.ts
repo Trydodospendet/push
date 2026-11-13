@@ -507,6 +507,8 @@ export type Database = {
       };
       profiles: {
         Row: {
+          anonymous_in_rankings: boolean;
+          avatar_path: string | null;
           created_at: string;
           default_ngo_id: string | null;
           display_name: string;
@@ -517,6 +519,8 @@ export type Database = {
         };
         ComputedFields: never;
         Insert: {
+          anonymous_in_rankings?: boolean;
+          avatar_path?: string | null;
           created_at?: string;
           default_ngo_id?: string | null;
           display_name: string;
@@ -526,6 +530,8 @@ export type Database = {
           timezone?: string;
         };
         Update: {
+          anonymous_in_rankings?: boolean;
+          avatar_path?: string | null;
           created_at?: string;
           default_ngo_id?: string | null;
           display_name?: string;
@@ -653,6 +659,7 @@ export type Database = {
       };
       create_weekly_challenge: { Args: { p_now?: string }; Returns: string };
       delete_my_account: { Args: Record<PropertyKey, never>; Returns: undefined };
+      export_my_data: { Args: { p_include_routes?: boolean }; Returns: Json };
       get_challenge_by_code: {
         Args: { p_code: string };
         Returns: {
@@ -781,6 +788,8 @@ export type Database = {
       get_my_profile: {
         Args: Record<PropertyKey, never>;
         Returns: {
+          anonymous_in_rankings: boolean;
+          avatar_path: string | null;
           created_at: string;
           default_ngo_id: string | null;
           display_name: string;
@@ -871,6 +880,7 @@ export type Database = {
       leave_challenge: { Args: { p_challenge_id: string }; Returns: number };
       mark_badge_seen: { Args: { p_badge: string }; Returns: undefined };
       recompute_progress: { Args: { p_challenge_id: string }; Returns: undefined };
+      set_avatar_path: { Args: { p_path?: string }; Returns: undefined };
       set_challenge_donation: {
         Args: { p_challenge_id: string; p_donate?: boolean; p_ngo_id?: string };
         Returns: undefined;
@@ -878,6 +888,8 @@ export type Database = {
       set_display_name: {
         Args: { p_display_name: string };
         Returns: {
+          anonymous_in_rankings: boolean;
+          avatar_path: string | null;
           created_at: string;
           default_ngo_id: string | null;
           display_name: string;
@@ -894,6 +906,7 @@ export type Database = {
         };
       };
       set_donation_defaults: { Args: { p_donate: boolean; p_ngo_id?: string }; Returns: undefined };
+      set_ranking_visibility: { Args: { p_anonymous: boolean }; Returns: undefined };
       settle_challenge: { Args: { p_challenge_id: string }; Returns: boolean };
       sync_daily_steps: { Args: { p_days: Json }; Returns: number };
       sync_gps_run: {

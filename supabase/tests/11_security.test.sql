@@ -3,7 +3,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 
-select plan(16);
+select plan(19);
 
 create function pg_temp.login(p_user_id uuid)
 returns void
@@ -109,6 +109,25 @@ select is(
       and has_function_privilege('authenticated', p.oid, 'execute')),
   0,
   'scheduler and trigger functions are closed to clients'
+);
+
+-- Storage ---------------------------------------------------------------------------------------
+
+select is(
+  (select count(*)::integer from storage.buckets where public),
+  0,
+  'no storage bucket is public'
+);
+select ok(
+  (select relrowsecurity from pg_class where oid = 'storage.objects'::regclass),
+  'row level security is on for stored files'
+);
+select is(
+  (select count(*)::integer from pg_policies
+    where schemaname = 'storage' and tablename = 'objects'
+      and (roles @> array['anon']::name[] or roles @> array['public']::name[])),
+  0,
+  'no storage policy applies to anonymous users'
 );
 
 -- Defaults for the future -----------------------------------------------------------------------
