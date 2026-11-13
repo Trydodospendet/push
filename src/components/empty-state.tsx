@@ -2,6 +2,7 @@ import { StyleSheet, View } from 'react-native';
 
 import { colors, layout, radius, spacing } from '@/theme';
 
+import { Art, type ArtName } from './art';
 import { Button } from './button';
 import { Icon, type IconName } from './icon';
 import { Text } from './text';
@@ -17,6 +18,19 @@ export type EmptyStateProps = {
   compact?: boolean;
 };
 
+/** The own illustration that belongs to an icon name; unknown icons get the target. */
+function artForIcon(icon: IconName): ArtName {
+  if (icon.startsWith('trophy')) return 'podium';
+  if (icon.startsWith('flag')) return 'flag';
+  if (icon.startsWith('search')) return 'target';
+  if (icon.startsWith('checkmark')) return 'trophy';
+  if (icon.startsWith('wallet') || icon.startsWith('cash')) return 'coins';
+  if (icon.startsWith('heart')) return 'heart';
+  if (icon.startsWith('people')) return 'friends';
+  if (icon.startsWith('walk') || icon.startsWith('footsteps')) return 'steps';
+  return 'target';
+}
+
 /** Illustration, short explanation and one clear action instead of an empty list. */
 export function EmptyState({
   icon,
@@ -28,7 +42,10 @@ export function EmptyState({
 }: EmptyStateProps) {
   return (
     <View style={styles.root}>
-      <Illustration icon={icon} size={compact ? layout.illustration.compactSize : undefined} />
+      <Art
+        name={artForIcon(icon)}
+        size={compact ? layout.illustration.compactSize : layout.illustration.size}
+      />
       <View style={styles.texts}>
         <Text variant="heading" align="center" accessibilityRole="header">
           {title}

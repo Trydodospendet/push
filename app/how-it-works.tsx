@@ -1,8 +1,8 @@
 import { router } from 'expo-router';
 
-import { IntroPager } from '@/features/intro/intro-pager';
+import { Guide } from '@/features/intro/guide';
 
-/** The intro pages again, opened from the profile. */
+/** The illustrated guide, opened from the profile. */
 export default function HowItWorksScreen() {
-  return <IntroPager onFinish={() => router.back()} />;
+  return <Guide onBack={() => router.back()} />;
 }

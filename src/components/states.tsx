@@ -1,21 +1,23 @@
-import { ActivityIndicator, StyleSheet, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 
 import { de } from '@/i18n/de';
-import { colors, spacing } from '@/theme';
+import { spacing } from '@/theme';
 
 import { Button } from './button';
+import { SkeletonCard } from './skeleton';
 import { Text } from './text';
 
-/** Centered spinner for content that is still loading. */
+/** Grey placeholder cards for content that is still loading (instead of a spinner). */
 export function LoadingState({ label = de.common.loading }: { label?: string }) {
   return (
     <View
-      style={styles.center}
+      style={styles.loading}
       accessible
       accessibilityLabel={label}
       accessibilityRole="progressbar"
     >
-      <ActivityIndicator color={colors.accent} size="large" />
+      <SkeletonCard lines={3} />
+      <SkeletonCard lines={2} />
     </View>
   );
 }
@@ -41,6 +43,10 @@ export function ErrorState({ message, onRetry, retrying = false }: ErrorStatePro
 }
 
 const styles = StyleSheet.create({
+  loading: {
+    alignSelf: 'stretch',
+    gap: spacing.md,
+  },
   center: {
     flex: 1,
     alignItems: 'center',

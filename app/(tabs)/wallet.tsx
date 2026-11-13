@@ -1,7 +1,7 @@
 import { useRouter } from 'expo-router';
 import { RefreshControl, StyleSheet, View } from 'react-native';
 
-import { Card, EmptyState, ErrorState, LoadingState, Screen, Text } from '@/components';
+import { Card, EmptyState, ErrorState, LoadingState, Screen, Text, CountUp } from '@/components';
 import { useSession } from '@/features/auth/auth-provider';
 import { useLedger, useWalletBalance, type LedgerEntry } from '@/features/wallet/api';
 import { de } from '@/i18n/de';
@@ -50,9 +50,13 @@ export default function WalletScreen() {
           accessible
           accessibilityLabel={de.wallet.balanceAccessibility(formatAmount(balance.data))}
         >
-          <Text variant="display" numberOfLines={1} adjustsFontSizeToFit>
-            {formatAmount(balance.data)}
-          </Text>
+          <CountUp
+            value={balance.data}
+            format={formatAmount}
+            variant="display"
+            numberOfLines={1}
+            adjustsFontSizeToFit
+          />
           <Text variant="heading" color="textSecondary">
             {de.common.credits}
           </Text>

@@ -10,7 +10,8 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Button, Icon, Text } from '@/components';
+import { Button, Confetti, Icon, Text } from '@/components';
+import { hapticSuccess } from '@/features/preferences/haptics';
 import { useSession } from '@/features/auth/auth-provider';
 import { de } from '@/i18n/de';
 import { colors, motion, radius, spacing } from '@/theme';
@@ -48,6 +49,10 @@ function BadgeModal({ code, onClose }: { code: BadgeCode; onClose: () => void })
   const progress = useAnimatedValue(0);
 
   useEffect(() => {
+    hapticSuccess();
+  }, []);
+
+  useEffect(() => {
     let cancelled = false;
     void AccessibilityInfo.isReduceMotionEnabled().then((reduce) => {
       if (cancelled) {
@@ -83,6 +88,7 @@ function BadgeModal({ code, onClose }: { code: BadgeCode; onClose: () => void })
         style={[styles.root, { paddingTop: insets.top, paddingBottom: insets.bottom + spacing.lg }]}
         accessibilityViewIsModal
       >
+        <Confetti count={20} distance={150} />
         <View style={styles.center}>
           <Animated.View style={[styles.badge, { transform: [{ scale }] }]}>
             <Icon name={BADGE_ICONS[code]} color="onAccent" size={BADGE_SIZE / 2} />

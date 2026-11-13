@@ -47,7 +47,7 @@ beforeEach(() => {
 });
 
 describe('app flow', () => {
-  it('shows the three intro pages once, then continues to the app', async () => {
+  it('shows the intro pages once, then continues to the app', async () => {
     const user = userEvent.setup();
     mockIntro.set(false);
     mockAuth.setInitialSession(session);
@@ -58,8 +58,9 @@ describe('app flow', () => {
     expect(await screen.findByText("So funktioniert's")).toBeOnTheScreen();
     expect(screen.getByText('Automatisch geprüft über Apple Health')).toBeOnTheScreen();
     expect(screen.getByText('So wird ausgezahlt')).toBeOnTheScreen();
-    await user.press(screen.getByRole('button', { name: 'Weiter' }));
-    await user.press(screen.getByRole('button', { name: 'Weiter' }));
+    for (let page = 0; page < 4; page += 1) {
+      await user.press(screen.getByRole('button', { name: 'Weiter' }));
+    }
     await user.press(screen.getByRole('button', { name: "Los geht's" }));
 
     expect(await screen.findByText('Noch keine Challenge')).toBeOnTheScreen();

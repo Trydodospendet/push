@@ -10,9 +10,10 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Button, Icon, Text } from '@/components';
+import { Button, Confetti, Icon, Text } from '@/components';
 import { BadgeCelebration } from '@/features/badges/badge-celebration';
 import { useSession } from '@/features/auth/auth-provider';
+import { hapticSuccess } from '@/features/preferences/haptics';
 import { de } from '@/i18n/de';
 import { formatAmount } from '@/lib/money';
 import { colors, motion, radius, spacing } from '@/theme';
@@ -70,6 +71,10 @@ export function WinCelebration() {
 
 function CelebrationModal({ win, onClose }: { win: Win; onClose: () => void }) {
   const insets = useSafeAreaInsets();
+
+  useEffect(() => {
+    hapticSuccess();
+  }, []);
   const progress = useAnimatedValue(0);
 
   useEffect(() => {
@@ -114,6 +119,7 @@ function CelebrationModal({ win, onClose }: { win: Win; onClose: () => void }) {
         style={[styles.root, { paddingTop: insets.top, paddingBottom: insets.bottom + spacing.lg }]}
         accessibilityViewIsModal
       >
+        <Confetti />
         <View style={styles.center}>
           <View style={styles.stage}>
             {Array.from({ length: CONFETTI_COUNT }, (_, index) => {

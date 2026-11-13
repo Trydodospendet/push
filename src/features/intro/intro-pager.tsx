@@ -9,7 +9,7 @@ import {
   type ScrollViewInstance,
 } from 'react-native';
 
-import { Button, Illustration, Screen, Text } from '@/components';
+import { Art, Button, Screen, Text } from '@/components';
 import { healthSourceName } from '@/features/health/platform';
 import { de } from '@/i18n/de';
 import { colors, radius, spacing } from '@/theme';
@@ -19,7 +19,7 @@ export type IntroPagerProps = {
   onFinish: () => void;
 };
 
-/** Three swipeable pages: how it works, automatic checking, how winnings are paid. */
+/** Swipeable pages: how it works, automatic checking, pool, ranked, donations. */
 export function IntroPager({ onFinish }: IntroPagerProps) {
   const { width } = useWindowDimensions();
   const scroll = useRef<ScrollViewInstance>(null);
@@ -60,7 +60,7 @@ export function IntroPager({ onFinish }: IntroPagerProps) {
             accessible
             accessibilityLabel={`${de.intro.pageOf(pageIndex + 1, pages.length)}. ${page.title}. ${page.text}`}
           >
-            <Illustration icon={page.icon} />
+            <Art name={page.art} size={176} />
             <View style={styles.texts}>
               <Text variant="title" align="center" accessibilityRole="header">
                 {page.title}

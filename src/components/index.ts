@@ -1,4 +1,8 @@
+export { Art, type ArtName, type ArtProps } from './art';
 export { Avatar, type AvatarProps } from './avatar';
+export { Confetti, type ConfettiProps } from './confetti';
+export { CountUp, type CountUpProps } from './count-up';
+export { Skeleton, SkeletonCard, type SkeletonProps } from './skeleton';
 export { Button, type ButtonProps } from './button';
 export { Card, type CardProps } from './card';
 export { ChipGroup, type ChipGroupProps, type ChipOption } from './chip-group';

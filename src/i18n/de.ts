@@ -314,21 +314,81 @@ export const de = {
     pages: (source: string) =>
       [
         {
-          icon: 'flag' as const,
+          art: 'target' as const,
           title: "So funktioniert's",
-          text: 'Such dir ein Lauf- oder Schrittziel aus. Im Pool setzt du Credits darauf, in Ranked trittst du ohne Einsatz in einer Rangliste an.',
+          text: 'Such dir ein Lauf- oder Schrittziel aus und tritt an – allein, mit Freunden oder gegen alle.',
         },
         {
-          icon: 'shield-checkmark' as const,
+          art: 'shield' as const,
           title: `Automatisch geprüft über ${source}`,
-          text: `Deine Läufe und Schritte kommen direkt aus ${source}. Niemand kann sein Ergebnis selbst behaupten – und von Hand eingetragene Einträge zählen nie.`,
+          text: `Deine Läufe und Schritte kommen direkt aus ${source} oder aus dem GPS-Lauf der App. Niemand kann sein Ergebnis selbst behaupten – und von Hand eingetragene Einträge zählen nie.`,
         },
         {
-          icon: 'wallet' as const,
+          art: 'pool' as const,
           title: 'So wird ausgezahlt',
-          text: 'Nach dem Ende rechnet der Server automatisch ab: Wer im Pool sein Ziel geschafft hat, bekommt den Einsatz plus einen Anteil am Topf – oder spendet den Anteil an eine NGO. Aktuell sind Credits virtuell und können nicht ausgezahlt werden.',
+          text: 'Im Pool zahlt jeder einen Einsatz in einen Topf. Wer sein Ziel schafft, bekommt den Einsatz plus einen Anteil der Einsätze der anderen. Aktuell sind Credits virtuell und können nicht ausgezahlt werden.',
+        },
+        {
+          art: 'podium' as const,
+          title: 'Ranked: ohne Einsatz',
+          text: 'In Ranglisten gibt es keinen Einsatz. Wer im Zeitraum am meisten schafft, steht oben – für Punkte, Level und Abzeichen.',
+        },
+        {
+          art: 'heart' as const,
+          title: 'Gewinn teilen',
+          text: 'Wenn du gewinnst, kannst du deinen Gewinnanteil an eine NGO spenden – oder behalten. Du entscheidest, jedes Mal neu.',
         },
       ] as const,
+  },
+  guide: {
+    title: "So funktioniert's",
+    intro: 'In acht Schritten von deinem Ziel zur Abrechnung.',
+    back: 'Zurück',
+    step: (number: number) => `SCHRITT ${number}`,
+    steps: (source: string) =>
+      [
+        {
+          art: 'target' as const,
+          title: 'Ziel wählen',
+          text: 'Lauf-Ziele (ein Lauf oder insgesamt), Schritte pro Tag oder die meisten Schritte im Zeitraum. Du wählst das Ziel, den Start und die Dauer von 1 bis 42 Tagen.',
+        },
+        {
+          art: 'podium' as const,
+          title: 'Ranked oder Pool',
+          text: 'Ranked ist eine Rangliste ohne Einsatz: Wer am meisten schafft, bekommt Punkte und Abzeichen. Im Pool zahlt jeder einen Einsatz in einen gemeinsamen Topf.',
+        },
+        {
+          art: 'calendar' as const,
+          title: 'Beitreten und starten',
+          text: 'Tritt vor dem Start bei. Im Pool legst du deinen eigenen Einsatz fest (1 bis 50 Credits). Bis zum Start kannst du jederzeit aussteigen.',
+        },
+        {
+          art: 'phone' as const,
+          title: `Automatisch geprüft über ${source}`,
+          text: `Deine Läufe und Schritte kommen aus ${source}. Von Hand eingetragene Einträge zählen nie. Nach dem Ende hast du Zeit, deine Daten zu synchronisieren.`,
+        },
+        {
+          art: 'map' as const,
+          title: 'Oder mit GPS laufen',
+          text: 'Zeichne einen Lauf direkt in der App auf – auch bei gesperrtem Bildschirm. Der Server rechnet nach und erkennt Fake-GPS. Auf der Karte sind Start und Ende ausgeblendet.',
+        },
+        {
+          art: 'coins' as const,
+          title: 'Abrechnung im Pool',
+          text: 'Wer das Ziel schafft, bekommt den eigenen Einsatz zurück und teilt sich die Einsätze der anderen im Verhältnis zum eigenen Einsatz. Schafft es niemand, verfallen alle Einsätze. Allein im Pool: Ziel geschafft = Einsatz zurück.',
+        },
+        {
+          art: 'heart' as const,
+          title: 'Gewinn spenden',
+          text: 'Deinen Gewinnanteil kannst du an eine NGO spenden – als Standard im Profil oder für jede Challenge einzeln, bis zur Abrechnung. Deinen Einsatz bekommst du immer zurück.',
+        },
+        {
+          art: 'trophy' as const,
+          title: 'Punkte, Level, Abzeichen',
+          text: 'Du bekommst Punkte für Kilometer, Schritte, Siege und Platzierungen. Sie bringen dich im Level nach oben und schalten Abzeichen frei.',
+        },
+      ] as const,
+    testPhase: 'Aktuell sind Credits virtuell und können nicht ausgezahlt werden.',
   },
   stats: {
     streak: (days: number) => (days === 1 ? '1 Tag in Folge' : `${days} Tage in Folge`),

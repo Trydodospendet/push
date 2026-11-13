@@ -1,5 +1,6 @@
 import { Pressable, StyleSheet, View } from 'react-native';
 
+import { hapticSelect } from '@/features/preferences/haptics';
 import { colors, layout, opacity, radius, spacing } from '@/theme';
 
 import { Text } from './text';
@@ -42,7 +43,10 @@ export function ChipGroup<T extends string | number>({
               accessibilityRole="radio"
               accessibilityLabel={option.accessibilityLabel ?? option.label}
               accessibilityState={{ checked: selected }}
-              onPress={() => onChange(option.value)}
+              onPress={() => {
+                hapticSelect();
+                onChange(option.value);
+              }}
               style={({ pressed }) => [
                 styles.chip,
                 selected && styles.selected,
