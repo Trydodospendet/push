@@ -5,7 +5,8 @@ import { Button, Screen, Text } from '@/components';
 import { useSession } from '@/features/auth/auth-provider';
 import { useMyChallenges, useOpenChallenges } from '@/features/challenges/api';
 import { ChallengeSection } from '@/features/challenges/challenge-section';
-import { isFinished, isSolo } from '@/features/challenges/format';
+import { ChallengeCard } from '@/features/challenges/challenge-card';
+import { isFinished, isSolo, isWeekly } from '@/features/challenges/format';
 import { de } from '@/i18n/de';
 import { colors, spacing } from '@/theme';
 
@@ -25,6 +26,11 @@ export default function RankedScreen() {
   const myRanked = mine.data?.filter((challenge) => !isSolo(challenge));
   const myIds = new Set(myRanked?.filter((c) => c.isParticipant).map((c) => c.id));
   const createdIds = new Set(myRanked?.filter((c) => c.isCreator).map((c) => c.id));
+  // The weekly challenge: the one people can still join, otherwise the one I am part of.
+  const weekly =
+    open.data?.find(isWeekly) ??
+    myRanked?.find((challenge) => isWeekly(challenge) && !isFinished(challenge));
+  const notWeekly = <T extends { id: string }>(challenge: T) => challenge.id !== weekly?.id;
   const toItem = (challenge: { id: string }) => ({
     joined: myIds.has(challenge.id),
     created: createdIds.has(challenge.id),
@@ -75,6 +81,18 @@ export default function RankedScreen() {
         </View>
       </View>
 
+      {weekly ? (
+        <View style={styles.weekly}>
+          <Text variant="label" color="accent" accessibilityRole="header">
+            {de.challenges.weekly}
+          </Text>
+          <ChallengeCard challenge={weekly} featured {...toItem(weekly)} />
+          <Text variant="caption" color="textMuted">
+            {de.challenges.weeklyHint}
+          </Text>
+        </View>
+      ) : null}
+
       <ChallengeSection
         label={de.challenges.mine}
         empty={{
@@ -84,7 +102,7 @@ export default function RankedScreen() {
         }}
         errorText={de.challenges.error}
         items={myRanked
-          ?.filter((challenge) => !isFinished(challenge))
+          ?.filter((challenge) => !isFinished(challenge) && notWeekly(challenge))
           .map((challenge) => ({ challenge, ...toItem(challenge) }))}
         {...mineState}
       />
@@ -97,7 +115,9 @@ export default function RankedScreen() {
           text: de.emptyStates.rankedOpenText,
         }}
         errorText={de.challenges.error}
-        items={open.data?.map((challenge) => ({ challenge, ...toItem(challenge) }))}
+        items={open.data
+          ?.filter(notWeekly)
+          .map((challenge) => ({ challenge, ...toItem(challenge) }))}
         loading={open.isPending}
         error={open.isError}
         retrying={open.isFetching}
@@ -127,6 +147,9 @@ const styles = StyleSheet.create({
     paddingTop: spacing.xl,
     paddingBottom: spacing.xl,
     gap: spacing.lg,
+  },
+  weekly: {
+    gap: spacing.xs,
   },
   header: {
     gap: spacing.xs,

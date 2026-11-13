@@ -84,6 +84,11 @@ export function isSolo(challenge: Pick<Challenge, 'mode'>): boolean {
   return challenge.mode === 'solo';
 }
 
+/** The platform's weekly challenge (created every Sunday by the server). */
+export function isWeekly(challenge: Pick<Challenge, 'weekly_key'>): boolean {
+  return Boolean(challenge.weekly_key);
+}
+
 export function modeLabel(mode: string): string {
   return mode === 'solo' ? de.mode.solo : de.mode.ranked;
 }

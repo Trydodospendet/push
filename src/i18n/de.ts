@@ -371,6 +371,9 @@ export const de = {
     error: 'Die Challenges konnten nicht geladen werden.',
     joinedBadge: 'Dabei',
     createdBadge: 'Von dir',
+    weekly: 'WOCHEN-CHALLENGE',
+    weeklyBadge: 'Diese Woche',
+    weeklyHint: 'Jede Woche neu: gleiche Regeln für alle, gleicher Einsatz.',
   },
   goal: {
     typeLabel: {

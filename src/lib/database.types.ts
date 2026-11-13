@@ -194,6 +194,7 @@ export type Database = {
           timezone: string;
           title: string;
           visibility: string;
+          weekly_key: string | null;
         };
         ComputedFields: never;
         Insert: {
@@ -218,6 +219,7 @@ export type Database = {
           timezone?: string;
           title: string;
           visibility: string;
+          weekly_key?: string | null;
         };
         Update: {
           created_at?: string;
@@ -241,6 +243,7 @@ export type Database = {
           timezone?: string;
           title?: string;
           visibility?: string;
+          weekly_key?: string | null;
         };
         Relationships: [
           {
@@ -390,6 +393,7 @@ export type Database = {
           timezone: string;
           title: string;
           visibility: string;
+          weekly_key: string | null;
         };
         SetofOptions: {
           from: '*';
@@ -398,6 +402,7 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      create_weekly_challenge: { Args: { p_now?: string }; Returns: string };
       delete_my_account: { Args: Record<PropertyKey, never>; Returns: undefined };
       get_challenge_by_code: {
         Args: { p_code: string };
@@ -423,6 +428,7 @@ export type Database = {
           timezone: string;
           title: string;
           visibility: string;
+          weekly_key: string | null;
         };
         SetofOptions: {
           from: '*';
