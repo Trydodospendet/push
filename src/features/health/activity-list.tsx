@@ -1,8 +1,10 @@
+import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import { Card, ErrorState, LoadingState, Pill, Text } from '@/components';
+import { Button, Card, ErrorState, LoadingState, Pill, Text } from '@/components';
 import { challengeDays, formatSteps } from '@/features/challenges/format';
 import type { Challenge } from '@/features/challenges/types';
+import { AppealSheet } from '@/features/help/appeal-sheet';
 import { de } from '@/i18n/de';
 import { addDays, formatDateTime, formatDayLabel, toLocalDate } from '@/lib/dates';
 import { spacing } from '@/theme';
@@ -64,6 +66,8 @@ function Runs({ challenge, userId }: ActivityListProps) {
 }
 
 function RunRow({ workout, timezone }: { workout: Workout; timezone: string }) {
+  const [appealOpen, setAppealOpen] = useState(false);
+  const canAppeal = !workout.isValid && workout.invalidReason !== 'manual_entry';
   const distance = `${distanceFormat.format(workout.distanceM / 1000)} km`;
   const minutes = Math.round(workout.durationS / 60);
   const title = de.activities.run(distance, minutes);
@@ -91,6 +95,20 @@ function RunRow({ workout, timezone }: { workout: Workout; timezone: string }) {
         )}
       </View>
       <Pill label={status} tone={workout.isValid ? 'accent' : 'neutral'} />
+      {canAppeal ? (
+        <>
+          <Button
+            label={de.appeals.button}
+            variant="secondary"
+            onPress={() => setAppealOpen(true)}
+          />
+          <AppealSheet
+            target={{ workoutId: workout.id }}
+            visible={appealOpen}
+            onClose={() => setAppealOpen(false)}
+          />
+        </>
+      ) : null}
     </View>
   );
 }

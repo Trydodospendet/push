@@ -737,6 +737,82 @@ export const de = {
     runLine: (km: string, clock: string) => `${km} km · ${clock}`,
     mapLabel: 'Karte mit deiner Strecke',
   },
+  appeals: {
+    title: 'Einspruch einlegen',
+    intro:
+      'Du meinst, dieser Lauf hätte zählen müssen? Schreib uns kurz, was passiert ist. Eine Person prüft deinen Einspruch – das kann ein paar Tage dauern. Von Hand eingetragene Läufe sind ausgeschlossen.',
+    messageLabel: 'Deine Erklärung',
+    messageHint: (min: number, max: number) => `${min} bis ${max} Zeichen.`,
+    tooShort: (min: number) => `Bitte schreib mindestens ${min} Zeichen.`,
+    send: 'Einspruch senden',
+    close: 'Abbrechen',
+    done: 'Fertig',
+    sent: 'Danke! Dein Einspruch ist eingegangen. Den Stand siehst du unter Profil → Hilfe & Kontakt.',
+    button: 'Einspruch einlegen',
+    error: 'Die Einsprüche konnten nicht geladen werden.',
+    runOf: (km: string) => (km ? `Lauf über ${km} km` : 'Lauf'),
+    answer: (note: string) => `Antwort: ${note}`,
+    status: {
+      open: 'In Prüfung',
+      accepted: 'Angenommen',
+      rejected: 'Abgelehnt',
+    },
+    statusShort: 'Einspruch',
+  },
+  help: {
+    title: 'Hilfe & Kontakt',
+    faqLabel: 'HÄUFIGE FRAGEN',
+    appealsLabel: 'MEINE EINSPRÜCHE',
+    appealsEmpty: 'Du hast noch keinen Einspruch eingelegt.',
+    appealsHint:
+      'Einspruch einlegen kannst du bei einem Lauf, der nicht zählt (in der Challenge unter „Deine Läufe“ oder in der Lauf-Ansicht).',
+    supportLabel: 'KONTAKT',
+    supportText: 'Fragen, Probleme oder Ideen? Wir antworten per E-Mail.',
+    writeUs: 'E-Mail schreiben',
+    mailSubject: 'PUSH – Frage zur App',
+    faq: [
+      {
+        q: 'Was sind Credits?',
+        a: 'Credits sind die virtuelle Spielwährung der App. Aktuell haben sie keinen Geldwert und können nicht ausgezahlt werden.',
+      },
+      {
+        q: 'Wie wird geprüft, ob ich mein Ziel geschafft habe?',
+        a: 'Automatisch: Die App liest deine Läufe und Schritte aus Health Connect bzw. Apple Health oder zeichnet den Lauf selbst per GPS auf. Der Server rechnet nach. Von Hand eingetragene Einträge zählen nie.',
+      },
+      {
+        q: 'Warum zählt mein Lauf nicht?',
+        a: 'Der Grund steht direkt beim Lauf: zu schnell (schneller als 2:30 min/km, z. B. Fahrrad), zu langsam (langsamer als 15:00 min/km), von Hand eingetragen, Fake-GPS, Sprünge in der Strecke oder schon über eine andere Quelle gezählt. Wenn du meinst, dass das falsch ist, kannst du Einspruch einlegen.',
+      },
+      {
+        q: 'Was ist der Unterschied zwischen Ranked und Pool?',
+        a: 'Ranked ist eine Rangliste ohne Einsatz: Wer im Zeitraum am meisten schafft, steht oben und bekommt Punkte. Im Pool zahlt jeder einen Einsatz; wer sein Ziel schafft, bekommt den Einsatz zurück plus einen Anteil der Einsätze derer, die es nicht schaffen.',
+      },
+      {
+        q: 'Was passiert, wenn niemand das Ziel schafft oder ich allein bin?',
+        a: 'Schafft es niemand, verfallen alle Einsätze. Bist du allein im Pool: Ziel geschafft = Einsatz zurück, sonst verfällt er.',
+      },
+      {
+        q: 'Kann ich meinen Gewinn spenden?',
+        a: 'Ja. Du kannst deinen Gewinnanteil an eine NGO spenden – als Standard im Profil oder für jede Challenge einzeln bis zur Abrechnung. Deinen Einsatz bekommst du immer zurück. Aktuell sind die NGO-Partner Platzhalter.',
+      },
+      {
+        q: 'Kann ich aussteigen?',
+        a: 'Bis zum Start jederzeit; im Pool bekommst du deinen Einsatz zurück. Danach nicht mehr.',
+      },
+      {
+        q: 'Wer sieht meine Daten?',
+        a: 'Deine Gesundheitsdaten und Strecken siehst nur du. Andere Teilnehmer sehen höchstens Distanz und Ergebnis. In den Einstellungen kannst du in Ranglisten anonym bleiben.',
+      },
+      {
+        q: 'Der GPS-Lauf bricht bei gesperrtem Bildschirm ab. Was tun?',
+        a: 'Manche Hersteller (Samsung, Xiaomi, …) beenden Apps im Hintergrund, um Akku zu sparen. Schalte die Akku-Optimierung für PUSH aus – die Anleitung findest du beim Start eines GPS-Laufs unter „Akku-Optimierung“.',
+      },
+      {
+        q: 'Wie lösche ich mein Konto?',
+        a: 'Profil → Daten & Datenschutz → Konto löschen. Laufende Einsätze verfallen, offene werden erstattet.',
+      },
+    ],
+  },
   runStats: {
     splits: 'KILOMETER-ZEITEN',
     noSplits: 'Noch keine volle Kilometer-Zeit – dafür war der Lauf zu kurz.',
@@ -896,7 +972,7 @@ export const de = {
     connections: { label: 'Health & GPS', detail: 'Verbindungen und Standort' },
     appearance: { label: 'Darstellung', detail: 'Animationen und Haptik' },
     data: { label: 'Daten & Datenschutz', detail: 'Download, Datenschutz, Konto löschen' },
-    help: { label: 'Hilfe & Kontakt', detail: 'FAQ, Support, Einspruch' },
+    help: { label: 'Hilfe & Kontakt', detail: 'FAQ, Support, Einsprüche' },
     signOut: 'Abmelden',
   },
   account: {

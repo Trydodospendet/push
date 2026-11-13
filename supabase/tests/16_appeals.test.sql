@@ -2,7 +2,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 
-select plan(16);
+select plan(19);
 
 create function pg_temp.login(p_user_id uuid)
 returns void
@@ -134,6 +134,39 @@ select throws_ok(
   $$ select public.submit_appeal((select id from public.activity_workouts where source_record_id = 'r5'),
        'Ich habe diesen Lauf wirklich gemacht, ehrlich.') $$,
   'P0001', 'appeal_rate_limited', 'at most five appeals per day'
+);
+select pg_temp.logout();
+
+-- GPS runs: appeal by run id --------------------------------------------------------------------------
+
+insert into public.activity_workouts (id, user_id, platform, source_record_id, activity_type,
+  start_at, end_at, distance_m, duration_s, was_user_entered, is_valid, invalid_reason)
+values ('c0000000-0000-4000-8000-000000000001', 'aaaaaaaa-0000-0000-0000-000000000001', 'gps',
+  'cccccccc-1111-4111-8111-111111111111', 'running', now() - interval '6 days',
+  now() - interval '6 days' + interval '10 minutes', 3000, 600, false, false, 'gps_jump');
+insert into public.gps_runs (id, user_id, client_run_id, workout_id, started_at, ended_at, distance_m,
+  duration_s, point_count, jump_count, mocked_count, base_reason, route)
+values ('c1000000-0000-4000-8000-000000000001', 'aaaaaaaa-0000-0000-0000-000000000001',
+  'cccccccc-1111-4111-8111-111111111111', 'c0000000-0000-4000-8000-000000000001',
+  now() - interval '6 days', now() - interval '6 days' + interval '10 minutes', 3000, 600, 50, 3, 0,
+  'gps_jump', '[]'::jsonb);
+
+select pg_temp.login('aaaaaaaa-0000-0000-0000-000000000001');
+select is(
+  (public.submit_gps_run_appeal('c1000000-0000-4000-8000-000000000001', 'Ich bin durch einen Tunnel gelaufen.')).status,
+  'open',
+  'an appeal can be filed by GPS run id'
+);
+select results_eq(
+  $$ select run_id, status from public.get_my_gps_run_appeals() $$,
+  $$ values ('c1000000-0000-4000-8000-000000000001'::uuid, 'open'::text) $$,
+  'the GPS run list can show the status of the appeal'
+);
+select pg_temp.logout();
+select pg_temp.login('bbbbbbbb-0000-0000-0000-000000000002');
+select throws_ok(
+  $$ select public.submit_gps_run_appeal('c1000000-0000-4000-8000-000000000001', 'Das ist nicht mein Lauf, aber egal.') $$,
+  'P0001', 'workout_not_found', 'nobody can appeal for the GPS run of somebody else'
 );
 select pg_temp.logout();
 

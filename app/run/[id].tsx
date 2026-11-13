@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
 import {
+  Button,
   Card,
   DraggablePanel,
   ErrorState,
@@ -14,6 +15,8 @@ import {
 } from '@/components';
 import { DEFAULT_TIMEZONE } from '@/config/app';
 import { useMyProfile } from '@/features/auth/api';
+import { AppealSheet } from '@/features/help/appeal-sheet';
+import { useGpsRunAppeals } from '@/features/help/api';
 import { useSession } from '@/features/auth/auth-provider';
 import {
   recordsHeldBy,
@@ -48,6 +51,8 @@ export default function RunDetailScreen() {
   const profilePoints = useRunProfile(id);
   const records = useMyRecords(session.user.id);
   const [inset, setInset] = useState(0);
+  const [appealOpen, setAppealOpen] = useState(false);
+  const appeals = useGpsRunAppeals(session.user.id);
   const timezone = profile.data?.timezone ?? DEFAULT_TIMEZONE;
 
   if (runs.isPending) {
@@ -114,6 +119,24 @@ export default function RunDetailScreen() {
             {reason}
           </Text>
         ) : null}
+        {!run.isValid ? (
+          appeals.data?.has(run.id) ? (
+            <Pill
+              label={`${de.appeals.statusShort}: ${de.appeals.status[appeals.data.get(run.id) ?? 'open']}`}
+            />
+          ) : (
+            <Button
+              label={de.appeals.button}
+              variant="secondary"
+              onPress={() => setAppealOpen(true)}
+            />
+          )
+        ) : null}
+        <AppealSheet
+          target={{ gpsRunId: run.id }}
+          visible={appealOpen}
+          onClose={() => setAppealOpen(false)}
+        />
         <Card style={styles.stats}>
           <Stat label={de.run.time} value={formatClock(run.durationS)} />
           <Stat label={de.run.pace} value={formatPace(pace)} />

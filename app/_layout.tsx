@@ -153,6 +153,16 @@ function AppStack({ isSignedIn, isOnboarded }: { isSignedIn: boolean; isOnboarde
         <Stack.Screen name="how-it-works" />
         <Stack.Screen name="run" />
         <Stack.Screen name="settings" />
+        <Stack.Screen
+          name="help"
+          options={{
+            headerShown: true,
+            headerStyle: { backgroundColor: colors.bg },
+            headerTintColor: colors.text,
+            headerShadowVisible: false,
+            headerBackButtonDisplayMode: 'minimal',
+          }}
+        />
       </Stack.Protected>
       <Stack.Screen name="legal" />
     </Stack>

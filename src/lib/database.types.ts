@@ -834,6 +834,14 @@ export type Database = {
           title: string;
         }[];
       };
+      get_my_gps_run_appeals: {
+        Args: Record<PropertyKey, never>;
+        Returns: {
+          resolution_note: string;
+          run_id: string;
+          status: string;
+        }[];
+      };
       get_my_gps_runs: {
         Args: { p_limit?: number };
         Returns: {
@@ -1005,6 +1013,25 @@ export type Database = {
       settle_challenge: { Args: { p_challenge_id: string }; Returns: boolean };
       submit_appeal: {
         Args: { p_message: string; p_workout_id: string };
+        Returns: {
+          created_at: string;
+          id: string;
+          message: string;
+          resolution_note: string | null;
+          resolved_at: string | null;
+          status: string;
+          user_id: string;
+          workout_id: string;
+        };
+        SetofOptions: {
+          from: '*';
+          to: 'appeals';
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
+      submit_gps_run_appeal: {
+        Args: { p_message: string; p_run_id: string };
         Returns: {
           created_at: string;
           id: string;

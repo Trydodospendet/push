@@ -28,7 +28,8 @@ type Target =
   | '/settings/donations'
   | '/settings/connections'
   | '/settings/appearance'
-  | '/settings/data';
+  | '/settings/data'
+  | '/help';
 
 const GROUPS: readonly {
   target: Target;
@@ -46,6 +47,7 @@ const GROUPS: readonly {
   { target: '/settings/connections', icon: 'pulse-outline', text: de.settings.connections },
   { target: '/settings/appearance', icon: 'color-wand-outline', text: de.settings.appearance },
   { target: '/settings/data', icon: 'shield-checkmark-outline', text: de.settings.data },
+  { target: '/help', icon: 'help-buoy-outline', text: de.settings.help },
 ];
 
 /** Overview: who I am, my numbers and badges, and the groups of settings. */
