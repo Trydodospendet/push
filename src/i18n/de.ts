@@ -236,6 +236,7 @@ export const de = {
     barLabel: 'Fortschritt der Challenge',
     unitKm: 'km',
     unitDays: 'Tage geschafft',
+    unitSteps: 'Schritte',
     spoken: (current: string, target: string) => `${current} von ${target}`,
     days: (count: number) => (count === 1 ? '1 Tag' : `${count} Tage`),
     remainingDays: (count: number) => (count === 1 ? 'Noch 1 Tag' : `Noch ${count} Tage`),
@@ -255,6 +256,7 @@ export const de = {
     error: 'Deine Aktivitäten konnten nicht geladen werden.',
     run: (distance: string, minutes: number) => `Lauf · ${distance} · ${minutes} Min.`,
     counted: 'zählt',
+    counts: 'zählt',
     notCounted: 'zählt nicht',
     dayDone: 'geschafft',
     dayOpen: 'zu wenig',
@@ -339,6 +341,11 @@ export const de = {
           text: 'Wenn du gewinnst, kannst du deinen Gewinnanteil an eine NGO spenden – oder behalten. Du entscheidest, jedes Mal neu.',
         },
       ] as const,
+  },
+  errorBoundary: {
+    title: 'Hoppla, da ist etwas schiefgelaufen',
+    text: 'Das ist nicht deine Schuld. Deine Daten sind sicher. Versuche es noch einmal.',
+    retry: 'Erneut versuchen',
   },
   guide: {
     title: "So funktioniert's",
@@ -826,6 +833,7 @@ export const de = {
     minuteDown: '15 Minuten früher',
     kmLeft: (km: string) => `Noch ${km} km bis zum Ziel.`,
     stepsOpen: (steps: string) => `Dein Tagesziel von ${steps} Schritten ist noch offen.`,
+    stepsLeft: (steps: string) => `Noch ${steps} Schritte bis zum Ziel.`,
     startsTomorrow: 'Deine Challenge startet morgen.',
     resultReady: 'Dein Ergebnis ist da.',
     deniedHint:

@@ -1,15 +1,18 @@
--- Plays a ranked challenge and a solo goal in time-lapse up to the settlement.
+-- Plays a pool, a pool for one and a ranked challenge in time-lapse up to the settlement.
 -- LOCAL DEVELOPMENT ONLY. Needs the seed users (run `npm run db:reset` first).
 --
 -- Run (see docs/SETUP.md, section 5.9):
 --   Get-Content supabase\scripts\simulate_challenge.sql | docker exec -i supabase_db_push psql -U postgres -d postgres
 --
 -- What happens:
---   Ranked "Simulation 5 km" (stake 5.00): Anna, Ben and Clara join.
+--   Pool "Simulation 5 km": Anna stakes 10.00, Ben and Clara 5.00 each.
 --     Anna runs 6.2 km, Ben 5.1 km, Clara enters 10 km by hand (does not count).
---     → Anna and Ben each get 5.00 + 2.50 = 7.50, Clara loses her 5.00.
---   Solo "Simulation Solo" (stake 3.00, 10 km in total) by Ben: 5.1 + 4 = 9.1 km → the 3.00
---     go to the house.
+--     → Clara's 5.00 is shared in proportion to the stakes: Anna gets 10.00 + 3.33, Ben
+--       5.00 + 1.66 (1 cent rounding goes to the house). Anna donates her share to NGO 1.
+--   Pool for one "Simulation Solo" (stake 3.00, 10 km in total) by Ben: 5.1 + 4 = 9.1 km → the
+--     3.00 go to the house.
+--   Ranked "Simulation Rangliste" (no stake, most kilometres): Ben 1st (9.1 km), Anna 2nd → rank points,
+--     no credits move.
 -- Everything is booked by the real functions; the script only moves the clock (dates).
 
 begin;
@@ -48,11 +51,18 @@ select pg_temp.as_user('ben@example.com');
 insert into sim select 'ranked', (public.create_challenge('Simulation 5 km', 'run_single', 5000,
   500, (now() at time zone 'Europe/Berlin')::date + 1, 3, 'public')).id;
 insert into sim select 'solo', (public.create_challenge('Simulation Solo', 'run_total', 10000,
-  300, (now() at time zone 'Europe/Berlin')::date + 1, 3, 'private', null, 'solo')).id;
+  300, (now() at time zone 'Europe/Berlin')::date + 1, 3, 'private')).id;
+insert into sim select 'rangliste', (public.create_challenge('Simulation Rangliste', 'run_total',
+  5000, 0, (now() at time zone 'Europe/Berlin')::date + 1, 3, 'public', null, 'ranked')).id;
 
 select public.join_challenge((select id from sim where name = 'ranked'));
+select public.join_challenge((select id from sim where name = 'solo'));
+select public.join_challenge((select id from sim where name = 'rangliste'));
 select pg_temp.as_user('anna@example.com');
-select public.join_challenge((select id from sim where name = 'ranked'));
+select public.join_challenge((select id from sim where name = 'ranked'), 1000);
+select public.join_challenge((select id from sim where name = 'rangliste'));
+select public.set_challenge_donation((select id from sim where name = 'ranked'), true,
+  '00000000-0000-4000-a000-000000000001');
 select pg_temp.as_user('clara@example.com');
 select public.join_challenge((select id from sim where name = 'ranked'));
 select set_config('request.jwt.claims', '', true);
@@ -98,7 +108,8 @@ update public.challenges set sync_grace_hours = 0 where id in (select id from si
 select public.advance_challenges() as geaenderte_challenges;
 
 select c.title, c.status, p.display_name as name, cp.result as ergebnis,
-       cp.stake_cents as einsatz_cent, cp.payout_cents as auszahlung_cent
+       cp.stake_cents as einsatz_cent, cp.payout_cents as auszahlung_cent,
+       cp.donated_cents as gespendet_cent, cp.rank as platz, cp.rank_points as punkte
   from public.challenge_participants cp
   join public.challenges c on c.id = cp.challenge_id
   join public.profiles p on p.id = cp.user_id
@@ -123,6 +134,12 @@ select c.title, sum(le.amount_cents) as summe_cent
 
 select public.settle_challenge(id) as erneut_abgerechnet from sim order by name;
 
+\echo '== 8. Spenden der NGOs (Summe je NGO) =='
+
+select n.name, sum(le.amount_cents) as erhalten_cent
+  from public.ledger_entries le join public.ngos n on n.id = le.ngo_id
+ where le.account = 'donation' and le.challenge_id in (select id from sim) group by n.name;
+
 commit;
 
-\echo 'Fertig. In der App: Ranked -> Abgeschlossen bzw. Solo -> Abgeschlossen, und das Wallet.'
+\echo 'Fertig. In der App: Pool bzw. Ranked -> Abgeschlossen, das Wallet und Profil -> Spenden.'

@@ -5,7 +5,8 @@ export const colors = {
   border: '#2A2A2A',
   text: '#FFFFFF',
   textSecondary: '#A1A1A1',
-  textMuted: '#6B6B6B',
+  /** Lighter than the first design (#6B6B6B) so small texts reach a contrast of about 6:1. */
+  textMuted: '#8A8A8A',
   /** Lime – use sparingly: progress, primary button, success. */
   accent: '#C6FF00',
   /** Text on lime surfaces. */

@@ -5,7 +5,7 @@ import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import { useEffect, useState } from 'react';
 
-import { Button, ErrorState, LoadingState, Screen } from '@/components';
+import { Button, ErrorBoundary, ErrorState, LoadingState, Screen } from '@/components';
 import { useMyProfile, useSignOut } from '@/features/auth/api';
 import { AuthProvider, useAuth } from '@/features/auth/auth-provider';
 import { DEFAULT_TIMEZONE } from '@/config/app';
@@ -35,12 +35,14 @@ export default function RootLayout() {
   }
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <StatusBar style="light" />
-        <RootNavigator />
-      </AuthProvider>
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <AuthProvider>
+          <StatusBar style="light" />
+          <RootNavigator />
+        </AuthProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 }
 

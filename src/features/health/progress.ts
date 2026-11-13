@@ -31,10 +31,20 @@ export function progressNumbers(
   target: number,
   totalDays: number,
 ): ProgressNumbers {
-  const isSteps = goalType === 'steps_daily';
-  const current = isSteps ? integerFormat.format(value) : kmFormat.format(value / 1000);
-  const goal = isSteps ? integerFormat.format(totalDays) : kmFormat.format(target / 1000);
-  const unit = isSteps ? de.progress.unitDays : de.progress.unitKm;
+  const days = goalType === 'steps_daily';
+  const stepsInTotal = goalType === 'steps_total';
+  const current =
+    days || stepsInTotal ? integerFormat.format(value) : kmFormat.format(value / 1000);
+  const goal = days
+    ? integerFormat.format(totalDays)
+    : stepsInTotal
+      ? integerFormat.format(target)
+      : kmFormat.format(target / 1000);
+  const unit = days
+    ? de.progress.unitDays
+    : stepsInTotal
+      ? de.progress.unitSteps
+      : de.progress.unitKm;
   return { current, goal, unit, spoken: de.progress.spoken(current, `${goal} ${unit}`) };
 }
 

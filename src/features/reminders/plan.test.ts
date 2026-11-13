@@ -40,6 +40,16 @@ describe('planReminders', () => {
     expect(plan.filter((entry) => entry.key.startsWith('daily-'))).toEqual([]);
   });
 
+  it('reminds about the steps still missing in a most-steps challenge', () => {
+    const plan = planReminders(
+      [challenge({ goalType: 'steps_total', targetValue: 70_000 })],
+      { c1: 61_500 },
+      settings,
+      now,
+    );
+    expect(plan[0].body).toBe('Noch 8.500 Schritte bis zum Ziel.');
+  });
+
   it('does not plan reminders after the challenge ended', () => {
     const plan = planReminders(
       [challenge({ endsAt: new Date(now.getTime() + 2 * HOUR).toISOString() })],

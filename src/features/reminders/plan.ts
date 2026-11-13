@@ -101,14 +101,17 @@ export function planReminders(
 
     if (challenge.status === 'active' || challenge.status === 'open') {
       const value = progress[challenge.id] ?? 0;
-      const left = challenge.goalType === 'steps_daily' ? null : remainingMeters(challenge, value);
-      const reachedRunGoal = challenge.goalType !== 'steps_daily' && left === null;
-      if (reachedRunGoal) {
+      const daily = challenge.goalType === 'steps_daily';
+      const stepsInTotal = challenge.goalType === 'steps_total';
+      const left = daily ? null : remainingMeters(challenge, value);
+      // A reached run or "most steps" goal needs no reminder (the ranking goes on, though).
+      if (!daily && left === null) {
         continue;
       }
-      const body =
-        challenge.goalType === 'steps_daily'
-          ? de.reminders.stepsOpen(integerFormat.format(challenge.targetValue))
+      const body = daily
+        ? de.reminders.stepsOpen(integerFormat.format(challenge.targetValue))
+        : stepsInTotal
+          ? de.reminders.stepsLeft(integerFormat.format(left ?? 0))
           : de.reminders.kmLeft(kmFormat.format((left ?? 0) / 1000));
 
       for (let offset = 0; offset < DAILY_HORIZON_DAYS; offset += 1) {

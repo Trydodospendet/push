@@ -28,7 +28,7 @@ type ActivityListProps = {
 
 /** What the server found for the user in the challenge period, including what does not count. */
 export function ActivityList({ challenge, userId }: ActivityListProps) {
-  return challenge.goal_type === 'steps_daily' ? (
+  return challenge.goal_type === 'steps_daily' || challenge.goal_type === 'steps_total' ? (
     <StepDays challenge={challenge} userId={userId} />
   ) : (
     <Runs challenge={challenge} userId={userId} />
@@ -124,9 +124,18 @@ function StepDays({ challenge, userId }: ActivityListProps) {
         <Card style={styles.list}>
           {dates.map((date) => {
             const day = byDate.get(date);
-            const reached = day !== undefined && day.isValid && day.steps >= challenge.target_value;
+            // In "most steps" challenges every valid day just adds up; only daily goals pass or fail.
+            const adds = challenge.goal_type === 'steps_total';
+            const reached =
+              day !== undefined && day.isValid && (adds || day.steps >= challenge.target_value);
             const label = day === undefined ? '–' : formatSteps(day.steps);
-            const status = reached ? de.activities.dayDone : de.activities.dayOpen;
+            const status = reached
+              ? adds
+                ? de.activities.counts
+                : de.activities.dayDone
+              : adds
+                ? de.activities.notCounted
+                : de.activities.dayOpen;
             return (
               <View
                 key={date}

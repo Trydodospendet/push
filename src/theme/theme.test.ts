@@ -10,7 +10,7 @@ describe('theme tokens', () => {
       border: '#2A2A2A',
       text: '#FFFFFF',
       textSecondary: '#A1A1A1',
-      textMuted: '#6B6B6B',
+      textMuted: '#8A8A8A',
       accent: '#C6FF00',
       onAccent: '#0A0A0A',
       danger: '#FF4D4D',

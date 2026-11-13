@@ -21,6 +21,18 @@ describe('progressNumbers', () => {
   });
 });
 
+describe('steps_total (most steps)', () => {
+  it('shows the steps so far against the target in steps', () => {
+    expect(progressNumbers('steps_total', 23_500, 70_000, 7)).toEqual({
+      current: '23.500',
+      goal: '70.000',
+      unit: 'Schritte',
+      spoken: '23.500 von 70.000 Schritte',
+    });
+    expect(progressRatio('steps_total', 35_000, 70_000, 7)).toBe(0.5);
+  });
+});
+
 describe('progressRatio', () => {
   it('relates runs to the target and steps_daily to the number of days', () => {
     expect(progressRatio('run_single', 2500, 5000, 7)).toBe(0.5);
