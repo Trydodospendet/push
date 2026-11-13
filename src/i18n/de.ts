@@ -738,6 +738,19 @@ export const de = {
     runLine: (km: string, clock: string) => `${km} km · ${clock}`,
     mapLabel: 'Karte mit deiner Strecke',
   },
+  share: {
+    button: 'Teilen',
+    dialogTitle: 'Ergebnis teilen',
+    error: 'Das Bild konnte nicht erstellt werden. Versuche es noch einmal.',
+    runLabel: 'MEIN LAUF',
+    winLabel: 'GEWONNEN',
+    creditsLine: 'Credits',
+    timeFact: 'ZEIT',
+    paceFact: 'PACE',
+    dateFact: 'DATUM',
+    privacyHint:
+      'Das Bild zeigt nur die Form der Strecke – keine Karte, keinen Start und kein Ziel.',
+  },
   social: {
     title: 'Freunde & Liga',
     error: 'Das konnte nicht geladen werden.',

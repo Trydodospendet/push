@@ -13,6 +13,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Button, Confetti, Icon, Text } from '@/components';
 import { BadgeCelebration } from '@/features/badges/badge-celebration';
 import { useSession } from '@/features/auth/auth-provider';
+import { ShareButton } from '@/features/share/share-button';
 import { maybeAskForReview } from '@/features/review/review';
 import { hapticSuccess } from '@/features/preferences/haptics';
 import { de } from '@/i18n/de';
@@ -175,6 +176,16 @@ function CelebrationModal({ win, onClose }: { win: Win; onClose: () => void }) {
             </Text>
           </Animated.View>
         </View>
+        <View style={styles.shareRow}>
+          <ShareButton
+            data={{
+              label: de.share.winLabel,
+              headline: `+${amount}`,
+              subline: `${de.share.creditsLine} · ${win.title}`,
+              facts: [],
+            }}
+          />
+        </View>
         <Button label={de.celebration.close} onPress={onClose} />
       </View>
     </Modal>
@@ -182,6 +193,9 @@ function CelebrationModal({ win, onClose }: { win: Win; onClose: () => void }) {
 }
 
 const styles = StyleSheet.create({
+  shareRow: {
+    marginBottom: spacing.sm,
+  },
   root: {
     flex: 1,
     backgroundColor: colors.bg,

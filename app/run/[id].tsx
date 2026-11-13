@@ -17,9 +17,11 @@ import { DEFAULT_TIMEZONE } from '@/config/app';
 import { useMyProfile } from '@/features/auth/api';
 import { AppealSheet } from '@/features/help/appeal-sheet';
 import { useGpsRunAppeals } from '@/features/help/api';
+import { ShareButton } from '@/features/share/share-button';
 import { useSession } from '@/features/auth/auth-provider';
 import {
   recordsHeldBy,
+  useRunShapes,
   useMyRecords,
   useRunProfile,
   useRunSplits,
@@ -52,6 +54,7 @@ export default function RunDetailScreen() {
   const records = useMyRecords(session.user.id);
   const [inset, setInset] = useState(0);
   const [appealOpen, setAppealOpen] = useState(false);
+  const shapes = useRunShapes(session.user.id);
   const appeals = useGpsRunAppeals(session.user.id);
   const timezone = profile.data?.timezone ?? DEFAULT_TIMEZONE;
 
@@ -118,6 +121,23 @@ export default function RunDetailScreen() {
           <Text color="danger" accessibilityRole="alert">
             {reason}
           </Text>
+        ) : null}
+        {run.isValid ? (
+          <ShareButton
+            data={{
+              label: de.share.runLabel,
+              headline: `${formatKm(run.distanceM)} km`,
+              facts: [
+                { label: de.share.timeFact, value: formatClock(run.durationS) },
+                { label: de.share.paceFact, value: formatPace(pace) },
+                {
+                  label: de.share.dateFact,
+                  value: new Date(run.startedAt).toLocaleDateString('de-DE'),
+                },
+              ],
+              shape: shapes.data?.get(run.id) ?? null,
+            }}
+          />
         ) : null}
         {!run.isValid ? (
           appeals.data?.has(run.id) ? (
