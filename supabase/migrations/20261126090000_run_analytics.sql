@@ -316,10 +316,14 @@ begin
   for s in select * from private.gps_steps(p_run_id, v_user_id) order by ord loop
     if s.altitude is not null then
       v_has_alt := true;
-      if v_prev_alt is not null and s.altitude > v_prev_alt + 0.5 then
+      -- Hysteresis against GPS noise: a climb counts once it is at least 1 m above the lowest
+      -- point since the last counted climb.
+      if v_prev_alt is null or s.altitude < v_prev_alt then
+        v_prev_alt := s.altitude;
+      elsif s.altitude >= v_prev_alt + 1 then
         v_ascent := v_ascent + (s.altitude - v_prev_alt);
+        v_prev_alt := s.altitude;
       end if;
-      v_prev_alt := s.altitude;
     end if;
     while s.cum_dist >= v_next_mark loop
       v_cross := v_prev_time + s.step_time * ((v_next_mark - v_prev_dist) / s.step_dist);
