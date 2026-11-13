@@ -105,6 +105,34 @@ Profil → Gruppen (jede Zeile öffnet einen Bildschirm):
 
 ---
 
+## G. Ausbau 2 – Lauf-Erlebnis, Vertrauen, Social
+
+Voraussetzung: neuer Development Build (siehe SETUP 5.11) und `supabase db reset` lokal.
+
+- **Karte und Lauf (9):** Home → „GPS-Lauf starten“. Die Karte füllt den Hintergrund, die Strecke
+  leuchtet in Lime und baut sich auf, das Werte-Panel lässt sich nach oben/unten ziehen. Nach „Stopp“
+  im Lauf-Detail: Splits pro km, Höhenprofil, Tempo-Diagramm. Auf dem Lauf-Bildschirm unten:
+  Rekorde, Verlauf mit Mini-Karten, Wochen-/Monatsstatistik.
+- **Sprachansagen (10):** Profil → Darstellung → „Sprachansagen beim Laufen“ einschalten, Lautstärke
+  prüfen, einen Lauf starten und etwa 1 km gehen/laufen: Nach dem Kilometer wird Zeit angesagt.
+  Ausschalten: keine Ansage mehr. Bereits gelaufene Kilometer werden beim Einschalten nicht wiederholt.
+- **Trainingsplan (10):** Home → „Trainingsplan“ → Plan wählen → „Plan starten“. Die Wochen-Läufe
+  stehen mit Datum (Di/Do/Sa) und „Offen“. Nach einem gültigen Lauf (mind. 80 % der Strecke, in
+  derselben Woche) steht „Geschafft“. Mit eingeschalteten Erinnerungen (Profil → Benachrichtigungen)
+  kommt am Tag eines offenen Laufs zur Erinnerungszeit eine Meldung. „Plan beenden“ löscht ihn.
+- **Einspruch und Hilfe (13):** Bei einem Lauf, der nicht zählt, „Einspruch“ tippen; Status unter
+  Profil → Hilfe. Entscheidung (Betreiber) per SQL: `select private.resolve_appeal('<id>', true, 'Notiz');`.
+- **Akku-Hinweis (15):** Im GPS-Lauf „Läuft der GPS-Lauf bei gesperrtem Bildschirm nicht weiter?“ (öffnet die Akku-Optimierung).
+- **Bewertung (14):** erscheint höchstens selten (nach Sieg/Rekord, ab Tag 3, alle 90 Tage). Im
+  Debug-Build zeigt Google nichts an; das ist normal.
+- **Push (16):** erst nach Einrichtung (`docs/PUSH.md`). Lokal prüft `supabase test db` (17_push) die Warteschlange.
+- **Social (11):** Home → „Freunde & Liga“. Mit zwei Konten: Freundescode tauschen, Anfrage
+  annehmen, Lauf gegenseitig sehen (nur Distanz/Zeit), Kudos und Kommentar, private Gruppe mit
+  Wochenbrett. Einladungs-Link: `push://invite/<code>` öffnet die App.
+- **Teilen (12):** Lauf-Detail oder Sieg → „Teilen“: Das Teilen-Menü öffnet sich mit einem 9:16-Bild
+  (nur Streckenform, keine Karte).
+- **Widget (17):** nicht gebaut, Begründung in `docs/HANDOFF.md`.
+
 ## Automatische Tests
 
 ```powershell

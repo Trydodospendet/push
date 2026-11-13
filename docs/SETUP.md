@@ -507,6 +507,25 @@ laufen. Mit einer Fake-GPS-App aufgezeichnet, muss der Lauf als „zählt nicht�
 **Datenbank:** Nach `git pull` einmal `supabase db reset` (lokal) bzw. – erst wenn du es bewusst
 willst – die neuen Migrationen `20261118…` bis `20261121…` in die Cloud (Abschnitt 8).
 
+### 5.11 Neu seit Ausbau 2: neuer Development Build nötig
+
+Neue native Bausteine: `expo-store-review`, `@sentry/react-native`, `react-native-view-shot`,
+`expo-sharing`, `expo-speech`. Ein alter Development Build startet mit einem Fehler. Einmal neu
+bauen:
+
+```powershell
+npm install
+```
+
+```powershell
+eas build --profile development --platform android
+```
+
+Danach lokal `supabase db reset` (neue Migrationen bis `20261129…`). Was du dann in der App
+ausprobieren kannst, steht Punkt für Punkt in `docs/TESTING.md`, Abschnitt G. Server-Push,
+Absturzberichte (Sentry) und die Einladungs-Seite sind optional und brauchen Cloud-Schritte
+(`docs/PUSH.md`, `docs/HANDOFF.md`).
+
 ## 6. Befehle im Überblick
 
 | Befehl              | Was er tut                                        |

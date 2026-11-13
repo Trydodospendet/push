@@ -97,8 +97,14 @@ hochgeladen, kein `db push`, kein `eas build`, kein `eas env`.
    lokalen Daten.
 7. **Spenden**: Die drei NGOs sind Platzhalter (Tabelle `ngos`). Sobald es echte Partner gibt:
    Namen in der Tabelle ändern (Studio → Table Editor), nichts in der App.
-8. **Play Console**: Datenschutz-Seite (`docs/legal/privacy.html`) neu veröffentlichen (Feed,
-   GPS, Karten, Benachrichtigungen, Profilbild, Spenden sind ergänzt) und die Hinweise aus `docs/RELEASE.md` 2.8a (Vordergrunddienst-Formular).
+   8a. **Neue Migrationen seit der Liste oben**: `20261126090000_run_analytics`, `20261126100000_run_shapes`, `20261127090000_appeals`, `20261127100000_appeal_gps`, `20261128090000_push_outbox`, `20261129090000_social` (alle mit `supabase db push`, Reihenfolge automatisch).
+   8b. **Einladungs-Seite**: `docs/legal/i.html` zusammen mit den anderen Seiten auf Netlify hochladen (Einladungslinks `https://puschdich.netlify.app/i.html?c=<code>`).
+   8c. **Server-Push**: Schritt-für-Schritt in `docs/PUSH.md` (Firebase-Projekt, `google-services.json` als EAS-Datei, Edge Function `send-push` deployen, Cron-Job anlegen).
+   8d. **Einsprüche entscheiden**: `select private.resolve_appeal('<id>', true, 'Notiz');` im SQL-Editor.
+   8e. **Neue native Bausteine** (neuer Development Build nötig): expo-store-review, @sentry/react-native, react-native-view-shot, expo-sharing, expo-speech.
+8. **Optional Sentry**: `EXPO_PUBLIC_SENTRY_DSN` nur setzen, wenn du Absturzberichte willst (Datenschutz-Text nennt sie bereits).
+9. **Play Console**: Datenschutz-Seite (`docs/legal/privacy.html`) neu veröffentlichen (Feed,
+   GPS, Karten, Benachrichtigungen, Profilbild, Spenden, Freunde/Gruppen, Teilen-Bilder, Server-Push sind ergänzt) und die Hinweise aus `docs/RELEASE.md` 2.8a (Vordergrunddienst-Formular).
 
 **Hinweis Datenschutz:** Die Datenschutzerklärung (App und `docs/legal/privacy.html`) nennt jetzt
 auch Profilbild, Anonymität in Ranglisten, Spenden-Buchungen und den Datenexport. Vor der
@@ -120,3 +126,21 @@ NACHT-AUFTRAG ERLEDIGT
 - [x] 14. In-App-Review: `src/features/review/` (expo-store-review = Google In-App Review), nur nach Sieg oder neuem Rekord, frühestens nach 3 Tagen Nutzung, höchstens alle 90 Tage und 3x insgesamt; Regeln als reine Funktion getestet.
 - [x] 16. Push vom Server vorbereitet: Migration `20261128090000_push_outbox.sql` (Tokens, Outbox, Trigger für Ergebnis und Anfeuern, Einstellungen je Art, Aufräum-Job), pgTAP `17_push`, Edge Function `supabase/functions/send-push`, App-Registrierung + Schalter (Profil → Benachrichtigungen), Link-Öffnen beim Antippen. **Einrichtung durch dich: `docs/PUSH.md`** (Firebase, EAS-Credentials, Function + Cron).
 - [x] 11. Social: Migration `20261129090000_social.sql` (Freundescode, Anfragen, Freunde, Läufe der Freunde nur Distanz/Zeit, Kudos, Kommentare, private Gruppen mit Wochen-/Monatsbrett, Monats-Liga über Ranked-Punkte; Anonymität berücksichtigt), pgTAP `18_social`; App: `app/social.tsx` (Home → „Freunde & Liga“), Deep Links `push://invite/<code>` und `push://join/<code>`, Landing-Seite `docs/legal/i.html` (muss mit hochgeladen werden, Einladungslink `https://puschdich.netlify.app/i.html?c=<code>`), Schalter „Freunde sehen meine Läufe“ in Privatsphäre. **Vereinfachung:** Teams = private Gruppen; Ligen = eine monatliche Saison-Rangliste für alle (keine Divisionen/Aufstieg). Android-App-Links (https öffnet direkt die App) sind nicht eingerichtet – der Link führt über die Landing-Seite mit Knopf „In der App öffnen“.
+- [x] 12. Teilen-Bilder: `src/features/share/` (9:16-Karte 1080 × 1920 mit Lime-Glow, nur Form der Strecke, keine Karte/Name/Standort; `react-native-view-shot` + `expo-sharing` öffnet das Teilen-Menü, z. B. Instagram/TikTok-Story). Knopf „Teilen" im Lauf-Detail und nach einem Sieg. Es wird nichts von PUSH hochgeladen.
+- [x] 10. Sprachansagen und Trainingspläne: `expo-speech` sagt nach jedem Kilometer Gesamtzeit und Zeit des Kilometers an (Profil → Darstellung → „Sprachansagen beim Laufen", standardmäßig aus; `src/features/gps/voice.ts`). Trainingspläne (`src/features/training/`, Seite `app/training.tsx`, Home → „Trainingsplan"): „Einstieg in 4 Wochen", „In 8 Wochen zu 5 km", „In 10 Wochen zu 10 km", je 3 Läufe pro Woche (Di/Do/Sa). Ein Lauf zählt ab 80 % der Strecke in derselben Woche (gültige Läufe vom Server). Der Plan liegt nur auf dem Handy; offene Läufe erscheinen als lokale Erinnerung zur täglichen Erinnerungszeit (Profil → Benachrichtigungen muss an sein).
+- [ ] 17. Android-Widget: **bewusst nicht gebaut**. Begründung: Ein Home-Screen-Widget braucht nativen Android-Code (AppWidgetProvider, Kotlin/Java, eigene Layout-XML) oder eine zusätzliche native Bibliothek mit Config-Plugin (z. B. `react-native-android-widget`). Das lässt sich ohne Gerät/Emulator nicht prüfen, birgt ein hohes Risiko für den Build (compileSdk 37 bleibt) und müsste Fortschrittsdaten außerhalb der App (SharedPreferences) vorhalten – ein zusätzlicher Datenschutz- und Aktualisierungsweg. Vorschlag für später: `react-native-android-widget` einbinden, das Widget zeigt Titel + Fortschrittsbalken der Haupt-Challenge, Daten schreibt die App nach jedem Sync.
+
+## Status Ausbau 2
+
+Alle Punkte 9–16 sind umgesetzt und getestet (typecheck, lint ohne Warnungen, 277 Jest-Tests, 18 pgTAP-Dateien / 515 Prüfungen grün). Punkt 17 (Android-Widget) wurde bewusst nicht gebaut, Begründung oben. Nichts wurde in der Cloud ausgeführt; alle Cloud-Schritte stehen unter „Cloud-Aufgaben“ (Punkte 8a–10). Testanleitung: `docs/TESTING.md` Abschnitt G und `docs/SETUP.md` 5.11. Datenschutz (App + `docs/legal/privacy.html`) um Freunde/Gruppen, Teilen-Bilder, Server-Push, Sprachansagen und Trainingspläne ergänzt.
+
+**Offene Fragen**
+
+1. Android-Widget: soll es später mit `react-native-android-widget` kommen (nur mit Gerätetest)?
+2. Ligen: reicht eine monatliche Gesamtliste, oder sollen Divisionen mit Auf-/Abstieg folgen?
+3. Einladungslinks: sollen Android-App-Links (https öffnet direkt die App) eingerichtet werden? Das braucht die Signatur-Fingerprints aus der Play Console.
+4. Trainingspläne: Tage fest Di/Do/Sa und ab 80 % der Strecke – passt das, oder sollen Tage wählbar sein?
+5. `textMuted` ist bewusst heller (#8A8A8A) als in CLAUDE.md §9 (Kontrast).
+6. Rechtstexte (Datenschutz, Impressum) müssen vor Veröffentlichung juristisch geprüft werden.
+
+AUSBAU-2 ERLEDIGT

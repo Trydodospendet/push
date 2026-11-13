@@ -62,9 +62,12 @@
         <li>
           <strong>Benachrichtigungen:</strong> Erinnerungen („Noch 2,3 km bis zum Ziel“, „Deine
           Challenge startet morgen“, „Dein Ergebnis ist da“) werden ausschließlich lokal auf deinem
-          Handy geplant und angezeigt. Dafür wird kein Push-Server genutzt und es werden keine Daten
-          an Dritte übermittelt. Du kannst sie im Profil oder in den Systemeinstellungen jederzeit
-          ausschalten.
+          Handy geplant und angezeigt. Zusätzlich kann der Betreiber Push-Nachrichten über den
+          Server senden (Ergebnis, Anfeuern, Freundschaftsanfragen), sofern du sie nicht
+          ausgeschaltet hast; dafür wird ein Gerätekennzeichen (Push-Token) gespeichert und über die
+          Dienste Expo und Google (Firebase Cloud Messaging) zugestellt. Es enthält keine
+          Gesundheits- oder Streckendaten. Du kannst sie im Profil oder in den Systemeinstellungen
+          jederzeit ausschalten.
         </li>
         <li>
           <strong>GPS-Läufe</strong> (nur wenn du einen Lauf in der App aufzeichnest): Während der
@@ -93,6 +96,22 @@
         <li>
           <strong>Auskunft:</strong> In der App unter Profil → Daten & Datenschutz kannst du alle
           über dich gespeicherten Daten als Datei herunterladen.
+        </li>
+        <li>
+          <strong>Freunde, Gruppen und Kommentare:</strong> Wenn du Freunde hinzufügst oder einer
+          Gruppe beitrittst, sehen diese deinen Anzeigenamen sowie – solange du es nicht in den
+          Privatsphäre-Einstellungen ausschaltest – Distanz und Zeit deiner Läufe (keine Strecke).
+          Kommentare und Anfeuern sind für die jeweiligen Freunde sichtbar.
+        </li>
+        <li>
+          <strong>Teilen-Bilder:</strong> Das Teilen-Bild eines Laufs oder Siegs wird auf deinem
+          Handy erzeugt und nur über das Teilen-Menü weitergegeben, das du auswählst. Es zeigt nur
+          die Form der Strecke, keine Karte und keinen Standort.
+        </li>
+        <li>
+          <strong>Sprachansagen und Trainingspläne:</strong> Die Ansagen werden von der
+          Sprachausgabe deines Handys erzeugt. Dein gewählter Trainingsplan wird nur auf deinem
+          Handy gespeichert.
         </li>
         <li>
           <strong>Absturzberichte (nur wenn der Betreiber sie aktiviert):</strong> Bei einem Absturz
