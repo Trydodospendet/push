@@ -114,13 +114,11 @@ select 'own_pool', (public.create_challenge('Mein 10-km-Lauf', 'run_single', 100
 select public.join_challenge((select id from seed_challenges where name = 'own_pool'));
 
 -- Ranked (no stake): a leaderboard for the most kilometres, and one for the most steps.
-select pg_temp.as_user('c0000000-0000-4000-8000-000000000003');
+select public.create_ranked_cycles();
 insert into seed_challenges
-select 'ranked_km', (public.create_challenge('Meiste Kilometer', 'run_total', 20000, 0,
-  (now() at time zone 'Europe/Berlin')::date + 1, 7, 'public', null, 'ranked')).id;
+select 'ranked_km', id from public.challenges where weekly_key like 'D%-km' order by starts_at desc limit 1;
 insert into seed_challenges
-select 'ranked_steps', (public.create_challenge('Meiste Schritte', 'steps_total', 70000, 0,
-  (now() at time zone 'Europe/Berlin')::date + 2, 7, 'public', null, 'ranked')).id;
+select 'ranked_steps', id from public.challenges where weekly_key like 'D%-steps' order by starts_at desc limit 1;
 
 select pg_temp.as_user('a0000000-0000-4000-8000-000000000001');
 select public.join_challenge((select id from seed_challenges where name = 'ranked_km'));

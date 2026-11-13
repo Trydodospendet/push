@@ -105,7 +105,7 @@ select is(
 select is(
   (select count(*)::integer from pg_proc p join pg_namespace n on n.oid = p.pronamespace
     where n.nspname = 'public' and p.proname in
-      ('settle_challenge', 'advance_challenges', 'create_weekly_challenge', 'handle_new_user')
+      ('settle_challenge', 'advance_challenges', 'create_ranked_cycles', 'handle_new_user')
       and has_function_privilege('authenticated', p.oid, 'execute')),
   0,
   'scheduler and trigger functions are closed to clients'

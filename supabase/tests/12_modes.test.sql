@@ -409,18 +409,15 @@ select throws_ok(
   '23514', null, 'a ranked challenge can never get a stake'
 );
 
-select pg_temp.login(pg_temp.u(6));
-insert into ids select 'ranked_new', (public.create_challenge('Meiste Kilometer', 'run_total', 20000, 2500,
-  (now() at time zone 'Europe/Berlin')::date + 1, 7, 'public', null, 'ranked')).id;
-insert into ids select 'steps_new', (public.create_challenge('Meiste Schritte', 'steps_total', 70000, 0,
-  (now() at time zone 'Europe/Berlin')::date + 1, 7, 'public', null, 'ranked')).id;
-select pg_temp.logout();
+select public.create_ranked_cycles('2032-05-10 12:00:00+00');
+insert into ids select 'ranked_new', id from public.challenges where weekly_key = 'W2032-W21-km';
+insert into ids select 'steps_new', id from public.challenges where weekly_key = 'W2032-W21-steps';
 
 select results_eq(
   $$ select mode, stake_cents, fee_bps, min_participants from public.challenges
       where id in (pg_temp.c('ranked_new')) $$,
   $$ values ('ranked'::text, 0::bigint, 0, 2) $$,
-  'creating a ranked challenge ignores any stake and needs two participants'
+  'a ranked cycle has no stake and needs two participants'
 );
 
 select pg_temp.login(pg_temp.u(6));

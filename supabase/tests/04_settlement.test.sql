@@ -491,13 +491,11 @@ select is(
   'new pools take the configured fee'
 );
 
-insert into ids select 'ranked_fee', (public.create_challenge('Rangliste ohne Gebühr', 'run_single', 5000, 500,
-  (now() at time zone 'Europe/Berlin')::date + 1, 7, 'public', null, 'ranked')).id;
-
-select results_eq(
-  $$ select fee_bps, stake_cents from public.challenges where id = pg_temp.c('ranked_fee') $$,
-  $$ values (0, 0::bigint) $$,
-  'ranked challenges never take a fee and have no stake'
+select throws_ok(
+  $$ select public.create_challenge('Rangliste ohne Gebühr', 'run_single', 5000, 500,
+       (now() at time zone 'Europe/Berlin')::date + 1, 7, 'public', null, 'ranked') $$,
+  'P0001', 'invalid_mode',
+  'ranked challenges cannot be created by users'
 );
 
 select is(

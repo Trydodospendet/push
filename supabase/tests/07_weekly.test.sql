@@ -1,8 +1,8 @@
--- Phase 7 – weekly challenges.
+-- Ausbau 3 – fixed ranked cycles (daily, weekly, monthly; km and steps).
 begin;
 create extension if not exists pgtap with schema extensions;
 
-select plan(12);
+select plan(13);
 
 create function pg_temp.login(p_user_id uuid)
 returns void
@@ -21,80 +21,69 @@ as $$
          set_config('request.jwt.claims', '', true);
 $$;
 
--- Sunday 2026-11-15, 09:00 Berlin → the week of Monday 2026-11-16 (ISO week 47).
-select isnt(
-  public.create_weekly_challenge('2026-11-15 08:00:00+00'),
-  null::uuid,
-  'the Sunday run creates the challenge'
+-- The migration already created cycles for "now"; use a date far away for exact checks.
+-- Wednesday 2031-03-12 → day 13.03., week from Monday 17.03. (KW 12), month April 2031.
+select is(public.create_ranked_cycles('2031-03-12 12:00:00+00'), 6, 'one run creates six cycles');
+
+select results_eq(
+  $$ select weekly_key from public.challenges where weekly_key like '%2031%' order by weekly_key $$,
+  $$ values ('D2031-03-13-km'), ('D2031-03-13-steps'), ('M2031-04-km'), ('M2031-04-steps'),
+            ('W2031-W12-km'), ('W2031-W12-steps') $$,
+  'daily, weekly and monthly, each for km and steps'
 );
 
 select results_eq(
-  $$ select title, goal_type, target_value, stake_cents, mode, visibility, status,
-            creator_id is null, weekly_key, min_participants
-       from public.challenges where weekly_key = '2026-W47' $$,
-  $$ values ('10 km diese Woche', 'run_total', 10000, 0::bigint, 'ranked', 'public', 'open',
-             true, '2026-W47', 2) $$,
-  'it is a public ranked 10 km challenge without any stake'
+  $$ select goal_type, target_value, stake_cents, fee_bps, mode, visibility, status,
+            creator_id is null, min_participants
+       from public.challenges where weekly_key = 'W2031-W12-km' $$,
+  $$ values ('run_total', 1000, 0::bigint, 0, 'ranked', 'public', 'open', true, 2) $$,
+  'a ranked cycle is public and has no stake'
 );
 
 select results_eq(
-  $$ select starts_at, ends_at from public.challenges where weekly_key = '2026-W47' $$,
-  $$ values ('2026-11-15 23:00:00+00'::timestamptz, '2026-11-22 23:00:00+00'::timestamptz) $$,
-  'it runs from Monday 00:00 to the next Monday 00:00 (Berlin time)'
+  $$ select goal_type from public.challenges where weekly_key = 'M2031-04-steps' $$,
+  $$ values ('steps_total') $$,
+  'steps cycles count steps'
 );
 
-select is(
-  public.create_weekly_challenge('2026-11-15 08:00:00+00'),
-  null::uuid,
-  'a second run in the same week creates nothing'
-);
-select is(
-  public.create_weekly_challenge('2026-11-15 20:30:00+00'),
-  null::uuid,
-  'a later run on the same Sunday creates nothing'
-);
-select is(
-  (select count(*)::integer from public.challenges where weekly_key = '2026-W47'),
-  1,
-  'there is exactly one challenge for the week'
+select results_eq(
+  $$ select starts_at, ends_at from public.challenges where weekly_key = 'D2031-03-13-km' $$,
+  $$ values ('2031-03-12 23:00:00+00'::timestamptz, '2031-03-13 23:00:00+00'::timestamptz) $$,
+  'the day runs from 00:00 to 00:00 (Berlin time)'
 );
 
-select isnt(
-  public.create_weekly_challenge('2026-11-22 08:00:00+00'),
-  null::uuid,
-  'the next Sunday creates the next week'
-);
-select is(
-  (select weekly_key from public.challenges where weekly_key = '2026-W48'),
-  '2026-W48',
-  'the next week has its own key'
+select results_eq(
+  $$ select starts_at, ends_at from public.challenges where weekly_key = 'W2031-W12-km' $$,
+  $$ values ('2031-03-16 23:00:00+00'::timestamptz, '2031-03-23 23:00:00+00'::timestamptz) $$,
+  'the week runs from Monday to the next Monday'
 );
 
-select is(
-  (select to_char('2026-12-28'::date, 'IYYY"-W"IW')),
-  '2026-W53',
-  'the key follows the ISO year at year ends'
+select results_eq(
+  $$ select starts_at, ends_at, title from public.challenges where weekly_key = 'M2031-04-km' $$,
+  $$ values ('2031-03-31 22:00:00+00'::timestamptz, '2031-04-30 22:00:00+00'::timestamptz,
+             'Meiste km im April') $$,
+  'the month runs over the calendar month (summer time)'
 );
 
+select is(public.create_ranked_cycles('2031-03-12 20:00:00+00'), 0, 'a second run the same day creates nothing');
+select is(public.create_ranked_cycles('2031-03-13 12:00:00+00'), 2, 'the next day only adds the next day');
+
+insert into auth.users (id, email, aud, role) values ('00000000-0000-4000-8000-000000000001', 'u1@pgtap.test', 'authenticated', 'authenticated');
 select pg_temp.login('00000000-0000-4000-8000-000000000001');
+select throws_ok($$ select public.create_ranked_cycles() $$, '42501', null,
+  'signed-in users cannot create ranked cycles');
 select throws_ok(
-  $$ select public.create_weekly_challenge() $$,
-  '42501',
-  null,
-  'signed-in users cannot create weekly challenges'
-);
+  $$ select public.create_challenge('Eigene Ranked', 'run_total', 5000, 0, current_date + 2, 3, 'public', null, 'ranked') $$,
+  'P0001', 'invalid_mode', 'users cannot create ranked challenges any more');
 select pg_temp.logout();
 
-select ok(
-  not has_function_privilege('anon', 'public.create_weekly_challenge(timestamptz)', 'execute'),
-  'anonymous users cannot call create_weekly_challenge'
-);
-
 select is(
-  (select count(*)::integer from cron.job where jobname = 'create-weekly-challenge'
-     and schedule = '0 8 * * 0'),
-  1,
-  'pg_cron runs the job every Sunday'
+  (select count(*)::integer from cron.job where jobname = 'create-ranked-cycles' and schedule = '0 12 * * *'),
+  1, 'pg_cron creates the cycles every day'
+);
+select is(
+  (select count(*)::integer from cron.job where jobname = 'create-weekly-challenge'),
+  0, 'the old weekly job is gone'
 );
 
 select * from finish();
