@@ -1,6 +1,7 @@
 # Handoff (Stand: laufende Nacht-Session)
 
 ## Fertig
+- Phase 8 Teil A (DB): `20261121090000_gps_runs.sql` (sync_gps_run mit Server-Nachrechnung, Betrugsregeln, Dedupe mit Health, Route ohne 200 m an den Enden), pgTAP `10_gps`.
 
 - Phase 6 (Design) – in main.
 - Phase 7 komplett (Branch `phase-7-community`):
@@ -11,11 +12,11 @@
 
 ## Offen
 
-- Phase 8 (GPS) auf Branch `phase-8-gps` (von `phase-7-community`).
+- Phase 8 Teile B–E: Kernlogik (TS), Aufzeichnung, Karte, Datenschutz/Docs.
 
 ## Nächster Schritt
 
-Phase 8 Teil 1: expo-location + expo-task-manager, Aufzeichnung.
+Phase 8 Teil B: GPS-Kernlogik in TypeScript + Tests.
 
 ## Offene Fragen
 

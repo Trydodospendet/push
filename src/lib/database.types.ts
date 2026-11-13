@@ -335,6 +335,73 @@ export type Database = {
           },
         ];
       };
+      gps_runs: {
+        Row: {
+          base_reason: string | null;
+          client_run_id: string;
+          created_at: string;
+          distance_m: number;
+          duration_s: number;
+          ended_at: string;
+          id: string;
+          jump_count: number;
+          mocked_count: number;
+          point_count: number;
+          route: NonNullable<Json>;
+          started_at: string;
+          user_id: string;
+          workout_id: string;
+        };
+        ComputedFields: never;
+        Insert: {
+          base_reason?: string | null;
+          client_run_id: string;
+          created_at?: string;
+          distance_m: number;
+          duration_s: number;
+          ended_at: string;
+          id?: string;
+          jump_count: number;
+          mocked_count: number;
+          point_count: number;
+          route: NonNullable<Json>;
+          started_at: string;
+          user_id: string;
+          workout_id: string;
+        };
+        Update: {
+          base_reason?: string | null;
+          client_run_id?: string;
+          created_at?: string;
+          distance_m?: number;
+          duration_s?: number;
+          ended_at?: string;
+          id?: string;
+          jump_count?: number;
+          mocked_count?: number;
+          point_count?: number;
+          route?: NonNullable<Json>;
+          started_at?: string;
+          user_id?: string;
+          workout_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'gps_runs_user_id_fkey';
+            columns: ['user_id'];
+            isOneToOne: false;
+            referencedRelation: 'profiles';
+            referencedColumns: ['id'];
+          },
+          {
+            foreignKeyName: 'gps_runs_workout_id_fkey';
+            columns: ['workout_id'];
+            isOneToOne: false;
+            referencedRelation: 'activity_workouts';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
       ledger_entries: {
         Row: {
           account: string;
@@ -561,6 +628,15 @@ export type Database = {
           kind: string;
         }[];
       };
+      get_gps_run_route: {
+        Args: { p_run_id: string };
+        Returns: {
+          lat: number;
+          lng: number;
+          segment: number;
+          seq: number;
+        }[];
+      };
       get_leaderboard: {
         Args: { p_challenge_id: string };
         Returns: {
@@ -569,6 +645,19 @@ export type Database = {
           is_me: boolean;
           rank: number;
           user_id: string;
+        }[];
+      };
+      get_my_gps_runs: {
+        Args: { p_limit?: number };
+        Returns: {
+          distance_m: number;
+          duration_s: number;
+          ended_at: string;
+          has_route: boolean;
+          id: string;
+          invalid_reason: string;
+          is_valid: boolean;
+          started_at: string;
         }[];
       };
       get_my_level: {
@@ -696,6 +785,16 @@ export type Database = {
       };
       settle_challenge: { Args: { p_challenge_id: string }; Returns: boolean };
       sync_daily_steps: { Args: { p_days: Json }; Returns: number };
+      sync_gps_run: {
+        Args: { p_run: Json };
+        Returns: {
+          distance_m: number;
+          duration_s: number;
+          invalid_reason: string;
+          is_valid: boolean;
+          run_id: string;
+        }[];
+      };
       sync_workouts: { Args: { p_workouts: Json }; Returns: number };
     };
     Enums: {
