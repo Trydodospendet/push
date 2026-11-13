@@ -77,3 +77,9 @@ export const DURATION_PRESETS_DAYS = [1, 3, 7, 14, 28, 42] as const;
 
 /** DB: challenges.invite_code */
 export const INVITE_CODE_LENGTH = 6;
+
+/**
+ * Map style of the GPS run screens: OpenFreeMap (free, no API key), dark variant. Tiles are
+ * requested from tiles.openfreemap.org – mentioned in the privacy policy.
+ */
+export const MAP_STYLE_URL = 'https://tiles.openfreemap.org/styles/fiord';

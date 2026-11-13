@@ -37,6 +37,18 @@
       "expo-font",
       "expo-secure-store",
       [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "PUSH nutzt deinen Standort, um deine Laufstrecke aufzuzeichnen, solange du einen Lauf aufnimmst – auch bei gesperrtem Bildschirm. Der Standort wird nur während eines Laufs genutzt.",
+          "locationAlwaysAndWhenInUsePermission": false,
+          "locationAlwaysPermission": false,
+          "isIosBackgroundLocationEnabled": true,
+          "isAndroidBackgroundLocationEnabled": false,
+          "isAndroidForegroundServiceEnabled": true
+        }
+      ],
+      "@maplibre/maplibre-react-native",
+      [
         "expo-notifications",
         {
           "color": "#C6FF00"

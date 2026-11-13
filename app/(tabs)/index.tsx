@@ -2,7 +2,7 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'expo-router';
 import { Pressable, RefreshControl, StyleSheet } from 'react-native';
 
-import { Card, EmptyState, ErrorState, LoadingState, Screen, Text } from '@/components';
+import { Button, Card, EmptyState, ErrorState, LoadingState, Screen, Text } from '@/components';
 import { DEFAULT_TIMEZONE } from '@/config/app';
 import { useSession } from '@/features/auth/auth-provider';
 import { useMyChallenges } from '@/features/challenges/api';
@@ -66,6 +66,7 @@ export default function HomeScreen() {
           actionLabel={de.home.findChallenge}
           onAction={() => router.navigate('/ranked')}
         />
+        <Button label={de.run.homeButton} variant="secondary" onPress={() => router.push('/run')} />
         <StreakAndWeek userId={session.user.id} />
         <RecentWins userId={session.user.id} timezone={timezone} />
       </Screen>
@@ -95,6 +96,7 @@ export default function HomeScreen() {
       }
     >
       <HealthBanner />
+      <Button label={de.run.homeButton} variant="secondary" onPress={() => router.push('/run')} />
       {primary ? (
         <>
           <Text variant="label" color="textSecondary" accessibilityRole="header">

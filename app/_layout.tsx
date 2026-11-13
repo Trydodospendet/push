@@ -11,6 +11,7 @@ import { AuthProvider, useAuth } from '@/features/auth/auth-provider';
 import { DEFAULT_TIMEZONE } from '@/config/app';
 import { HealthProvider, useHealth } from '@/features/health/health-provider';
 import { IntroProvider, useIntro } from '@/features/intro/intro-provider';
+import { GpsProvider } from '@/features/gps/gps-provider';
 import { ReminderProvider } from '@/features/reminders/reminder-provider';
 import { de } from '@/i18n/de';
 import { createQueryClient } from '@/lib/query-client';
@@ -93,7 +94,9 @@ function RootNavigator() {
     >
       <IntroProvider userId={session?.user.id ?? null}>
         <ReminderProvider userId={session?.user.id ?? null}>
-          <AppStack isSignedIn={isSignedIn} isOnboarded={isOnboarded} />
+          <GpsProvider userId={session?.user.id ?? null}>
+            <AppStack isSignedIn={isSignedIn} isOnboarded={isOnboarded} />
+          </GpsProvider>
         </ReminderProvider>
       </IntroProvider>
     </HealthProvider>
@@ -141,6 +144,7 @@ function AppStack({ isSignedIn, isOnboarded }: { isSignedIn: boolean; isOnboarde
         <Stack.Screen name="(tabs)" />
         <Stack.Screen name="challenge" />
         <Stack.Screen name="how-it-works" />
+        <Stack.Screen name="run" />
       </Stack.Protected>
       <Stack.Screen name="legal" />
     </Stack>
