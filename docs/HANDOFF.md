@@ -2,6 +2,10 @@
 
 ## Aktueller Stand: Coach und sofortige Ergebnisse (14.11.2026)
 
+- Firebase-Projekt `push-aeaf3`, Android-App `com.pushchallenge.app` registriert. Nutzer hat `google-services.json` heruntergeladen; Projekt/Paket geprüft, lokal im Projekt abgelegt und in `app.json` verknüpft. Datei bleibt Git-ignoriert. Neuer Android-Build nötig.
+- `.easignore` übernimmt die Git-Ausschlüsse und nimmt nur die Android-Konfiguration wieder auf; private Admin-Schlüssel bleiben ausgeschlossen. Expo-Konfiguration erkennt Paket und Datei, EAS-Anmeldung `darab2004` bestätigt. Typecheck/Lint und 555 DB-Tests bestanden. Jest-Gesamtlauf: 282 bestanden, 3 Fehler in goals-flow (Timeout/Ladezustand); betroffene Suite separat mit 30 Sekunden Testlimit: 4/4 bestanden. Keine Tests oder App-Logik für diese Konfigurationsänderung angepasst.
+- FCM noch nicht eingerichtet: privater Schlüssel im Browser angefordert, Download kam nicht an. Cloud-Schlüsselliste zeigte genau einen aktiven Schlüssel (Endung `9481f132`); nicht bei Expo hinterlegt. Nutzer hat Erstellung und Upload zu Expo ausdrücklich freigegeben. Nicht blind weitere Schlüssel erstellen. In-App-Browsersteuerung steht aktuell nicht zur Verfügung; Konfigurationsdownload gelang dem Nutzer manuell. Versandfunktion/Cron bleiben offen.
+
 - Nutzerentscheidung: Am Zielende endgültig abrechnen; verspätete Synchronisierung zählt nicht. Neue Migration 20261130130000_immediate_results.sql friert den gespeicherten Fortschritt am Ende ein, setzt die Kulanzzeit auf null und den Abrechnungsjob auf zehn Sekunden. Neue sofortige Ziele werden direkt aktiv. Alte Abrechnungstests behalten ausdrücklich ihre historische Kulanzzeit; neue Cutoff-Tests prüfen die neue Regel.
 - Gewinnverwendung wird bei Teilnahme festgehalten, kann vor Beginn gewählt und ab Start nicht mehr geändert werden. Profiländerungen beeinflussen laufende Ziele nicht.
 - Header mit Zielfortschritt, Zielsetzen unter dem aktiven Ziel, abgeschlossene Ziele separat. Heutige Schritte und Wochen-Schrittsumme zusätzlich zu gemessenen Laufkilometern; laufende App synchronisiert Health regelmäßig.
@@ -9,7 +13,7 @@
 - Kleiner verschiebbarer Laufhase in Akzentfarbe mit Sprechblase, Blickbewegung, Schwindelanimation, Ausblenden und Tempoansicht. Entwicklungsstufen nach 2/7/30/90 aktiven Tagen ab erster Coach-Nutzung; lokaler Speicher pro Konto. GPS-Tempo erfordert Standortfreigabe, läuft nur im Vordergrund und speichert keine Strecke. Begrüßung nutzt Fortschrittsdifferenzen und Zielergebnisse.
 - Typecheck, Lint, 285 Jest-Tests (42 Suites), 555 pgTAP-Tests (21 Dateien) erfolgreich. Oberfläche und GPS-Tempo noch auf dem Gerät prüfen.
 - Cloud-Dry-run listet nur 20261130130000_immediate_results.sql. Flexible Ziele sind inzwischen angewendet. Cloud-Push bleibt gemäß CLAUDE.md dem Nutzer vorbehalten.
-- Push offen: Nutzer hat noch kein Firebase-Projekt; google-services.json fehlt. Supabase functions list liefert keine bereitgestellten Funktionen. Lokale Testnachricht ist unter Profil → Benachrichtigungen verfügbar. Firebase, FCM-Zugang, neuer Android-Build und Versandfunktion/Cron stehen aus. Kein Build oder Cloud-Push durch Agenten ausführen.
+- Push offen: FCM-Zugang, neuer Android-Build und Versandfunktion/Cron stehen aus (Firebase-Konfiguration siehe oben). Supabase functions list lieferte keine bereitgestellten Funktionen. Lokale Testnachricht ist unter Profil → Benachrichtigungen verfügbar. Kein Build oder Cloud-Push durch Agenten ausführen.
 - Browser-Einrichtung wurde bisher durch Computer-Use gestoppt, weil die aktuelle Chrome-URL nicht verlässlich erkannt wurde. Erneuter Versuch nach Nutzerfortsetzung; persönliche Anmeldung nicht automatisieren.
 
 ## Vorheriger Ausbau: freie Ziele und Navigation

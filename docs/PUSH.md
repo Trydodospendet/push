@@ -4,6 +4,12 @@ Stand: **vorbereitet, nicht eingeschaltet**. Die App und die Datenbank sind fert
 Schritte in Firebase, Expo/EAS und Supabase, die nur du ausführen kannst. Bis dahin passiert
 nichts (die lokalen Erinnerungen funktionieren unabhängig davon).
 
+Aktuell (14.11.2026): Firebase `push-aeaf3` und Android-App sind registriert. Die geprüfte
+`google-services.json` liegt lokal im Projekt und ist in `app.json` verknüpft. `.easignore`
+nimmt diese Android-Konfiguration in den Build auf, während Git sie weiterhin ignoriert.
+Private Dienstkonto-Schlüssel gehören außerhalb des Projekts. FCM-Zugang bei Expo,
+neuer Android-Build und Server-Versand sind noch offen.
+
 ## Wie es funktioniert
 
 1. Die App registriert beim Einschalten (Profil → Benachrichtigungen → _Push-Nachrichten_) den

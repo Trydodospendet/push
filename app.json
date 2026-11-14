@@ -13,6 +13,7 @@
     },
     "android": {
       "package": "com.pushchallenge.app",
+      "googleServicesFile": "./google-services.json",
       "permissions": [
         "android.permission.health.READ_EXERCISE",
         "android.permission.health.READ_DISTANCE",
