@@ -1,7 +1,8 @@
 // Sends the messages waiting in public.push_outbox through Expo's push service.
 //
-// NOT DEPLOYED. Setup is described in docs/PUSH.md. The function is called every minute (pg_cron
-// + pg_net, or a scheduled trigger) with the header "Authorization: Bearer <SEND_PUSH_SECRET>".
+// Deployed to the linked production project. Setup is described in docs/PUSH.md. The function is
+// called every minute (pg_cron + pg_net, or a scheduled trigger) with the header
+// "Authorization: Bearer <SEND_PUSH_SECRET>".
 // It uses the service role key from the function's environment and never sends anything but
 // the title, the text and a deep link.
 //
@@ -44,7 +45,9 @@ Deno.serve(async (request: Request) => {
   }
   const outbox = (rows ?? []) as OutboxRow[];
   if (outbox.length === 0) {
-    return new Response(JSON.stringify({ sent: 0 }), { headers: { 'Content-Type': 'application/json' } });
+    return new Response(JSON.stringify({ sent: 0 }), {
+      headers: { 'Content-Type': 'application/json' },
+    });
   }
 
   const { data: tokenRows } = await supabase
@@ -57,11 +60,25 @@ Deno.serve(async (request: Request) => {
   }
 
   // One Expo message per token; remember which outbox row and token each belongs to.
-  const messages: { to: string; title: string; body: string; data: unknown; sound: string; channelId: string }[] = [];
+  const messages: {
+    to: string;
+    title: string;
+    body: string;
+    data: unknown;
+    sound: string;
+    channelId: string;
+  }[] = [];
   const owners: { rowId: string; token: string }[] = [];
   for (const row of outbox) {
     for (const token of tokensByUser.get(row.user_id) ?? []) {
-      messages.push({ to: token, title: row.title, body: row.body, data: row.data, sound: 'default', channelId: 'default' });
+      messages.push({
+        to: token,
+        title: row.title,
+        body: row.body,
+        data: row.data,
+        sound: 'default',
+        channelId: 'default',
+      });
       owners.push({ rowId: row.id, token });
     }
   }
@@ -101,7 +118,10 @@ Deno.serve(async (request: Request) => {
     await supabase.from('push_tokens').delete().in('token', deadTokens);
   }
 
-  return new Response(JSON.stringify({ sent: outbox.length - failedRows.size, failed: failedRows.size }), {
-    headers: { 'Content-Type': 'application/json' },
-  });
+  return new Response(
+    JSON.stringify({ sent: outbox.length - failedRows.size, failed: failedRows.size }),
+    {
+      headers: { 'Content-Type': 'application/json' },
+    },
+  );
 });
