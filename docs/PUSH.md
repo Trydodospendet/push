@@ -1,8 +1,6 @@
 # Push-Nachrichten vom Server – Einrichtung
 
-Stand: **vorbereitet, nicht eingeschaltet**. Die App und die Datenbank sind fertig; es fehlen
-Schritte in Firebase, Expo/EAS und Supabase, die nur du ausführen kannst. Bis dahin passiert
-nichts (die lokalen Erinnerungen funktionieren unabhängig davon).
+Stand: **Server-Versand eingerichtet.** Die Zustellung auf einem Android-Gerät steht noch zur Prüfung aus.
 
 Aktuell (14.11.2026): Firebase `push-aeaf3` und Android-App sind registriert. Die geprüfte
 `google-services.json` liegt lokal im Projekt und ist in `app.json` verknüpft. `.easignore`
@@ -10,9 +8,9 @@ nimmt diese Android-Konfiguration in den Build auf, während Git sie weiterhin i
 Private Dienstkonto-Schlüssel gehören außerhalb des Projekts. FCM V1 ist bei Expo für
 `com.pushchallenge.app` hochgeladen und zugeordnet (CLI-Bestätigung am 14.11.2026).
 Der Server-Versand ist am 14.11.2026 als Edge Function `send-push` bereitgestellt und aktiv.
-Das nur dort hinterlegte Versandgeheimnis `SEND_PUSH_SECRET` ist gesetzt und wird nicht in
-Dateien, Logs oder Dokumentation gespeichert. Offen bleiben der einmalige Cron-Job, der
-Gerätetest und ein neuer Android-Build nach der Firebase-Konfiguration.
+Der aktive Cron-Job `send-push` ruft die Funktion jede Minute auf. Er liest das Versandgeheimnis
+aus Supabase Vault (`push_dispatch_secret`). Die Funktion verwendet dasselbe Geheimnis aus
+`SEND_PUSH_SECRET`.
 
 ## Wie es funktioniert
 
@@ -69,8 +67,9 @@ Gesundheitsdaten, keine Beträge.
 
    `SUPABASE_URL` und `SUPABASE_SERVICE_ROLE_KEY` stellt Supabase der Function selbst bereit.
 
-4. Die Function jede Minute aufrufen lassen. Im SQL-Editor (einmalig; `pg_net` ist in Supabase
-   Cloud vorhanden, sonst unter _Database → Extensions_ aktivieren):
+4. Die Function jede Minute aufrufen lassen (in Produktion erledigt). Für ein neues Projekt
+   `pg_cron`, `pg_net` und Supabase Vault aktivieren und dasselbe Versandgeheimnis als
+   `push_dispatch_secret` im Vault und als `SEND_PUSH_SECRET` bei der Funktion hinterlegen:
 
    ```sql
    select cron.schedule(
@@ -78,12 +77,16 @@ Gesundheitsdaten, keine Beträge.
      '* * * * *',
      $$ select net.http_post(
           url := 'https://DEIN-PROJEKT.supabase.co/functions/v1/send-push',
-          headers := jsonb_build_object('Authorization', 'Bearer EIN-LANGES-ZUFAELLIGES-GEHEIMNIS')
+          headers := jsonb_build_object(
+            'Authorization', 'Bearer ' || (select decrypted_secret
+              from vault.decrypted_secrets where name = 'push_dispatch_secret'),
+            'Content-Type', 'application/json'),
+          timeout_milliseconds := 10000
         ) $$
    );
    ```
 
-   Das Geheimnis steht dadurch im Cron-Job; nur Betreiber haben Zugriff auf `cron.job`.
+   In der Jobdefinition steht der Name des Vault-Eintrags.
 
 ### 4. Testen
 
