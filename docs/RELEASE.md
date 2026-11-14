@@ -69,7 +69,7 @@ https://DEINE-SEITE/legal/privacy.html
 Auswahl: **Alle oder einige Funktionen sind eingeschränkt** → Anleitung hinzufügen:
 
 ```
-Die Anmeldung erfolgt ohne Passwort mit einem 6-stelligen Code per E-Mail. Jede E-Mail-Adresse kann ein neues Konto anlegen:
+Die Anmeldung erfolgt mit Passwort oder mit einem 8-stelligen Code per E-Mail. Jede E-Mail-Adresse kann ein neues Konto anlegen:
 1. „Loslegen“ antippen, eine erreichbare E-Mail-Adresse eingeben, „Code senden“.
 2. Den Code aus der E-Mail „Dein Anmeldecode“ eingeben.
 3. Einen Anzeigenamen wählen.
