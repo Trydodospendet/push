@@ -5,6 +5,8 @@ import { healthSourceName } from '@/features/health/platform';
 import { de } from '@/i18n/de';
 import { spacing } from '@/theme';
 
+import { GuideVideos } from './guide-videos';
+
 /** The long version of "how it works": every step with its own picture. */
 export function Guide({ onBack }: { onBack: () => void }) {
   const steps = de.guide.steps(healthSourceName);
@@ -18,6 +20,7 @@ export function Guide({ onBack }: { onBack: () => void }) {
         </Text>
         <Text color="textSecondary">{de.guide.intro}</Text>
       </FadeIn>
+      <GuideVideos />
       {steps.map((step, index) => (
         <FadeIn key={step.title} delayMs={Math.min(index, 4) * 80}>
           <Card

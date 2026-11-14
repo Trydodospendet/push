@@ -46,6 +46,7 @@
     "expo-store-review": "~58.0.3",
     "expo-system-ui": "~58.0.7",
     "expo-task-manager": "~58.0.14",
+    "expo-video": "~58.0.14",
     "react": "19.3.0",
     "react-native": "0.88.1",
     "react-native-health-connect": "4.1.3",

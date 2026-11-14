@@ -214,9 +214,13 @@ Bildschirm. Wichtig für die Play Console:
 Nutzer zeichnen in der App einen Lauf mit GPS auf (Start, Pause, Stopp). Der Vordergrunddienst vom Typ "Standort" hält die Aufzeichnung am Laufen, während das Handy in der Tasche steckt und der Bildschirm gesperrt ist. Er wird nur durch den Nutzer in der geöffneten App gestartet, zeigt während des Laufs eine dauerhafte Benachrichtigung und endet, sobald der Nutzer den Lauf beendet. Ohne den Dienst bricht Android die Standortaufzeichnung ab, sobald die App nicht mehr sichtbar ist, und die Strecke wäre unvollständig.
 ```
 
-- **Video** (verlangt Google für Vordergrunddienste): kurze, nicht gelistete Aufnahme: GPS-Lauf
-  öffnen → Erklärtext → „Lauf starten“ → Standort-Dialog → Bildschirm sperren → Benachrichtigung
-  sichtbar → Bildschirm entsperren → „Stopp“ → „Speichern“.
+- **Video für Google Plays Prüfung:** Auf einem Android-Gerät mit installiertem PUSH unter „Laufen“
+  die GPS-Aufzeichnung öffnen. Erklärtext, „Lauf starten“ und gegebenenfalls die Standortabfrage
+  zeigen. Anschließend die Benachrichtigungsleiste herunterziehen, die laufende Benachrichtigung
+  zeigen, zu PUSH zurückgehen und den Lauf stoppen. Wenn auch der Sperrbildschirm sichtbar sein
+  soll und die Bildschirmaufnahme beim Sperren abbricht, den Ablauf mit einem zweiten Gerät
+  filmen. Ein Testkonto verwenden und persönliche Benachrichtigungen ausblenden. Den für Google
+  abrufbaren Videolink in der Erklärung zum Vordergrunddienst eintragen.
 - **Falls du später doch `ACCESS_BACKGROUND_LOCATION` ergänzt** (z. B. um Läufe ohne geöffnete App zu
   starten): dann ist die Erklärung „Standortzugriff im Hintergrund“ Pflicht, mit Video und diesem
   Text: _„Die Hintergrundposition wird nur während eines vom Nutzer gestarteten Laufs genutzt, um die

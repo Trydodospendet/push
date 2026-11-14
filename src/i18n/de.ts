@@ -468,6 +468,13 @@ export const de = {
   guide: {
     title: "So funktioniert's",
     intro: 'In acht Schritten von deinem Ziel zur Abrechnung.',
+    videos: {
+      title: 'Kurze Videos zum Einstieg',
+      oneMoreLap: 'Eine Runde noch',
+      stepGoal: 'Dein Schrittziel',
+      close: 'Video schließen',
+      error: 'Das Video konnte nicht abgespielt werden.',
+    },
     back: 'Zurück',
     step: (number: number) => `SCHRITT ${number}`,
     steps: (source: string) =>

@@ -1,5 +1,11 @@
 # Übergabe – Branch `ausbau`
 
+## Videos in der App
+
+- Unter Profil → „So funktioniert’s“ lassen sich zwei kurze Videos zu Schrittzielen öffnen und offline abspielen. Die App-Versionen liegen in `assets/guide-videos/`. Das Render-Skript `marketing/push-shorts/render.py` erzeugt sie mit `--in-app`.
+- `expo-video` ist neu und benötigt einen neuen nativen Android-/iOS-Build. Auf einem Gerät Wiedergabe, Vollbild, Wechsel zwischen den beiden Clips und Schließen des Players prüfen.
+- Für die GPS-Vordergrunddienst-Erklärung in Google Play ist eine Aufnahme der tatsächlichen Android-Funktion erforderlich. Aufnahme und Prüflink stehen aus. Ablauf in [Release §2.8a](RELEASE.md).
+
 ## Aktueller Stand: Coach und sofortige Ergebnisse (14.11.2026)
 
 - Produktions-Supabase versendet derzeit achtstellige E-Mail-OTPs. Die App akzeptiert daher achtstellige Codes (`SIGN_IN_CODE_LENGTH = 8`); der bisherige sechsstellige Wert führte beim Gerätetest dazu, dass gültige Codes nicht eingegeben werden konnten. Für die Verteilung ist ein neuer Android-Build nötig. Die Supabase-Einstellung und die App müssen künftig gleich bleiben.
