@@ -1,5 +1,6 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
+  Animated,
   ScrollView,
   StyleSheet,
   useWindowDimensions,
@@ -7,12 +8,14 @@ import {
   type NativeScrollEvent,
   type NativeSyntheticEvent,
   type ScrollViewInstance,
+  useAnimatedValue,
 } from 'react-native';
 
 import { Art, Button, Screen, Text, FadeIn, type ArtName } from '@/components';
 import { healthSourceName } from '@/features/health/platform';
 import { de } from '@/i18n/de';
-import { colors, radius, spacing } from '@/theme';
+import { colors, glow, radius, spacing } from '@/theme';
+import { useMotionEnabled } from '@/features/preferences/motion';
 
 export type IntroPagerProps = {
   /** Called by "Los geht's" on the last page and by "Überspringen". */
@@ -25,6 +28,8 @@ export function IntroPager({ onFinish, training = false }: IntroPagerProps) {
   const { width } = useWindowDimensions();
   const scroll = useRef<ScrollViewInstance>(null);
   const [index, setIndex] = useState(0);
+  const motionOn = useMotionEnabled();
+  const float = useAnimatedValue(0);
   const pages = training
     ? de.intro
         .pages(healthSourceName)
@@ -37,6 +42,19 @@ export function IntroPager({ onFinish, training = false }: IntroPagerProps) {
         }))
     : de.intro.pages(healthSourceName);
   const last = index === pages.length - 1;
+
+  useEffect(() => {
+    if (!motionOn) return;
+    float.setValue(0);
+    const animation = Animated.loop(
+      Animated.sequence([
+        Animated.timing(float, { toValue: 1, duration: 1300, useNativeDriver: true }),
+        Animated.timing(float, { toValue: 0, duration: 1300, useNativeDriver: true }),
+      ]),
+    );
+    animation.start();
+    return () => animation.stop();
+  }, [float, index, motionOn]);
 
   const onScrollEnd = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
     setIndex(Math.round(event.nativeEvent.contentOffset.x / width));
@@ -72,7 +90,26 @@ export function IntroPager({ onFinish, training = false }: IntroPagerProps) {
             accessibilityLabel={`${de.intro.pageOf(pageIndex + 1, pages.length)}. ${page.title}. ${page.text}`}
           >
             <FadeIn key={`${pageIndex}-${index}`}>
-              <Art name={page.art} size={176} />
+              <Animated.View
+                style={[
+                  styles.art,
+                  {
+                    transform: [
+                      {
+                        translateY: float.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: [0, -8],
+                        }),
+                      },
+                      {
+                        scale: float.interpolate({ inputRange: [0, 1], outputRange: [1, 1.035] }),
+                      },
+                    ],
+                  },
+                ]}
+              >
+                <Art name={page.art} size={176} />
+              </Animated.View>
             </FadeIn>
             <View style={styles.texts}>
               <Text variant="title" align="center" accessibilityRole="header">
@@ -118,6 +155,15 @@ const styles = StyleSheet.create({
   },
   texts: {
     gap: spacing.sm,
+  },
+  art: {
+    alignSelf: 'center',
+    borderRadius: radius.pill,
+    backgroundColor: colors.surface,
+    padding: spacing.md,
+    borderWidth: 1,
+    borderColor: colors.border,
+    boxShadow: [{ offsetX: 0, offsetY: 0, blurRadius: 18, spreadDistance: 1, color: glow.soft }],
   },
   footer: {
     gap: spacing.lg,

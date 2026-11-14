@@ -147,9 +147,9 @@ export const de = {
     won: 'Ziel geschafft! Du kannst stolz auf dich sein.',
     missed: 'Diesmal hat es nicht gereicht. Dein nächster Schritt zählt trotzdem.',
     ongoing: 'Jeder Schritt bringt dich weiter. Dein Tempo zählt.',
-    stages: ['Ei', 'Baby-Hase', 'Junger Hase', 'Laufpartner', 'Erfahrener Coach'],
+    name: 'Pushy',
+    stages: ['Dein neuer Laufcoach', 'Baby-Hase', 'Junger Hase', 'Laufpartner', 'Erfahrener Coach'],
     speed: 'km/h',
-    noGps: 'Warte auf ein genaues GPS-Signal. Standortfreigabe erforderlich.',
     move: 'Coach verschieben; antippen für Tempo',
     progress: 'Dein Ziel im Blick',
     winReturn:

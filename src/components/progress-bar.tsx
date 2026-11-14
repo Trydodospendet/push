@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { Animated, Easing, StyleSheet, useAnimatedValue, View } from 'react-native';
 
-import { colors, layout, motion, radius } from '@/theme';
+import { colors, glow, layout, motion, radius } from '@/theme';
 
 export type ProgressBarProps = {
   /** Share of the goal that is reached, from 0 to 1. Values outside are clamped. */
@@ -54,11 +54,11 @@ const styles = StyleSheet.create({
     height: layout.progressBarHeight,
     borderRadius: radius.pill,
     backgroundColor: colors.surfaceRaised,
-    overflow: 'hidden',
   },
   fill: {
     height: '100%',
     borderRadius: radius.pill,
     backgroundColor: colors.accent,
+    boxShadow: [{ offsetX: 0, offsetY: 0, blurRadius: 6, spreadDistance: 0, color: glow.soft }],
   },
 });

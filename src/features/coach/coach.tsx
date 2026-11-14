@@ -56,8 +56,14 @@ export function Coach() {
   const [speedMode, setSpeedMode] = useState(false);
   const [dragging, setDragging] = useState(false);
   const [hidden, setHidden] = useState(false);
+  const [flip, setFlip] = useState(0);
   const [visit, setVisit] = useState(0);
   const handled = useRef(-1);
+  const lastQuote = useRef(-1);
+  const motionOn = useMotionEnabled();
+  const bounce = useAnimatedValue(0);
+  const celebration = useAnimatedValue(0);
+  const wiggle = useAnimatedValue(0);
   const [position] = useState(
     () =>
       new Animated.ValueXY({
@@ -71,6 +77,19 @@ export function Coach() {
   });
   const [gaze, setGaze] = useState(0);
   const [bubbleLeft, setBubbleLeft] = useState(-130);
+  const switchMode = useCallback(() => {
+    setSpeedMode((wasShowingSpeed) => {
+      if (wasShowingSpeed && motionOn) {
+        celebration.setValue(0);
+        Animated.sequence([
+          Animated.timing(celebration, { toValue: 1, duration: 210, useNativeDriver: true }),
+          Animated.timing(celebration, { toValue: 2, duration: 210, useNativeDriver: true }),
+        ]).start();
+        setFlip((value) => value + 1);
+      }
+      return !wasShowingSpeed;
+    });
+  }, [celebration, motionOn]);
   const bounds = useCallback(
     (x: number, y: number) => ({
       x: Math.max(8, Math.min(width - 88, x)),
@@ -107,14 +126,14 @@ export function Coach() {
           setBubbleLeft(next.x > width / 2 ? -130 : 0);
           position.setValue(next);
           setDragging(false);
-          if (Math.abs(g.dx) + Math.abs(g.dy) < 8) setSpeedMode((v) => !v);
+          if (Math.abs(g.dx) + Math.abs(g.dy) < 8) switchMode();
         },
         onPanResponderTerminate: () => {
           position.setValue(origin.current);
           setDragging(false);
         },
       }),
-    [height, width, insets.top, insets.bottom, position],
+    [height, width, insets.top, insets.bottom, position, switchMode],
   );
   useEffect(() => {
     const next = bounds(origin.current.x, origin.current.y);
@@ -227,16 +246,14 @@ export function Coach() {
   }, [message]);
   useEffect(() => {
     const timer = setInterval(() => {
-      if (AppState.currentState === 'active')
-        setMessage(
-          de.challengeStart.quotes[Math.floor(Math.random() * de.challengeStart.quotes.length)],
-        );
+      if (AppState.currentState !== 'active') return;
+      const next = (lastQuote.current + 1) % de.challengeStart.quotes.length;
+      lastQuote.current = next;
+      setMessage(de.challengeStart.quotes[next]);
     }, 60000);
     return () => clearInterval(timer);
   }, []);
   const liveSpeed = useLiveSpeed(speedMode && !hidden && recorder.status !== 'recording');
-  const motionOn = useMotionEnabled();
-  const bounce = useAnimatedValue(0);
   useEffect(() => {
     if (!motionOn) return;
     const animation = Animated.loop(
@@ -261,6 +278,18 @@ export function Coach() {
       bounce.setValue(0);
     };
   }, [motionOn, dragging, bounce]);
+  useEffect(() => {
+    if (!motionOn || speedMode || hidden) return;
+    const timer = setInterval(() => {
+      wiggle.setValue(0);
+      Animated.sequence([
+        Animated.timing(wiggle, { toValue: -1, duration: 120, useNativeDriver: true }),
+        Animated.timing(wiggle, { toValue: 1, duration: 160, useNativeDriver: true }),
+        Animated.timing(wiggle, { toValue: 0, duration: 120, useNativeDriver: true }),
+      ]).start();
+    }, 18000);
+    return () => clearInterval(timer);
+  }, [hidden, motionOn, speedMode, wiggle]);
   const speed =
     recorder.status === 'recording'
       ? currentSpeed(recorder.points, now)
@@ -282,7 +311,7 @@ export function Coach() {
       style={[styles.root, { transform: position.getTranslateTransform() }]}
       pointerEvents="box-none"
     >
-      {message ? (
+      {message && !speedMode ? (
         <View pointerEvents="none" style={[styles.bubble, { left: bubbleLeft }]}>
           <Text variant="caption">{message}</Text>
         </View>
@@ -292,26 +321,39 @@ export function Coach() {
         accessible
         accessibilityRole="button"
         accessibilityLabel={de.coach.move}
-        onAccessibilityTap={() => setSpeedMode((v) => !v)}
+        onAccessibilityTap={switchMode}
       >
         {speedMode ? (
           <View style={styles.speed}>
             <Text variant="heading" color="accent">
-              {speed === null ? '—' : speed.toFixed(1)}
+              {speed === null ? '0' : speed.toFixed(1)}
             </Text>
             <Text variant="caption">{de.coach.speed}</Text>
-            {speed === null ? <Text variant="caption">{de.coach.noGps}</Text> : null}
           </View>
         ) : (
           <Animated.View
+            key={flip}
             style={{
               transform: [
-                { translateY: bounce.interpolate({ inputRange: [0, 1], outputRange: [0, -3] }) },
                 {
-                  rotate: bounce.interpolate({
-                    inputRange: [0, 1],
-                    outputRange: dragging ? ['-12deg', '12deg'] : ['0deg', '0deg'],
-                  }),
+                  translateY: Animated.add(
+                    bounce.interpolate({ inputRange: [0, 1], outputRange: [0, -3] }),
+                    celebration.interpolate({ inputRange: [0, 1, 2], outputRange: [0, -17, 0] }),
+                  ),
+                },
+                {
+                  rotate: dragging
+                    ? bounce.interpolate({ inputRange: [0, 1], outputRange: ['-12deg', '12deg'] })
+                    : Animated.add(
+                        celebration.interpolate({
+                          inputRange: [0, 1, 2],
+                          outputRange: [0, 180, 360],
+                        }),
+                        wiggle.interpolate({ inputRange: [-1, 0, 1], outputRange: [-8, 0, 8] }),
+                      ).interpolate({
+                        inputRange: [-8, 0, 360, 368],
+                        outputRange: ['-8deg', '0deg', '360deg', '368deg'],
+                      }),
                 },
               ],
             }}
@@ -320,8 +362,8 @@ export function Coach() {
           </Animated.View>
         )}
       </View>
-      <Text variant="caption" color="textMuted">
-        {de.coach.stages[stage]}
+      <Text variant="caption" color="accent">
+        {de.coach.name}
       </Text>
       <Pressable accessibilityLabel={de.coach.hide} onPress={() => setHidden(true)}>
         <Text variant="caption" color="textMuted">

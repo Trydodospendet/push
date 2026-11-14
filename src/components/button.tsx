@@ -2,7 +2,7 @@ import { ActivityIndicator, Pressable, StyleSheet } from 'react-native';
 
 import { hapticTap } from '@/features/preferences/haptics';
 import { de } from '@/i18n/de';
-import { colors, layout, opacity, radius, spacing } from '@/theme';
+import { colors, glow, layout, opacity, radius, spacing } from '@/theme';
 
 import { Text } from './text';
 
@@ -55,6 +55,7 @@ export function Button({
       style={({ pressed }) => [
         styles.base,
         styles[variant],
+        variant === 'primary' && !isInactive && styles.glowing,
         pressed && styles.pressed,
         disabled && styles.disabled,
       ]}
@@ -85,6 +86,9 @@ const styles = StyleSheet.create({
   secondary: {
     borderWidth: layout.borderWidth,
     borderColor: colors.textMuted,
+  },
+  glowing: {
+    boxShadow: [{ offsetX: 0, offsetY: 0, blurRadius: 12, spreadDistance: 1, color: glow.soft }],
   },
   danger: {
     borderWidth: layout.borderWidth,
