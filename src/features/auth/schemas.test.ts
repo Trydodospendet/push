@@ -18,7 +18,7 @@ describe('emailSchema', () => {
 
 describe('signInCodeSchema', () => {
   it('accepts exactly six digits', () => {
-    expect(validate(signInCodeSchema, ' 012345 ')).toEqual({ ok: true, value: '012345' });
+    expect(validate(signInCodeSchema, ' 01234567 ')).toEqual({ ok: true, value: '01234567' });
   });
 
   it.each(['12345', '1234567', '12a456', ''])('rejects %p', (input) => {

@@ -2,6 +2,8 @@
 
 ## Aktueller Stand: Coach und sofortige Ergebnisse (14.11.2026)
 
+- Produktions-Supabase versendet derzeit achtstellige E-Mail-OTPs. Die App akzeptiert daher achtstellige Codes (`SIGN_IN_CODE_LENGTH = 8`); der bisherige sechsstellige Wert führte beim Gerätetest dazu, dass gültige Codes nicht eingegeben werden konnten. Für die Verteilung ist ein neuer Android-Build nötig. Die Supabase-Einstellung und die App müssen künftig gleich bleiben.
+
 - Dezenter Glow ergänzt: SVG-Farbverlauf hinter Pushy und allen Coach-Stufen, leichte Akzentschatten an aktiven Hauptbuttons und Fortschrittsbalken. Pushy heißt sichtbar so statt „Ei“, zeigt bei fehlendem Standort schlicht `0 km/h`, blendet die Sprechblase in der Tempoansicht aus und wechselt ihre Motivation. Dezente Blick-, Sprung-, Wackel- und Saltoanimationen berücksichtigen die Systemoption für reduzierte Bewegung. Dekoration fängt keine Berührungen ab; kein neues Modul oder Build nötig.
 - Die Trainingsplan-Einführung erhält zusätzlich pro Seite eine schwebende, sanft skalierende Grafik mit Akzentglow; damit wirken die Einführungsseiten nicht wie reine Textkarten.
 

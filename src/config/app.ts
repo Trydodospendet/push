@@ -32,8 +32,8 @@ export const LEGAL = {
 export const DISPLAY_NAME_MIN_LENGTH = 3;
 export const DISPLAY_NAME_MAX_LENGTH = 24;
 
-/** Must match `otp_length` in supabase/config.toml. */
-export const SIGN_IN_CODE_LENGTH = 6;
+/** Must match the Email OTP length configured in the production Supabase project. */
+export const SIGN_IN_CODE_LENGTH = 8;
 
 /** Timezone of new profiles and challenges (DB default). */
 export const DEFAULT_TIMEZONE = 'Europe/Berlin';
