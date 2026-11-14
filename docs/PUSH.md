@@ -9,7 +9,10 @@ Aktuell (14.11.2026): Firebase `push-aeaf3` und Android-App sind registriert. Di
 nimmt diese Android-Konfiguration in den Build auf, während Git sie weiterhin ignoriert.
 Private Dienstkonto-Schlüssel gehören außerhalb des Projekts. FCM V1 ist bei Expo für
 `com.pushchallenge.app` hochgeladen und zugeordnet (CLI-Bestätigung am 14.11.2026).
-Neuer Android-Build, Gerätetest und Server-Versand sind noch offen.
+Der Server-Versand ist am 14.11.2026 als Edge Function `send-push` bereitgestellt und aktiv.
+Das nur dort hinterlegte Versandgeheimnis `SEND_PUSH_SECRET` ist gesetzt und wird nicht in
+Dateien, Logs oder Dokumentation gespeichert. Offen bleiben der einmalige Cron-Job, der
+Gerätetest und ein neuer Android-Build nach der Firebase-Konfiguration.
 
 ## Wie es funktioniert
 
@@ -52,13 +55,13 @@ Gesundheitsdaten, keine Beträge.
 ### 3. Supabase
 
 1. Die Migration hochladen (gehört zu den Migrationen in `docs/HANDOFF.md`, „Cloud-Aufgaben“).
-2. Edge Function bereitstellen:
+2. Edge Function bereitstellen (bereits erledigt):
 
    ```powershell
    supabase functions deploy send-push --no-verify-jwt
    ```
 
-3. Geheimnis setzen (Wert selbst ausdenken, lang und zufällig; **nie committen**):
+3. Geheimnis setzen (bereits erledigt; Wert lang und zufällig, **nie committen**):
 
    ```powershell
    supabase secrets set SEND_PUSH_SECRET=EIN-LANGES-ZUFAELLIGES-GEHEIMNIS
