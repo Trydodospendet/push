@@ -7,8 +7,9 @@ nichts (die lokalen Erinnerungen funktionieren unabhängig davon).
 Aktuell (14.11.2026): Firebase `push-aeaf3` und Android-App sind registriert. Die geprüfte
 `google-services.json` liegt lokal im Projekt und ist in `app.json` verknüpft. `.easignore`
 nimmt diese Android-Konfiguration in den Build auf, während Git sie weiterhin ignoriert.
-Private Dienstkonto-Schlüssel gehören außerhalb des Projekts. FCM-Zugang bei Expo,
-neuer Android-Build und Server-Versand sind noch offen.
+Private Dienstkonto-Schlüssel gehören außerhalb des Projekts. FCM V1 ist bei Expo für
+`com.pushchallenge.app` hochgeladen und zugeordnet (CLI-Bestätigung am 14.11.2026).
+Neuer Android-Build, Gerätetest und Server-Versand sind noch offen.
 
 ## Wie es funktioniert
 
