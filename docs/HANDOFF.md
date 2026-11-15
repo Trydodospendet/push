@@ -1,5 +1,12 @@
 # Übergabe – Branch `ausbau`
 
+## Android-Release 5 im internen Google-Play-Test (15.11.2026)
+
+- `PUSH-v1.0.0-5.aab` liegt im Projektordner. Der vollständige Android-Release von `f6fe360` wurde lokal mit Gradle und SDK 37 gebaut und mit dem Upload-Schlüssel von Version 4 signiert. Paket `com.pushchallenge.app`, Versionscode 5 und Produktions-Supabase im Bundle geprüft. Für diesen Release ist kein Metro nötig.
+- Google Play zeigt **5 (1.0.0)** als neuesten Release und **Für interne Tester verfügbar**. Die Werbe-ID-Deklaration wurde passend zur App auf **Nein** korrigiert. [Interner Einladungslink](https://play.google.com/apps/internaltest/4698843839792601650).
+- Für weitere Releases den nächsten freien Versionscode in der Play Console prüfen. Der EAS-Zähler stand vor dem lokalen Build noch auf 4.
+- Typecheck, Lint, 288 Jest-Tests und 564 lokale PostgreSQL-Tests erfolgreich. Installation auf einem Testhandy und GPS-Vergleich im Freien stehen noch aus. Für echte Zielbuchungen fehlen in Produktion weiterhin die beiden unten dokumentierten Migrationen.
+
 ## Nachprüfung von Zielbuchung und GPS (15.11.2026)
 
 - „Angaben prüfen“ zeigt zusätzlich die Zielregel und bei einem heutigen Tagesziel den Zeitraum bis Mitternacht. Bei Schritten steht dort auch, dass bereits erfasste Schritte zählen. System-Zurück geht im Entwurf einen Schritt zurück und erhält die Eingaben. Bestätigungsfenster folgen reduzierter Bewegung, und Buttons können bei großer Schrift umbrechen.
