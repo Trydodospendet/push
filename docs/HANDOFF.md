@@ -1,5 +1,12 @@
 # Übergabe – Branch `ausbau`
 
+## Android-Release 6 im internen Google-Play-Test (15.11.2026)
+
+- Google Play zeigt **6 (1.0.0)** als neuesten Release und **Für interne Tester verfügbar**. [Installationslink für Tester](https://play.google.com/apps/internaltest/4698843839792601650).
+- Das signierte AAB `PUSH-v1.0.0-6.aab` liegt im Projektordner. Paketname, Versionscode 6, Signatur und Produktions-Supabase wurden geprüft. Die veröffentlichte App entspricht exakt Commit `8f5d2c6` und dem GitHub-Tag `android/internal/v6`.
+- Der [Release-Ablauf](RELEASE.md#android-release-mit-github-abgleichen) beschreibt die Zuordnung von GitHub-Stand und Play-Version für künftige Updates. Typecheck, Lint, 291 Jest-Tests und 564 lokale Datenbanktests waren erfolgreich.
+- Der lesende Cloud-Check bestätigt, dass die Produktions-RPC für die Zielbuchung und die Folgemigration fehlen. Zielbuchung nach Anwendung der Migrationen mit einem Testkonto prüfen. Die GPS-Messung und große Schrift am Gerät bleiben Teil der Abnahme.
+
 ## Frühere Oberfläche mit gezielten Korrekturen (15.11.2026)
 
 - Oberfläche von `0cf92c6` als Basis. Tab-Navigation, Header, Laufübersicht, Ranked, Profil und verschiebbarer Pushy sind wieder wie vor dem Umbau. Home zeigt den Zielfortschritt, einen direkten Laufstart und bei aktivem Trainingsplan den nächsten offenen Lauf. Lange Zieltitel und Auswahltexte bleiben innerhalb ihrer Rahmen.

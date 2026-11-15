@@ -783,25 +783,25 @@ verwendet weiterhin `.env`; nur der Produktions-Build verwendet die Cloud-Werte.
 
 ## 9. Produktions-Build für den Play Store (Android)
 
-Voraussetzungen: Abschnitt 8 ist erledigt (`eas env:list production` zeigt beide Werte).
+Voraussetzungen: Java 17, Android SDK 37, NDK und CMake. `JAVA_HOME` und `ANDROID_HOME` zeigen auf das eingerichtete lokale Build-Setup. Den Versionscode nach dem [Release-Ablauf](RELEASE.md#android-release-mit-github-abgleichen) in der Play Console prüfen.
 
-```powershell
-eas build --platform android --profile production
-```
+1. Den exakten gepushten Commit in einer separaten Build-Kopie auschecken. `.env.production` und `google-services.json` lokal in die Kopie legen. In der Kopie `expo.android.versionCode` in `app.json` auf den nächsten freien Play-Versionscode setzen.
+2. Abhängigkeiten installieren und das native Projekt aus der Produktionskonfiguration erzeugen:
 
-- Ergebnis ist eine **`.aab`-Datei** (Android App Bundle) – die lädt man in der Play Console hoch.
-  Auf dem Handy direkt installieren lässt sie sich nicht.
-- Die **Versionsnummer für Google** (`versionCode`) erhöht EAS bei jedem Produktions-Build
-  automatisch. Die sichtbare Version (`1.0.0` in `app.json` → `version`) änderst du selbst, wenn du
-  eine neue Version veröffentlichen willst.
-- Der Signierschlüssel ist derselbe, den EAS in 5.2 angelegt hat. **Nie löschen** – ohne ihn kann
-  die App im Store nicht mehr aktualisiert werden (Google speichert zusätzlich eine Kopie, wenn du
-  „Play App Signing“ nutzt, was Standard ist).
-- Der Produktions-Build enthält **keinen** Entwicklungsserver und verbindet sich mit der Cloud-
-  Datenbank.
+   ```powershell
+   npm.cmd ci
+   $env:NODE_ENV = 'production'
+   npx.cmd expo prebuild --platform android --no-install
+   ```
 
-Alles, was danach in der Play Console auszufüllen ist (inkl. fertiger Texte), steht in
-**`docs/RELEASE.md`**.
+3. Im erzeugten `android/app/build.gradle` die Debug-Signatur aus dem Block `release` entfernen. Das Bundle bauen:
+
+   ```powershell
+   cd android
+   .\gradlew.bat :app:bundleRelease
+   ```
+
+4. Das AAB aus `android/app/build/outputs/bundle/release/` mit `jarsigner` und dem bestehenden Play-Upload-Schlüssel signieren. Falls der Schlüssel nur in Expo hinterlegt ist, über `eas credentials --platform android` im Profil `production` exportieren und außerhalb des Repositorys verwenden. Signatur und Bundle prüfen. Für den Upload und den passenden GitHub-Tag gilt der [Release-Ablauf](RELEASE.md#android-release-mit-github-abgleichen).
 
 
 ## Freie Ziele und neue Navigation

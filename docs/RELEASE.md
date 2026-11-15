@@ -326,8 +326,7 @@ Screenshots machen (Ein/Aus + Leiser). Keine echten E-Mail-Adressen zeigen.
    (oder neuen Track anlegen).
 2. **Tester:** E-Mail-Liste anlegen (Google-Konten der Tester) oder eine Google Group.
 3. **Länder:** Deutschland (ggf. Österreich, Schweiz).
-4. **Neuen Release erstellen** → die `.aab`-Datei aus `eas build --platform android --profile
-production` hochladen (Download-Link steht am Ende des Builds bzw. auf expo.dev).
+4. **Neuen Release erstellen** → das signierte Android App Bundle aus dem [Release-Ablauf](#android-release-mit-github-abgleichen) hochladen.
 5. **Play App Signing** akzeptieren (Standard).
 6. **Versionshinweise:**
 
@@ -345,8 +344,17 @@ Erste Testversion von PUSH: Solo- und Ranked-Challenges für Läufe und Schritte
 **mindestens 12 Testern über mindestens 14 Tage** am Stück (Stand der Regel bitte in der Play Console
 prüfen). Plane das ein.
 
-**Jedes Update:** `eas build --platform android --profile production` (der `versionCode` steigt
-automatisch), neue `.aab` im selben Track hochladen.
+**Jedes Update:** Den [Release-Ablauf](#android-release-mit-github-abgleichen) für den gewünschten bestehenden Track verwenden.
+
+### Android-Release mit GitHub abgleichen
+
+1. Änderungen auf `ausbau` prüfen, committen und nach `origin/ausbau` pushen. Den Commit des Builds festhalten. Das Bundle aus einem separaten Checkout dieses Commits bauen, damit lokale Änderungen und Dateien des laufenden Projekts außen vor bleiben.
+2. In der Play Console unter **Neueste Releases und Bundles** den höchsten verwendeten Versionscode prüfen. Für den neuen Build den nächsten freien Code verwenden. Der EAS-Zähler kann nach lokalen Builds hinter der Play Console liegen.
+3. Ein Release-Bundle mit Produktionskonfiguration und Android SDK 37 lokal erstellen. Java 17, Android SDK, NDK und CMake müssen eingerichtet sein. In der separaten Kopie mit Expo das Android-Projekt generieren und mit Gradle `:app:bundleRelease` bauen. Bei Windows-Pfadfehlern eine aktuelle Ninja-Version im lokalen Build-Setup verwenden. Mit dem vorhandenen Play-Upload-Schlüssel signieren. Paketname, Versionscode, Produktions-Supabase und das Zertifikat gegen den vorigen Build prüfen. Das Bundle als `PUSH-v<VERSION>-<CODE>.aab` speichern.
+4. In der Play Console denselben Testkanal wie beim vorherigen Release öffnen. Das Bundle hochladen, Versionshinweise ergänzen und prüfen, ob der neue Code für Tester verfügbar ist.
+5. Auf GitHub den exakten Build-Commit als `android/internal/v<CODE>` taggen und den Tag pushen. Den Play-Status samt Commit und Dateiname in der Übergabe festhalten. AAB-Datei und Signierschlüssel gehören außerhalb der Git-Historie.
+
+Kollegen mit Repository-Zugriff holen den aktuellen Arbeitsstand mit `git pull --ff-only origin ausbau`, während sie auf `ausbau` sind. Für den exakten Stand aus Play holen sie die Tags mit `git fetch origin --tags` und öffnen `android/internal/v<CODE>`. Für eine Installation auf Android nutzen sie den Einladungslink des Testkanals und ein eingetragenes Google-Konto.
 
 ---
 
