@@ -113,7 +113,7 @@ export default function ActivityScreen() {
       <Button
         label={de.activityTab.record}
         variant="secondary"
-        onPress={() => router.push('/run/index')}
+        onPress={() => router.push('/run')}
       />
       <Button
         label={de.training.homeButton}

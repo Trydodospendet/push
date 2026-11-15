@@ -28,7 +28,7 @@ export default function ConnectionsScreen() {
           variant="secondary"
           onPress={() => void Linking.openSettings()}
         />
-        <Button label={de.connections.startRun} onPress={() => router.push('/run/index')} />
+        <Button label={de.connections.startRun} onPress={() => router.push('/run')} />
       </Card>
     </Screen>
   );

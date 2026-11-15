@@ -1,5 +1,12 @@
 # Übergabe – Branch `ausbau`
 
+## Laufstart: falsche Route anhand des Screenshots behoben (15.11.2026)
+
+- Der Screenshot zeigt die Detailseite „Lauf“, nicht den Aufnahmebildschirm. Home, Aktivität und Verbindungen verlinkten auf `/run/index`. Expo Router deutet `index` dort als Lauf-ID; ohne passenden Lauf erscheint irreführend der Verlaufsfehler, obwohl die API erfolgreich antwortet. Die vorige Empfehlung, nach oben zu scrollen, war deshalb falsch.
+- Alle drei Einstiegspunkte öffnen jetzt `/run`. Ein Navigationstest reproduzierte vor der Korrektur den fehlenden Startbutton; nach der Korrektur wird „Lauf starten“ sichtbar. Regressionstests decken alle drei Einstiegspunkte ab.
+- Typecheck, Lint, 294 Jest-Tests und 564 lokale Datenbanktests erfolgreich.
+- Keine Supabase-Änderung erforderlich. Die Korrektur muss noch in einen neuen Android-Release und in den internen Play-Test; der veröffentlichte Build 6 enthält den Fehler weiterhin. GPS-Berechtigung, Aufzeichnung, Pause/Fortsetzen und Speichern am echten Handy bleiben danach zu prüfen.
+
 ## Laufaufzeichnung und Verlauf nachgeprüft (15.11.2026)
 
 - Auf dem Handy gemeldet: „Deine Läufe konnten nicht geladen werden“, darunter „Erneut versuchen“. Diese Schaltfläche lädt den Verlauf neu. Die Aufnahme beginnt auf derselben Seite oben mit „Lauf starten“.

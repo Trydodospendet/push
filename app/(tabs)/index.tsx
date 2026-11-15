@@ -90,7 +90,7 @@ export default function HomeScreen() {
     />
   );
   const startRun = (
-    <Button label={de.home.run} variant="secondary" onPress={() => router.push('/run/index')} />
+    <Button label={de.home.run} variant="secondary" onPress={() => router.push('/run')} />
   );
   const setGoal = (
     <Button label={de.home.setGoal} onPress={() => router.push('/challenge/create')} />
