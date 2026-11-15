@@ -1,5 +1,11 @@
 # Übergabe – Branch `ausbau`
 
+## Laufaufzeichnung und Verlauf nachgeprüft (15.11.2026)
+
+- Auf dem Handy gemeldet: „Deine Läufe konnten nicht geladen werden“, darunter „Erneut versuchen“. Diese Schaltfläche lädt den Verlauf neu. Die Aufnahme beginnt auf derselben Seite oben mit „Lauf starten“.
+- Produktion mit einem synthetischen Testkonto geprüft. Die GPS-Aufzeichnung ließ sich speichern, im eigenen Verlauf aufrufen und als Strecke laden. Die Testtransaktion wurde vollständig zurückgerollt. Die beobachteten Android-Verlaufsanfragen lieferten HTTP 200 mit einer leeren JSON-Liste.
+- Offen sind die Fehlermeldung auf dem Handy trotz erfolgreicher Serverantwort und der tatsächliche Ablauf nach „Lauf starten“. Es war kein Android-Gerät per ADB verbunden. Keine App- oder Datenbankänderung für diesen Befund.
+
 ## Zielbuchung in Produktions-Supabase aktiviert (15.11.2026)
 
 - Nach ausdrücklichem Auftrag die beiden Migrationen `20261130130000_immediate_results.sql` und `20261130140000_book_friend_goal_owner.sql` in Produktion angewendet. Vorher wurden Schema und Daten der App sowie der bisherige Abrechnungsjob lokal unter `%LOCALAPPDATA%\PUSH\production-backups` gesichert. Die Sicherung liegt außerhalb des Repositorys.
