@@ -1,11 +1,17 @@
 # Übergabe – Branch `ausbau`
 
+## Zielbuchung in Produktions-Supabase aktiviert (15.11.2026)
+
+- Nach ausdrücklichem Auftrag die beiden Migrationen `20261130130000_immediate_results.sql` und `20261130140000_book_friend_goal_owner.sql` in Produktion angewendet. Vorher wurden Schema und Daten der App sowie der bisherige Abrechnungsjob lokal unter `%LOCALAPPDATA%\PUSH\production-backups` gesichert. Die Sicherung liegt außerhalb des Repositorys.
+- Ein persönliches Tagesziel mit 8.000 Schritten und ein Freundesziel mit 3,5 km wurden auf Produktion in einer zurückgerollten Testtransaktion geprüft. Pro Ziel wurde genau 1 virtueller Credit abgebucht, das Freundesziel enthielt die eigene Teilnahme und einen Einladungscode. Die Testdaten wurden vollständig zurückgerollt.
+- Die Speicherfunktion ist über die API erreichbar und verlangt Anmeldung. `advance-challenges` läuft alle zehn Sekunden, der Produktions-Dry-run hat keine offenen Migrationen. Build 6 kann für die Buchung am Handy verwendet werden. Gerätetest mit einem angemeldeten Testkonto steht noch aus.
+
 ## Android-Release 6 im internen Google-Play-Test (15.11.2026)
 
 - Google Play zeigt **6 (1.0.0)** als neuesten Release und **Für interne Tester verfügbar**. [Installationslink für Tester](https://play.google.com/apps/internaltest/4698843839792601650).
 - Das signierte AAB `PUSH-v1.0.0-6.aab` liegt im Projektordner. Paketname, Versionscode 6, Signatur und Produktions-Supabase wurden geprüft. Die veröffentlichte App entspricht exakt Commit `8f5d2c6` und dem GitHub-Tag `android/internal/v6`.
 - Der [Release-Ablauf](RELEASE.md#android-release-mit-github-abgleichen) beschreibt die Zuordnung von GitHub-Stand und Play-Version für künftige Updates. Typecheck, Lint, 291 Jest-Tests und 564 lokale Datenbanktests waren erfolgreich.
-- Der lesende Cloud-Check bestätigt, dass die Produktions-RPC für die Zielbuchung und die Folgemigration fehlen. Zielbuchung nach Anwendung der Migrationen mit einem Testkonto prüfen. Die GPS-Messung und große Schrift am Gerät bleiben Teil der Abnahme.
+- Bei der Veröffentlichung fehlten die Zielmigrationen noch. Sie sind inzwischen angewendet, siehe oben. Zielbuchung, GPS-Messung und große Schrift am Gerät bleiben Teil der Abnahme.
 
 ## Frühere Oberfläche mit gezielten Korrekturen (15.11.2026)
 
@@ -119,7 +125,7 @@
 
 ## Cloud-Aufgaben
 
-1. Produktionssicherung prüfen oder bereitstellen, dann `20261130130000_immediate_results.sql` und `20261130140000_book_friend_goal_owner.sql` nach [Setup](SETUP.md#coach-header-und-endgültige-zielauswertung) einspielen. Anschließend RPC und Cron-Zeitplan für `advance-challenges` prüfen und beide Zielarten mit einem Testkonto buchen.
+1. Beide Zielarten auf dem Handy mit einem Testkonto buchen. Die Produktionsmigrationen, die Speicherfunktion und der Cron-Zeitplan wurden geprüft.
 2. Privaten Bucket `avatars` und seine Regeln prüfen (512 KB, JPEG/PNG/WebP). E-Mail-Login und Passwortlänge 8 setzen, doppelte Bestätigung für E-Mail-Wechsel ausschalten und die OTP-Einstellung auf 8 Stellen prüfen.
 3. Vorlagen aus `supabase/templates/` für Anmeldung, Registrierung und E-Mail-Wechsel übernehmen. Anschließend mit `npm run start:cloud` und echten E-Mails testen.
 4. Server-Push auf einem installierten Android-Build mit Firebase-Konfiguration prüfen. Firebase, EAS-Zugangsdaten, Edge Function und Cron sind eingerichtet. Sentry ist optional.

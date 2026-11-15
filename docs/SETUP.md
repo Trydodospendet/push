@@ -829,6 +829,10 @@ QR-Code scannen. Heute 3 km mit 20 Credits prüfen, eigene Werte/Datumsbereiche 
 
 Die Migration `20261130130000_immediate_results.sql` stellt die Speicherfunktion für „Ziel setzen“ bereit. Der gespeicherte Fortschritt wird am Zielende endgültig. Die Abrechnung läuft alle zehn Sekunden. Die Folgemigration `20261130140000_book_friend_goal_owner.sql` bucht den Einsatz des Erstellers eines Freundesziels im selben Datenbankvorgang wie das Anlegen des Ziels.
 
+**Produktionsstand 15.11.2026.** Beide Migrationen wurden nach einer lokalen logischen Sicherung eingespielt. Der Dry-run zeigt keine offenen Migrationen. Der nächste Schritt ist der Gerätetest mit Build 6 und einem Testkonto.
+
+### Vorgehen bei einer noch nicht migrierten Umgebung
+
 PowerShell öffnen: Win + R, powershell, Enter. Nach Prüfung des Produktions-Backups zunächst den Dry-run ausführen:
 
 ```powershell
@@ -836,7 +840,7 @@ cd "$HOME\Desktop\PUSH"
 npx supabase db push --remote --dry-run
 ```
 
-Der Dry-run vom 15.11.2026 listete genau die beiden oben genannten Migrationen in dieser Reihenfolge. Der Nutzer führt den tatsächlichen Produktionslauf aus, sobald der Dry-run die erwartete Liste zeigt:
+Vor der Anwendung listet der Dry-run die beiden oben genannten Migrationen in dieser Reihenfolge. Der Nutzer führt den tatsächlichen Produktionslauf aus, sobald der Dry-run die erwartete Liste zeigt:
 
 ```powershell
 npx supabase db push --remote

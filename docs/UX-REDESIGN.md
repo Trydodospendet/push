@@ -49,4 +49,4 @@ Für einen eigenen Zielordner gibt es `-Destination`. Der Ordner erhält die in 
 
 Mit einem passenden Development Build lässt sich der neue Stand über einen Metro-Neustart mit `npm run start:cloud -- --clear` laden. Im selben WLAN lässt sich die im Terminal angezeigte Metro-Adresse auch im Expo Dev Launcher über „Enter URL manually“ eingeben. Der jüngste verfügbare Android-Development-Build stammt vom Commit `f8bb7ac`. Die Textanleitung ist auch für diesen Build verfügbar, die Videos benötigen das native Modul `expo-video`. Der Start dieses Builds mit dem neuen Bundle muss auf dem Gerät bestätigt werden. Für die Play-Verteilung ist ein neuer Build nötig.
 
-Vor einer Produktionsbuchung sind `20261130130000_immediate_results.sql` und `20261130140000_book_friend_goal_owner.sql` erforderlich. Ablauf in [Setup](SETUP.md#coach-header-und-endgültige-zielauswertung).
+In Produktion sind `20261130130000_immediate_results.sql` und `20261130140000_book_friend_goal_owner.sql` angewendet. Beide Zielarten wurden serverseitig in einer zurückgerollten Testbuchung geprüft. Auf dem Handy den Ablauf mit Build 6 und einem Testkonto prüfen.
