@@ -1,4 +1,4 @@
-import { Stack, useRouter } from 'expo-router';
+import { Stack, usePreventRemove, useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
@@ -183,6 +183,13 @@ export default function SetGoalScreen() {
     if (!problem) setStep(step === 0 ? 1 : 2);
   };
 
+  const back = () => {
+    if (submitting.current) return;
+    setError(null);
+    setStep(step === 2 ? 1 : 0);
+  };
+  const allowNavigation = usePreventRemove(step > 0, back);
+
   const closeConfirmation = () => {
     if (submitting.current) return;
     setConfirming(false);
@@ -198,6 +205,8 @@ export default function SetGoalScreen() {
     create.mutate(input, {
       onSuccess: (challenge) => {
         setConfirming(false);
+        setStep(0);
+        allowNavigation();
         router.replace({ pathname: '/challenge/[id]', params: { id: challenge.id, started: '1' } });
       },
       onError: (mutationError) => setError(toUserMessage(mutationError)),
@@ -210,6 +219,10 @@ export default function SetGoalScreen() {
   const stake = formatAmount(stakeCents);
   const stepText = de.create.steps[step];
   const audience = withFriends ? de.create.reviewFriends : de.create.reviewAlone;
+  const todayHint =
+    first === today && first === last
+      ? de.create.todayHint + (running ? '' : ' ' + de.create.todayStepsHint)
+      : null;
 
   const renderError = () =>
     error ? (
@@ -343,12 +356,7 @@ export default function SetGoalScreen() {
             }}
           />
           {datesValid ? <Text color="accent">{label}</Text> : null}
-          {first === today && first === last ? (
-            <Text color="textSecondary">
-              {de.create.todayHint}
-              {running ? '' : ' ' + de.create.todayStepsHint}
-            </Text>
-          ) : null}
+          {todayHint ? <Text color="textSecondary">{todayHint}</Text> : null}
         </Card>
       ) : null}
 
@@ -405,16 +413,7 @@ export default function SetGoalScreen() {
       <View style={styles.group}>
         {!confirming ? renderError() : null}
         <Button label={step === 2 ? de.create.review : de.create.submit} onPress={next} />
-        {step > 0 ? (
-          <Button
-            label={de.create.back}
-            variant="secondary"
-            onPress={() => {
-              setError(null);
-              setStep(step === 2 ? 1 : 0);
-            }}
-          />
-        ) : null}
+        {step > 0 ? <Button label={de.create.back} variant="secondary" onPress={back} /> : null}
       </View>
 
       <Sheet
@@ -427,6 +426,8 @@ export default function SetGoalScreen() {
         <Text color="textSecondary">
           {label} · {audience}
         </Text>
+        <Text color="textSecondary">{goalRule(goalType, targetValue)}</Text>
+        {todayHint ? <Text color="textSecondary">{todayHint}</Text> : null}
         <Text>{de.create.confirmStake(stake)}</Text>
         {donate ? (
           <Text color="textSecondary">

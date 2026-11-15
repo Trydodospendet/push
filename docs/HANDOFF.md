@@ -1,5 +1,14 @@
 # Übergabe – Branch `ausbau`
 
+## Nachprüfung von Zielbuchung und GPS (15.11.2026)
+
+- „Angaben prüfen“ zeigt zusätzlich die Zielregel und bei einem heutigen Tagesziel den Zeitraum bis Mitternacht. Bei Schritten steht dort auch, dass bereits erfasste Schritte zählen. System-Zurück geht im Entwurf einen Schritt zurück und erhält die Eingaben. Bestätigungsfenster folgen reduzierter Bewegung, und Buttons können bei großer Schrift umbrechen.
+- Lokal reproduziert: Beim Freundesziel wurde der Einrichtungsschritt abgeschlossen, ohne den Einsatz des Erstellers zu buchen. `20261130140000_book_friend_goal_owner.sql` übernimmt die Buchung zusammen mit Zielanlage und eigener Teilnahme. Lokale Tests bestätigen 3,5 km, Einladungscode, einmalige Abbuchung, Gewinnverwendung, Rückgabe vor Start und vollständigen Rollback bei fehlendem Guthaben. Das persönliche Schrittziel startete in einer lokalen, zurückgerollten Testbuchung sofort und endete zur nächsten lokalen Mitternacht.
+- Die lesende Produktionsabfrage fand die RPC `create_goal_with_preferences` noch nicht. Der Dry-run nennt `20261130130000_immediate_results.sql` und `20261130140000_book_friend_goal_owner.sql`. Die aktiven Cron-Jobs `advance-challenges` und `create-ranked-cycles` laufen derzeit alle fünf Minuten bzw. täglich um 12 Uhr laut Cron-Ausdruck. Die Backup-Liste meldete keine physischen Backups und deaktiviertes PITR. Vor dem Produktionslauf eine aktuelle Sicherung prüfen oder bereitstellen, danach beide Zielarten mit einem Testkonto nach [Setup](SETUP.md#coach-header-und-endgültige-zielauswertung) buchen.
+- Laufuhr und GPS-Status warten nach „Fortsetzen“ auf den ersten Punkt aus dem neuen Abschnitt. Jest prüft die Tempo-Umrechnung, Stillstand, ungenaue Messungen und die Trennung der Abschnitte. GPS-Werte im Freien und Vergleich mit einer Uhr sowie große Schrift und reduzierte Bewegung auf dem Gerät stehen offen. Die Aufgaben stehen im [Ablaufskript](UX-REDESIGN.md#vergleich-auf-dem-gerät).
+- Metro wurde im Cloud-Modus mit Cache-Reset gestartet. Der jüngste in EAS verfügbare Android-Development-Build ist `f6a42466-8b39-48ca-9e89-1f15064619f0` (Commit `f8bb7ac`). Die Textanleitung lädt unabhängig vom erst später hinzugekommenen nativen Videomodul. Start des neuen Bundles auf dem Handy prüfen. Die Videos und die Play-Verteilung benötigen einen neuen Build.
+- Typecheck, Lint, 288 Jest-Tests (43 Suites), 564 lokale DB-Tests (22 Dateien) und Android-JavaScript-Export erfolgreich. Vorversion lokal und auf GitHub unter `backup/pre-ux-redesign-2026-11-15` sowie im separaten Checkout bei `0cf92c6` bestätigt.
+
 ## Überarbeitete App-Oberfläche (15.11.2026)
 
 - Vorversion als Git-Tag `backup/pre-ux-redesign-2026-11-15` auf GitHub und als separater Checkout `PUSH-vor-umbau` auf dem Desktop gesichert. Ablauf, Studien, Gerätetests und PowerShell-Skript stehen im [Ablaufskript](UX-REDESIGN.md).
@@ -89,7 +98,7 @@
 
 ## Cloud-Aufgaben
 
-1. Supabase-Backup prüfen und `20261130130000_immediate_results.sql` einspielen. Der Dry-run vom 15.11.2026 listete genau diese Migration. In `cron.job` die Jobs `advance-challenges` und `create-ranked-cycles` prüfen.
+1. Produktionssicherung prüfen oder bereitstellen, dann `20261130130000_immediate_results.sql` und `20261130140000_book_friend_goal_owner.sql` nach [Setup](SETUP.md#coach-header-und-endgültige-zielauswertung) einspielen. Anschließend RPC und Cron-Zeitplan für `advance-challenges` prüfen und beide Zielarten mit einem Testkonto buchen.
 2. Privaten Bucket `avatars` und seine Regeln prüfen (512 KB, JPEG/PNG/WebP). E-Mail-Login und Passwortlänge 8 setzen, doppelte Bestätigung für E-Mail-Wechsel ausschalten und die OTP-Einstellung auf 8 Stellen prüfen.
 3. Vorlagen aus `supabase/templates/` für Anmeldung, Registrierung und E-Mail-Wechsel übernehmen. Anschließend mit `npm run start:cloud` und echten E-Mails testen.
 4. Server-Push auf einem installierten Android-Build mit Firebase-Konfiguration prüfen. Firebase, EAS-Zugangsdaten, Edge Function und Cron sind eingerichtet. Sentry ist optional.

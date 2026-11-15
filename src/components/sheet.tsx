@@ -2,6 +2,7 @@ import type { ReactNode } from 'react';
 import { Modal, Pressable, ScrollView, StyleSheet, View, useWindowDimensions } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { useMotionEnabled } from '@/features/preferences/motion';
 import { colors, layout, radius, scrim, spacing } from '@/theme';
 
 import { Text } from './text';
@@ -15,16 +16,17 @@ export type SheetProps = {
   closeLabel: string;
 };
 
-/** Bottom sheet for confirmations (e.g. joining a challenge). Slides in, no shadows. */
+/** Bottom sheet for confirmations (e.g. joining a challenge). */
 export function Sheet({ visible, title, onClose, children, closeLabel }: SheetProps) {
   const insets = useSafeAreaInsets();
   const { height } = useWindowDimensions();
+  const motionEnabled = useMotionEnabled();
 
   return (
     <Modal
       visible={visible}
       transparent
-      animationType="slide"
+      animationType={motionEnabled ? 'slide' : 'none'}
       statusBarTranslucent
       navigationBarTranslucent
       onRequestClose={onClose}

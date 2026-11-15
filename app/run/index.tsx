@@ -202,9 +202,10 @@ function ActiveRun({ onInset }: { onInset: (height: number) => void }) {
   const stats = liveStats(recorder.points);
   const splits = liveSplits(recorder.points);
   const lastSplit = splits[splits.length - 1];
-  const last = recorder.points[recorder.points.length - 1];
+  const last = recorder.points.at(-1);
+  const hasCurrentFix = last?.segment === recorder.segment;
   // Between two GPS points the clock keeps running (up to 10 s, then the signal is lost).
-  const sinceLast = !paused && last ? Math.min(10, Math.max(0, (now - last.t) / 1000)) : 0;
+  const sinceLast = !paused && hasCurrentFix ? Math.min(10, Math.max(0, (now - last.t) / 1000)) : 0;
   const elapsed = stats.elapsedS + sinceLast;
   const pace = paceSecondsPerKm(stats.distanceM, stats.elapsedS);
   const speed = paused ? null : currentSpeed(recorder.points, now, recorder.segment);
@@ -229,11 +230,7 @@ function ActiveRun({ onInset }: { onInset: (height: number) => void }) {
               align="center"
               accessibilityLiveRegion="polite"
             >
-              {paused
-                ? de.run.paused
-                : recorder.points.length === 0
-                  ? de.run.accuracyWaiting
-                  : de.run.recording}
+              {paused ? de.run.paused : !hasCurrentFix ? de.run.accuracyWaiting : de.run.recording}
             </Text>
             <Text
               variant="display"

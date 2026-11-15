@@ -1,11 +1,18 @@
-import { StyleSheet, View } from 'react-native';
+import { requireOptionalNativeModule } from 'expo';
+import { lazy, Suspense } from 'react';
+import { Platform, StyleSheet, View } from 'react-native';
 
 import { Art, Button, Card, FadeIn, GlowBackdrop, Screen, Text } from '@/components';
 import { healthSourceName } from '@/features/health/platform';
 import { de } from '@/i18n/de';
 import { spacing } from '@/theme';
 
-import { GuideVideos } from './guide-videos';
+const GuideVideos = lazy(async () => ({
+  default: (await import('./guide-videos')).GuideVideos,
+}));
+
+// Older development clients can load the guide without the native video player.
+const canPlayVideos = Platform.OS === 'web' || requireOptionalNativeModule('ExpoVideo') !== null;
 
 /** The long version of "how it works": every step with its own picture. */
 export function Guide({ onBack }: { onBack: () => void }) {
@@ -20,7 +27,11 @@ export function Guide({ onBack }: { onBack: () => void }) {
         </Text>
         <Text color="textSecondary">{de.guide.intro}</Text>
       </FadeIn>
-      <GuideVideos />
+      {canPlayVideos ? (
+        <Suspense fallback={null}>
+          <GuideVideos />
+        </Suspense>
+      ) : null}
       {steps.map((step, index) => (
         <FadeIn key={step.title} delayMs={Math.min(index, 4) * 80}>
           <Card

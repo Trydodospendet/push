@@ -28,9 +28,10 @@
 
 ## Vergleich auf dem Gerät
 
-- Leeres Konto öffnen. Ohne Erklärung ein persönliches Schrittziel für heute mit einem kleinen Einsatz vorbereiten und vor der Buchung erklären, was heute zählt und wann der Einsatz gebunden ist.
-- Ein eigenes Laufziel mit Kommawert und Freunden vorbereiten. Zurückgehen, Zeitraum ändern und kontrollieren, dass der Zielwert erhalten bleibt. Für eine echte Testbuchung ein Testkonto nutzen.
-- Draußen im Stand, beim Gehen und beim Laufen prüfen, wie schnell die Anzeige reagiert. Die Geschwindigkeit über einen gleichmäßigen Abschnitt mit einer Uhr oder Referenzmessung vergleichen. Pause, Fortsetzen und fehlende Freigabe prüfen.
+- Auf „Heute“ das Datum, die Ziele, den Laufstart, den nächsten Trainingslauf und Pushy prüfen. „Wochenstatistik und Erfolge“ öffnen und schließen. Unter Aktivität die drei Verlaufsfilter, unter Ranked Tag/Woche/Monat und „Freunde & Liga“, im Profil die Einstellungsgruppen prüfen.
+- Im leeren Testkonto unter „Heute“ → „Ziel setzen“ → „Tägliche Schritte“ → „8.000 Schritte“ wählen. Weiter zu „Heute bis Mitternacht“, dann „1,00 Credits“ und „Angaben prüfen“. Vor dem Buchen festhalten, welche Schritte zählen und ab wann der Einsatz gebunden ist.
+- Unter „Ziel setzen“ → „Gesamtstrecke“ → „Eigener Wert“ **3,5** eingeben. Weiter zu „Mit Freunden“ und „Eigene Daten wählen“. Mit dem System-Zurück zum Zielwert zurückgehen, erneut weiter und die Daten auf morgen bis übermorgen ändern. In „Angaben prüfen“ Wert, Zeitraum, Einsatz und Bindung ab Start kontrollieren. „Angaben ändern“ muss zum Einsatz zurückführen. Nach der Migration für eine echte Testbuchung ein Testkonto nutzen und prüfen, ob genau einmal abgebucht wurde und der Einladungscode erscheint.
+- Draußen unter „Aktivität“ → „Live-Tempo testen“ den Standort erlauben. Rund 20 Sekunden stehen, dann gleichmäßig gehen und laufen. Pro Abschnitt den angezeigten Bereich in km/h und bei einer Uhr deren Wert im gleichen Abschnitt festhalten. In „Lauf aufzeichnen“ → „Pause“ → „Fortsetzen“ prüfen, ob die Anzeige bis zur neuen Messung einen Strich zeigt und die Uhr keine Pausenzeit addiert. Vorschau schließen und einmal mit verweigerter Standortfreigabe öffnen. Geräte-/Android-Version und exakte Fehlermeldung festhalten, falls ein Schritt scheitert.
 - Mit großer Schrift und reduzierter Bewegung prüfen, ob alle Schritte und Einstellungen erreichbar sind. Für den Vergleich Fragen, Fehlversuche und benötigte Zeit je Aufgabe festhalten.
 
 ## Vorversion öffnen
@@ -45,4 +46,6 @@ Für einen eigenen Zielordner gibt es `-Destination`. Der Ordner erhält die in 
 
 ## Auf dem Gerät ausprobieren
 
-Mit einem passenden Development Build lässt sich der neue Stand über einen Metro-Neustart mit `npm run start:cloud -- --clear` laden. Für die Play-Verteilung ist ein neuer Build nötig. Die lesende Prüfung am 15.11.2026 zeigte die bereits vorhandene Migration `20261130130000_immediate_results.sql` weiterhin als offen. Vor dem Speichern von Zielen gegen Produktion muss sie nach [Setup](SETUP.md#coach-header-und-endgültige-zielauswertung) eingespielt werden.
+Mit einem passenden Development Build lässt sich der neue Stand über einen Metro-Neustart mit `npm run start:cloud -- --clear` laden. Im selben WLAN lässt sich die im Terminal angezeigte Metro-Adresse auch im Expo Dev Launcher über „Enter URL manually“ eingeben. Der jüngste verfügbare Android-Development-Build stammt vom Commit `f8bb7ac`. Die Textanleitung ist auch für diesen Build verfügbar, die Videos benötigen das native Modul `expo-video`. Der Start dieses Builds mit dem neuen Bundle muss auf dem Gerät bestätigt werden. Für die Play-Verteilung ist ein neuer Build nötig.
+
+Vor einer Produktionsbuchung sind `20261130130000_immediate_results.sql` und `20261130140000_book_friend_goal_owner.sql` erforderlich. Ablauf in [Setup](SETUP.md#coach-header-und-endgültige-zielauswertung).

@@ -63,7 +63,7 @@ export function Button({
       {loading ? (
         <ActivityIndicator color={colors[contentColor]} />
       ) : (
-        <Text variant="button" color={contentColor} numberOfLines={1}>
+        <Text variant="button" color={contentColor} align="center">
           {label}
         </Text>
       )}
@@ -77,6 +77,7 @@ const styles = StyleSheet.create({
     minHeight: layout.buttonHeight,
     borderRadius: radius.pill,
     paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm,
     alignItems: 'center',
     justifyContent: 'center',
   },

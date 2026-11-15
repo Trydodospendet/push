@@ -1,6 +1,8 @@
-import { userEvent } from '@testing-library/react-native';
+import { act, userEvent } from '@testing-library/react-native';
+import { router } from 'expo-router';
 import { renderRouter, screen } from 'expo-router/testing-library';
 import { de } from '@/i18n/de';
+import { addDays, formatDayLabel, toLocalDate } from '@/lib/dates';
 
 jest.mock('@/lib/supabase');
 jest.mock('@/features/health/storage');
@@ -97,9 +99,10 @@ beforeEach(() => {
 });
 
 describe('goals', () => {
-  it('shows the stake, the return and the binding before anything is booked', async () => {
+  it('explains and books a personal step goal for today only after confirmation', async () => {
     const user = userEvent.setup();
-    const created = goal();
+    const today = toLocalDate(new Date(), profile.timezone);
+    const created = goal({ goal_type: 'steps_daily', target_value: 8000, status: 'active' });
     mockDb.set({ challenges: [], challenge_participants: [], wallets: { balance_cents: 10000 } });
     mockRpc({
       create_goal_with_preferences: () => {
@@ -116,10 +119,10 @@ describe('goals', () => {
     expect(await screen.findByText('Noch kein Ziel')).toBeOnTheScreen();
     await user.press(screen.getAllByRole('button', { name: 'Ziel setzen' })[0]);
 
-    await user.press(await screen.findByRole('radio', { name: 'Gesamtstrecke' }));
-    await user.press(screen.getByRole('radio', { name: '10 km' }));
+    await user.press(await screen.findByRole('radio', { name: de.goal.typeLabel.steps_daily }));
+    await user.press(screen.getByRole('radio', { name: '8.000 Schritte' }));
     await user.press(screen.getByRole('button', { name: 'Weiter' }));
-    await user.press(screen.getByRole('radio', { name: 'Nächste Woche' }));
+    await user.press(screen.getByRole('radio', { name: de.create.periodLabel.day }));
     await user.press(screen.getByRole('button', { name: 'Weiter' }));
     await user.press(screen.getByRole('radio', { name: '10,00 Credits' }));
     await user.press(screen.getByRole('button', { name: 'Angaben prüfen' }));
@@ -140,7 +143,9 @@ describe('goals', () => {
     expect(
       screen.getByText('Verfehlst du dein Ziel, verfällt dein Einsatz in den Pool.'),
     ).toBeOnTheScreen();
-    expect(screen.getByText(/Ab dem Start ist der Einsatz gebunden/)).toBeOnTheScreen();
+    expect(screen.getByText(/Bereits heute erfasste Schritte zählen mit/)).toBeOnTheScreen();
+    expect(screen.getByText(/bis Mitternacht/)).toBeOnTheScreen();
+    expect(screen.getByText(/ab der Bestätigung sofort gebunden/)).toBeOnTheScreen();
     expect(
       screen.getByText('Testphase: Credits sind virtuell und können nicht ausgezahlt werden.'),
     ).toBeOnTheScreen();
@@ -150,33 +155,62 @@ describe('goals', () => {
     expect(supabaseMock.rpc).toHaveBeenCalledWith(
       'create_goal_with_preferences',
       expect.objectContaining({
-        p_goal_type: 'run_total',
-        p_target_value: 10000,
+        p_goal_type: 'steps_daily',
+        p_target_value: 8000,
         p_stake_cents: 1000,
-        p_start_date: expect.any(String),
-        p_end_date: expect.any(String),
+        p_start_date: today,
+        p_end_date: today,
         p_with_friends: false,
       }),
     );
     expect(await screen.findByText('TOPF DIESES ZEITRAUMS')).toBeOnTheScreen();
   });
 
-  it('validates custom dates and keeps a decimal distance when going back', async () => {
+  it('preserves a decimal friend goal through back navigation and custom date changes', async () => {
     const user = userEvent.setup();
+    const today = toLocalDate(new Date(), profile.timezone);
+    const first = addDays(today, 1);
+    const last = addDays(today, 3);
+    mockDb.set({ challenges: [], challenge_participants: [], wallets: { balance_cents: 10000 } });
     mockRpc();
-    await renderRouter('./app', { initialUrl: '/challenge/create' });
+    await renderRouter('./app', { initialUrl: '/' });
+    expect(await screen.findByText('Noch kein Ziel')).toBeOnTheScreen();
+    await user.press(screen.getAllByRole('button', { name: 'Ziel setzen' })[0]);
 
     await user.press(await screen.findByRole('radio', { name: 'Eigener Wert' }));
     const target = screen.getByLabelText(de.improvements.km);
     await user.type(target, '3,5');
     await user.press(screen.getByRole('button', { name: 'Weiter' }));
+    await user.press(screen.getByRole('radio', { name: de.improvements.together }));
     await user.press(screen.getByRole('button', { name: 'Eigene Daten wählen' }));
     await user.clear(screen.getByLabelText(de.improvements.endDate));
     await user.type(screen.getByLabelText(de.improvements.endDate), '2026-02-30');
     await user.press(screen.getByRole('button', { name: 'Weiter' }));
     expect(screen.getByRole('alert')).toHaveTextContent(de.improvements.invalidDates);
-    await user.press(screen.getByRole('button', { name: 'Zurück' }));
+    await act(async () => router.back());
     expect(screen.getByDisplayValue('3,5')).toBeOnTheScreen();
+    await user.press(screen.getByRole('button', { name: 'Weiter' }));
+    const start = screen.getByLabelText(de.improvements.startDate);
+    const end = screen.getByLabelText(de.improvements.endDate);
+    await user.clear(start);
+    await user.type(start, first);
+    await user.clear(end);
+    await user.type(end, last);
+    await user.press(screen.getByRole('button', { name: 'Weiter' }));
+    await user.press(screen.getByRole('button', { name: 'Angaben prüfen' }));
+    expect(await screen.findByText(/Alle deine Läufe im Zeitraum.*3,5 km/)).toBeOnTheScreen();
+    expect(
+      screen.getByText(
+        `${de.create.range(formatDayLabel(first), formatDayLabel(last))} · ${de.create.reviewFriends}`,
+      ),
+    ).toBeOnTheScreen();
+    expect(screen.getByText(/Ab dem Start ist der Einsatz gebunden/)).toBeOnTheScreen();
+    await user.press(screen.getByRole('button', { name: 'Angaben ändern' }));
+    expect(screen.getByRole('button', { name: 'Angaben prüfen' })).toBeOnTheScreen();
+    expect(supabaseMock.rpc).not.toHaveBeenCalledWith(
+      'create_goal_with_preferences',
+      expect.anything(),
+    );
   });
 
   it('shows the goal of the period pot and lets the owner withdraw it before the start', async () => {

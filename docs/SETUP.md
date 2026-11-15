@@ -827,17 +827,24 @@ QR-Code scannen. Heute 3 km mit 20 Credits prüfen, eigene Werte/Datumsbereiche 
 
 ## Coach, Header und endgültige Zielauswertung
 
-Migration: 20261130130000_immediate_results.sql. Der gespeicherte Fortschritt wird am Zielende endgültig; synchronisiere vorher. Die Serverbuchung erfolgt im nächsten Zehn-Sekunden-Durchlauf. Diese App-Änderungen nutzen vorhandene native Module. Ein neuer Build wird erst für Firebase-Push nötig.
+Die Migration `20261130130000_immediate_results.sql` stellt die Speicherfunktion für „Ziel setzen“ bereit. Der gespeicherte Fortschritt wird am Zielende endgültig. Die Abrechnung läuft alle zehn Sekunden. Die Folgemigration `20261130140000_book_friend_goal_owner.sql` bucht den Einsatz des Erstellers eines Freundesziels im selben Datenbankvorgang wie das Anlegen des Ziels.
 
-PowerShell öffnen: Win + R, powershell, Enter. Nach Backup-Prüfung:
+PowerShell öffnen: Win + R, powershell, Enter. Nach Prüfung des Produktions-Backups zunächst den Dry-run ausführen:
 
 ```powershell
 cd "$HOME\Desktop\PUSH"
 npx supabase db push --remote --dry-run
+```
+
+Der Dry-run vom 15.11.2026 listete genau die beiden oben genannten Migrationen in dieser Reihenfolge. Der Nutzer führt den tatsächlichen Produktionslauf aus, sobald der Dry-run die erwartete Liste zeigt:
+
+```powershell
 npx supabase db push --remote
 ```
 
-Erwartet wird nur die oben genannte Migration. Anschließend den bestehenden Expo-Server mit Strg+C beenden und im sichtbaren Fenster starten:
+Danach den Dry-run wiederholen und beide Zielarten mit einem Testkonto und kleinem Einsatz buchen. Beim Freundesziel Guthaben, eigene Teilnahme und Einladungscode in den Zieldetails prüfen.
+
+Bei Bedarf den bestehenden Expo-Server mit Strg+C beenden und im sichtbaren Fenster starten:
 
 ```powershell
 npm run start:cloud -- --clear
