@@ -1,5 +1,11 @@
 # Übergabe – Branch `ausbau`
 
+## Start am selben Tag (15.11.2026)
+
+- Trainingspläne starten über „Heute starten“ mit einem Lauf am selben Kalendertag. Die nächsten beiden Läufe liegen zwei und vier Tage später. Bereits gespeicherte Pläne behalten ihren Rhythmus. Bei einem früher geplanten Start in der Zukunft bietet die App „Heute starten“ an. Mit aktuellem Development Build genügt ein Metro-Neustart. Für die Verteilung über Play muss die aktualisierte App in einen neuen Build.
+- „Etwas ist schiefgelaufen. Bitte versuche es erneut.“ beim Speichern unter „Ziel setzen“: Der aktuelle Zielbildschirm ruft `create_goal_with_preferences` auf. Eine lesende Cloud-Abfrage bestätigt, dass die Funktion fehlt. Der Produktions-Dry-run listet genau `20261130130000_immediate_results.sql`, die diese Funktion bereitstellt. Nach Backup-Prüfung muss der Nutzer die Migration wie in [Setup](SETUP.md#coach-header-und-endgültige-zielauswertung) einspielen und „Heute“ auf dem Gerät bestätigen.
+- App-Flow-Tests an die bereits produktiven achtstelligen E-Mail-Codes angepasst. Typecheck, Lint, 285 Jest-Tests (mit 30 Sekunden Testlimit) und 555 lokale DB-Tests bestanden. Gerätetest steht aus.
+
 ## Videos in der App
 
 - Unter Profil → „So funktioniert’s“ lassen sich zwei kurze Videos zu Schrittzielen öffnen und offline abspielen. Die App-Versionen liegen in `assets/guide-videos/`. Das Render-Skript `marketing/push-shorts/render.py` erzeugt sie mit `--in-app`.
@@ -69,15 +75,15 @@
 
 - Android-Widget später mit Gerätetest? Android-App-Links mit Play-Signatur ergänzen?
 - Reicht die monatliche Gesamtliga oder sind Divisionen und andere Ranked-Punkte gewünscht?
-- Sollen Trainingstage wählbar sein? Aktuell gelten Di/Do/Sa und mindestens 80 % der Strecke.
+- Sollen Trainingstage wählbar sein? Neue Pläne starten mit dem ersten Lauf am selben Tag und setzen die beiden weiteren Läufe zwei und vier Tage nach Wochenbeginn an. Mindestens 80 % der Strecke innerhalb derselben Planwoche zählen weiterhin.
 - Tagesziele können ab sofort bis Mitternacht laufen; Woche und Monat nutzen feste Zeiträume. Alte Gruppen-Pools sind weiter per Code erreichbar. Weitere Annahmen stehen im [Archiv](HANDOFF_ARCHIV.md).
 - Verteilung bei Rundung: ganzzahlige Credits werden proportional zum Einsatz verteilt; nicht verteilbare Rest-Credits gehen ans Haus. Die bestehende Gebühren- und Spendenlogik bleibt aktiv.
 
 ## Cloud-Aufgaben
 
-1. Nach dem lokalen Test Supabase-Backup prüfen und die ausstehenden Migrationen bis einschließlich `20261130110000_goal_same_day_duration` einspielen. Der letzte Dry-run des Nutzers listete nur `20261130100000_goal_today`; nach der zusätzlichen Laufzeit-Migration Dry-run wiederholen. `20261121090000_gps_runs.sql` ist laut Dry-run bereits angewendet. In `cron.job` die Jobs `advance-challenges` und `create-ranked-cycles` prüfen.
-2. Privaten Bucket `avatars` und seine Regeln prüfen (512 KB, JPEG/PNG/WebP). E-Mail-Login und Passwortlänge 8 setzen, doppelte Bestätigung für E-Mail-Wechsel ausschalten, OTP auf 6 Stellen und 3600 s prüfen.
+1. Supabase-Backup prüfen und `20261130130000_immediate_results.sql` einspielen. Der Dry-run vom 15.11.2026 listete genau diese Migration. In `cron.job` die Jobs `advance-challenges` und `create-ranked-cycles` prüfen.
+2. Privaten Bucket `avatars` und seine Regeln prüfen (512 KB, JPEG/PNG/WebP). E-Mail-Login und Passwortlänge 8 setzen, doppelte Bestätigung für E-Mail-Wechsel ausschalten und die OTP-Einstellung auf 8 Stellen prüfen.
 3. Vorlagen aus `supabase/templates/` für Anmeldung, Registrierung und E-Mail-Wechsel übernehmen. Anschließend mit `npm run start:cloud` und echten E-Mails testen.
-4. Server-Push nach [PUSH.md](PUSH.md) einrichten (Firebase, EAS-Datei, Edge Function und Cron). Sentry ist optional.
+4. Server-Push auf einem installierten Android-Build mit Firebase-Konfiguration prüfen. Firebase, EAS-Zugangsdaten, Edge Function und Cron sind eingerichtet. Sentry ist optional.
 5. Einladungsseite `docs/legal/i.html` und aktualisierten Datenschutz auf Netlify veröffentlichen. Datenschutz bei Bedarf um die lokale Health-Connect-Streckenanzeige ergänzen und das Vordergrunddienst-Formular der Play Console ausfüllen ([Release §2.8a](RELEASE.md)).
 6. Bei Bedarf die NGO-Platzhalter in Supabase ersetzen und Einsprüche wie im [Archiv](HANDOFF_ARCHIV.md) beschrieben bearbeiten.

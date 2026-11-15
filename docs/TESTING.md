@@ -116,8 +116,10 @@ Voraussetzung: neuer Development Build (siehe SETUP 5.11) und `supabase db reset
 - **Sprachansagen (10):** Profil → Darstellung → „Sprachansagen beim Laufen“ einschalten, Lautstärke
   prüfen, einen Lauf starten und etwa 1 km gehen/laufen: Nach dem Kilometer wird Zeit angesagt.
   Ausschalten: keine Ansage mehr. Bereits gelaufene Kilometer werden beim Einschalten nicht wiederholt.
-- **Trainingsplan (10):** Home → „Trainingsplan“ → Plan wählen → „Plan starten“. Die Wochen-Läufe
-  stehen mit Datum (Di/Do/Sa) und „Offen“. Nach einem gültigen Lauf (mind. 80 % der Strecke, in
+- **Trainingsplan (10):** Home → „Trainingsplan“ → Plan wählen → „Heute starten“. Auch am Wochenende
+  muss der erste Lauf auf heute fallen. Die beiden weiteren Läufe der ersten Woche folgen nach zwei
+  und vier Tagen. Bei einem früher gespeicherten Plan mit Start in der Zukunft „Heute starten“
+  antippen und dieselben Daten prüfen. Nach einem gültigen Lauf (mind. 80 % der Strecke, in
   derselben Woche) steht „Geschafft“. Mit eingeschalteten Erinnerungen (Profil → Benachrichtigungen)
   kommt am Tag eines offenen Laufs zur Erinnerungszeit eine Meldung. „Plan beenden“ löscht ihn.
 - **Einspruch und Hilfe (13):** Bei einem Lauf, der nicht zählt, „Einspruch“ tippen; Status unter

@@ -13,11 +13,20 @@ describe('active plan storage', () => {
   beforeEach(() => mockStore.clear());
 
   it('keeps the plan per user and removes it again', async () => {
-    await saveActivePlan('a', { planId: '5k_8w', startMonday: '2026-11-16' });
-    expect(await loadActivePlan('a')).toEqual({ planId: '5k_8w', startMonday: '2026-11-16' });
+    await saveActivePlan('a', { planId: '5k_8w', startDate: '2026-11-15' });
+    expect(await loadActivePlan('a')).toEqual({ planId: '5k_8w', startDate: '2026-11-15' });
     expect(await loadActivePlan('b')).toBeNull();
     await saveActivePlan('a', null);
     expect(await loadActivePlan('a')).toBeNull();
+  });
+
+  it('loads the original Monday-based schedule', async () => {
+    mockStore.set('push.training.a', '{"planId":"5k_8w","startMonday":"2026-11-16"}');
+    expect(await loadActivePlan('a')).toEqual({
+      planId: '5k_8w',
+      startDate: '2026-11-16',
+      firstRunOffset: 1,
+    });
   });
 
   it('ignores damaged or unknown values', async () => {

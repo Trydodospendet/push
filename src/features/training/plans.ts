@@ -2,7 +2,7 @@ import { addDays } from '@/lib/dates';
 
 /**
  * Training plans: pure data and rules, no server. A plan is a list of weeks; every week has two
- * or three runs (distance in metres) on fixed days. A run counts as done when a valid run of at
+ * or three runs (distance in metres) every other day. A run counts as done when a valid run of at
  * least 80 % of the planned distance exists in the same week (the order inside the week is free,
  * so a rest day can be moved).
  */
@@ -23,8 +23,6 @@ export type PlanTemplate = {
   weeks: number;
   /** Kilometres of the runs of every week (the last is the long run), in metres. */
   weekly: readonly (readonly number[])[];
-  /** Days of the week (0 = Monday) on which the runs of a week take place. */
-  days: readonly number[];
 };
 
 const km = (...values: number[]): number[] => values.map((value) => Math.round(value * 1000));
@@ -33,13 +31,11 @@ export const PLANS: readonly PlanTemplate[] = [
   {
     id: 'start_4w',
     weeks: 4,
-    days: [1, 3, 5],
     weekly: [km(1.5, 1.5, 2), km(2, 2, 2.5), km(2, 2.5, 3), km(2.5, 3, 3.5)],
   },
   {
     id: '5k_8w',
     weeks: 8,
-    days: [1, 3, 5],
     weekly: [
       km(2, 2, 3),
       km(2.5, 2, 3.5),
@@ -54,7 +50,6 @@ export const PLANS: readonly PlanTemplate[] = [
   {
     id: '10k_10w',
     weeks: 10,
-    days: [1, 3, 5],
     weekly: [
       km(4, 3, 6),
       km(4, 4, 6),
@@ -74,13 +69,17 @@ export function planById(id: string): PlanTemplate | undefined {
   return PLANS.find((plan) => plan.id === id);
 }
 
-/** All runs of a plan that starts on `startMonday` (a local date, the Monday of week 1). */
-export function sessionsOf(plan: PlanTemplate, startMonday: string): PlanSession[] {
+/** All runs from the start date. Older plans have a rest day at the start of each week. */
+export function sessionsOf(
+  plan: PlanTemplate,
+  startDate: string,
+  firstRunOffset = 0,
+): PlanSession[] {
   const sessions: PlanSession[] = [];
   plan.weekly.forEach((distances, weekIndex) => {
     distances.forEach((distanceM, runIndex) => {
       sessions.push({
-        date: addDays(startMonday, weekIndex * 7 + (plan.days[runIndex] ?? runIndex * 2)),
+        date: addDays(startDate, weekIndex * 7 + firstRunOffset + runIndex * 2),
         week: weekIndex + 1,
         distanceM,
         kind: runIndex === distances.length - 1 ? 'long' : 'easy',
@@ -104,12 +103,12 @@ export const REQUIRED_SHARE = 0.8;
 export function sessionStates(
   sessions: readonly PlanSession[],
   workouts: readonly PlanWorkout[],
-  startMonday: string,
+  startDate: string,
 ): SessionState[] {
   const done = new Set<PlanSession>();
   const weeks = new Set(sessions.map((session) => session.week));
   for (const week of weeks) {
-    const from = addDays(startMonday, (week - 1) * 7);
+    const from = addDays(startDate, (week - 1) * 7);
     const to = addDays(from, 6);
     const runs = workouts
       .filter((run) => run.isValid && run.localDate >= from && run.localDate <= to)
@@ -127,11 +126,4 @@ export function sessionStates(
     }
   }
   return sessions.map((session) => ({ ...session, done: done.has(session) }));
-}
-
-/** Monday on or after the given local date (plans start on a Monday). */
-export function nextMonday(today: string): string {
-  const [year, month, day] = today.split('-').map(Number);
-  const weekday = (new Date(Date.UTC(year, month - 1, day)).getUTCDay() + 6) % 7; // 0 = Monday
-  return weekday === 0 ? today : addDays(today, 7 - weekday);
 }

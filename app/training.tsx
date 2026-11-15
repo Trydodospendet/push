@@ -19,9 +19,9 @@ import { DEFAULT_TIMEZONE } from '@/config/app';
 import { useSession } from '@/features/auth/auth-provider';
 import { formatKm } from '@/features/gps/format';
 import { useActivePlan, useSetActivePlan, useTrainingSessions } from '@/features/training/api';
-import { nextMonday, PLANS, planById, type PlanId } from '@/features/training/plans';
+import { PLANS, planById, type PlanId } from '@/features/training/plans';
 import { de } from '@/i18n/de';
-import { formatDayLabel, toLocalDate } from '@/lib/dates';
+import { daysBetween, formatDayLabel, toLocalDate } from '@/lib/dates';
 import { spacing } from '@/theme';
 
 const SCREEN_EDGES = ['bottom', 'left', 'right'] as const;
@@ -39,10 +39,7 @@ export default function TrainingScreen() {
 
   const start = (planId: PlanId) => {
     const today = toLocalDate(new Date(), DEFAULT_TIMEZONE);
-    setPlan.mutate(
-      { planId, startMonday: nextMonday(today) },
-      { onSuccess: () => setCelebrate(true) },
-    );
+    setPlan.mutate({ planId, startDate: today }, { onSuccess: () => setCelebrate(true) });
   };
 
   if (!active.isPending && !active.isError && !active.data && slide < de.improvements.slides.length)
@@ -57,8 +54,10 @@ export default function TrainingScreen() {
       ) : active.data ? (
         <ActivePlanView
           planId={active.data.planId}
-          startMonday={active.data.startMonday}
+          startDate={active.data.startDate}
           sessions={sessions}
+          isStarting={setPlan.isPending}
+          onStartToday={start}
           onStop={() => setConfirmStop(true)}
         />
       ) : (
@@ -81,9 +80,6 @@ export default function TrainingScreen() {
               />
             </Card>
           ))}
-          <Text variant="caption" color="textMuted">
-            {de.training.startHint}
-          </Text>
         </FadeIn>
       )}
 
@@ -120,13 +116,17 @@ export default function TrainingScreen() {
 
 function ActivePlanView({
   planId,
-  startMonday,
+  startDate,
   sessions,
+  isStarting,
+  onStartToday,
   onStop,
 }: {
   planId: PlanId;
-  startMonday: string;
+  startDate: string;
   sessions: ReturnType<typeof useTrainingSessions>;
+  isStarting: boolean;
+  onStartToday: (planId: PlanId) => void;
   onStop: () => void;
 }) {
   const template = planById(planId);
@@ -136,8 +136,9 @@ function ActivePlanView({
   const today = toLocalDate(new Date(), DEFAULT_TIMEZONE);
   const list = sessions.sessions;
   const doneCount = list?.filter((entry) => entry.done).length ?? 0;
-  const currentWeek = list?.find((entry) => entry.date >= today)?.week ?? template.weeks;
-  const finished = list !== undefined && list.every((entry) => entry.date < today);
+  const elapsedDays = daysBetween(startDate, today);
+  const currentWeek = Math.min(template.weeks, 1 + Math.floor(Math.max(0, elapsedDays) / 7));
+  const finished = elapsedDays >= template.weeks * 7;
 
   return (
     <FadeIn style={styles.section}>
@@ -146,8 +147,15 @@ function ActivePlanView({
       </Text>
       <Card style={styles.card}>
         <Text variant="heading">{de.training.plans[planId].name}</Text>
-        {today < startMonday ? (
-          <Text color="textSecondary">{de.training.startsOn(formatDayLabel(startMonday))}</Text>
+        {elapsedDays < 0 ? (
+          <>
+            <Text color="textSecondary">{de.training.startsOn(formatDayLabel(startDate))}</Text>
+            <Button
+              label={de.training.start}
+              loading={isStarting}
+              onPress={() => onStartToday(planId)}
+            />
+          </>
         ) : (
           <Text color="textSecondary">{de.training.week(currentWeek, template.weeks)}</Text>
         )}

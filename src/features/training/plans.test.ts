@@ -1,4 +1,4 @@
-import { nextMonday, PLANS, planById, sessionsOf, sessionStates } from './plans';
+import { PLANS, planById, sessionsOf, sessionStates } from './plans';
 
 describe('plans', () => {
   it('have the promised length and three runs per week', () => {
@@ -25,10 +25,23 @@ describe('plans', () => {
 });
 
 describe('sessionsOf', () => {
-  it('places the runs on Tuesday, Thursday and Saturday of every week', () => {
+  it('starts on the chosen day, even on a Sunday, with two days between runs', () => {
     const plan = planById('5k_8w');
     if (!plan) throw new Error('plan');
-    const sessions = sessionsOf(plan, '2026-11-16');
+    const sessions = sessionsOf(plan, '2026-11-15');
+    expect(sessions).toHaveLength(24);
+    expect(sessions.slice(0, 4).map((session) => session.date)).toEqual([
+      '2026-11-15',
+      '2026-11-17',
+      '2026-11-19',
+      '2026-11-22',
+    ]);
+  });
+
+  it('preserves Tuesday, Thursday and Saturday for older plans', () => {
+    const plan = planById('5k_8w');
+    if (!plan) throw new Error('plan');
+    const sessions = sessionsOf(plan, '2026-11-16', 1);
     expect(sessions).toHaveLength(24);
     expect(sessions.slice(0, 3).map((session) => session.date)).toEqual([
       '2026-11-17',
@@ -43,7 +56,7 @@ describe('sessionsOf', () => {
 describe('sessionStates', () => {
   const plan = planById('5k_8w');
   if (!plan) throw new Error('plan');
-  const sessions = sessionsOf(plan, '2026-11-16').filter((session) => session.week === 1);
+  const sessions = sessionsOf(plan, '2026-11-16', 1).filter((session) => session.week === 1);
   const run = (localDate: string, distanceM: number, isValid = true) => ({
     localDate,
     distanceM,
@@ -73,14 +86,11 @@ describe('sessionStates', () => {
     );
     expect(states.some((state) => state.done)).toBe(false);
   });
-});
 
-describe('nextMonday', () => {
-  it.each([
-    ['2026-11-16', '2026-11-16'],
-    ['2026-11-17', '2026-11-23'],
-    ['2026-11-22', '2026-11-23'],
-  ])('%s → %s', (today, expected) => {
-    expect(nextMonday(today)).toBe(expected);
+  it('counts a run on the first day of a new plan and ignores the day before', () => {
+    const start = '2026-11-15';
+    const firstWeek = sessionsOf(plan, start).filter((session) => session.week === 1);
+    const states = sessionStates(firstWeek, [run('2026-11-14', 3000), run(start, 1600)], start);
+    expect(states.map((state) => state.done)).toEqual([true, false, false]);
   });
 });

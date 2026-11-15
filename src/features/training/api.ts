@@ -27,7 +27,7 @@ export function useSetActivePlan(userId: string) {
 /** The sessions of the active plan with done/open, from the valid runs on the server. */
 export function useTrainingSessions(userId: string, plan: ActivePlan | null | undefined) {
   const template = plan ? planById(plan.planId) : undefined;
-  const from = plan?.startMonday ?? '2000-01-01';
+  const from = plan?.startDate ?? '2000-01-01';
   const until = template ? addDays(from, template.weeks * 7) : from;
   // One day of slack on both sides, so the local days at the edges are complete.
   const workouts = useMyWorkouts(
@@ -40,13 +40,13 @@ export function useTrainingSessions(userId: string, plan: ActivePlan | null | un
   const sessions: SessionState[] | undefined =
     plan && template && workouts.data
       ? sessionStates(
-          sessionsOf(template, plan.startMonday),
+          sessionsOf(template, plan.startDate, plan.firstRunOffset),
           workouts.data.map((run) => ({
             localDate: toLocalDate(new Date(run.startAt), DEFAULT_TIMEZONE),
             distanceM: run.distanceM,
             isValid: run.isValid,
           })),
-          plan.startMonday,
+          plan.startDate,
         )
       : undefined;
 

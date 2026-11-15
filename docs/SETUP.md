@@ -843,4 +843,4 @@ Erwartet wird nur die oben genannte Migration. Anschließend den bestehenden Exp
 npm run start:cloud -- --clear
 ```
 
-Gerätetest: Trainingsplan wischen, Bestätigung bei großer Schrift scrollen, Coach ziehen und antippen, Standort erlauben und draußen Tempo prüfen. Home-Schritte mit Laufen vergleichen. Lokale Testnachricht im Profil auslösen. Firebase-Push bleibt bis zur Einrichtung nach PUSH.md offen.
+Gerätetest: Trainingsplan-Einführung wischen und nach „Heute starten“ prüfen, dass der erste Lauf auf heute fällt. Einen früher gespeicherten, noch bevorstehenden Plan ebenfalls über „Heute starten“ vorziehen. Bestätigung bei großer Schrift scrollen, Coach ziehen und antippen, Standort erlauben und draußen Tempo prüfen. Home-Schritte mit Laufen vergleichen. Lokale Testnachricht im Profil auslösen. Server-Push auf einem installierten Android-Build mit Firebase-Konfiguration prüfen.

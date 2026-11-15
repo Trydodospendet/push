@@ -112,12 +112,12 @@ describe('app flow', () => {
     });
 
     expect(
-      await screen.findByText('Wir haben einen 6-stelligen Code an anna@example.com geschickt.'),
+      await screen.findByText('Wir haben einen 8-stelligen Code an anna@example.com geschickt.'),
     ).toBeOnTheScreen();
-    await user.type(screen.getByLabelText('6-stelliger Code'), '123456');
+    await user.type(screen.getByLabelText('8-stelliger Code'), '12345678');
     expect(supabaseMock.auth.verifyOtp).toHaveBeenCalledWith({
       email: 'anna@example.com',
-      token: '123456',
+      token: '12345678',
       type: 'email',
     });
     // The first password is set right after the e-mail is confirmed.
@@ -337,7 +337,7 @@ describe('app flow', () => {
 
     await renderRouter('./app', { initialUrl: '/verify?email=anna%40example.com' });
 
-    await user.type(await screen.findByLabelText('6-stelliger Code'), '000000');
+    await user.type(await screen.findByLabelText('8-stelliger Code'), '00000000');
 
     await waitFor(() =>
       expect(
