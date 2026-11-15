@@ -1,5 +1,13 @@
 # Übergabe – Branch `ausbau`
 
+## Überarbeitete App-Oberfläche (15.11.2026)
+
+- Vorversion als Git-Tag `backup/pre-ux-redesign-2026-11-15` auf GitHub und als separater Checkout `PUSH-vor-umbau` auf dem Desktop gesichert. Ablauf, Studien, Gerätetests und PowerShell-Skript stehen im [Ablaufskript](UX-REDESIGN.md).
+- „Heute“ bündelt wichtigstes Ziel, Laufstart, Trainingsplan und Schritte. Wochenstatistik und Erfolge lassen sich aufklappen. Pushy hat eine feste, dezent animierte Karte. Aktivität und Ranked haben Filter, das Profil hat benannte Einstellungsgruppen.
+- „Ziel setzen“ führt durch Zielwert, Zeitraum und Credits mit Prüfung vor der Buchung. Die Produktions-Migrationsliste führt `20261130130000_immediate_results.sql` weiterhin als offen. Der fehlende Endpunkt wird jetzt verständlich gemeldet. Anwendung wie in [Setup](SETUP.md#coach-header-und-endgültige-zielauswertung).
+- GPS-Tempo nutzt die vom Standortdienst gelieferte Geschwindigkeit oder schätzt sie aus aktuellen, genauen Positionen. Fehlende Messungen erscheinen als Strich. Vorschau unter Aktivität, während der Aufzeichnung im Laufpanel getrennt von der Durchschnittspace. Vergleich mit einem echten Gerät steht aus.
+- Typecheck, Lint, 288 Jest-Tests und 555 lokale DB-Tests erfolgreich. Der Android-JavaScript-Export ist möglich. Metro-Neustart für einen passenden Development Build, neuer Build für die Play-Verteilung.
+
 ## Start am selben Tag (15.11.2026)
 
 - Trainingspläne starten über „Heute starten“ mit einem Lauf am selben Kalendertag. Die nächsten beiden Läufe liegen zwei und vier Tage später. Bereits gespeicherte Pläne behalten ihren Rhythmus. Bei einem früher geplanten Start in der Zukunft bietet die App „Heute starten“ an. Mit aktuellem Development Build genügt ein Metro-Neustart. Für die Verteilung über Play muss die aktualisierte App in einen neuen Build.

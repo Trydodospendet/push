@@ -1,10 +1,12 @@
 import { useQuery } from '@tanstack/react-query';
-import { useRouter } from 'expo-router';
+import { usePathname, useRouter } from 'expo-router';
+import { useState } from 'react';
 import { RefreshControl, StyleSheet, View } from 'react-native';
 
 import {
   Button,
   Card,
+  ChipGroup,
   EmptyState,
   ErrorState,
   LoadingState,
@@ -16,8 +18,11 @@ import { DEFAULT_TIMEZONE } from '@/config/app';
 import { useMyProfile } from '@/features/auth/api';
 import { useSession } from '@/features/auth/auth-provider';
 import { formatSteps } from '@/features/challenges/format';
+import { formatSpeed } from '@/features/gps/format';
+import { useGps } from '@/features/gps/gps-provider';
 import { HistoryMap } from '@/features/gps/history-map';
 import { RunList } from '@/features/gps/run-list';
+import { useLiveSpeed } from '@/features/gps/use-live-speed';
 import { activityKeys, useRecentWorkouts, type RecentWorkout } from '@/features/health/api';
 import { reasonText } from '@/features/health/activity-list';
 import { useHealth } from '@/features/health/health-provider';
@@ -34,6 +39,11 @@ const distanceFormat = new Intl.NumberFormat('de-DE', {
 });
 
 const STEP_DAYS = 7;
+const historyOptions = [
+  { value: 'runs', label: de.activityTab.importedFilter },
+  { value: 'steps', label: de.activityTab.stepsFilter },
+  { value: 'gps', label: de.activityTab.gpsFilter },
+] as const;
 
 /** The last seven days of steps, read for the activity overview (all valid or not). */
 function useRecentSteps(userId: string, from: string, to: string) {
@@ -61,6 +71,9 @@ function useRecentSteps(userId: string, from: string, to: string) {
  */
 export default function ActivityScreen() {
   const router = useRouter();
+  const pathname = usePathname();
+  const { recorder } = useGps();
+  const [history, setHistory] = useState<(typeof historyOptions)[number]['value']>('runs');
   const session = useSession();
   const userId = session.user.id;
   const profile = useMyProfile(userId);
@@ -78,9 +91,8 @@ export default function ActivityScreen() {
     });
   };
 
-  const loading = workouts.isPending || steps.isPending;
-  const failed = workouts.isError || steps.isError;
-  const empty = !loading && !failed && workouts.data.length === 0 && steps.data.length === 0;
+  const current = history === 'steps' ? steps : workouts;
+  const empty = workouts.data?.length === 0 && steps.data?.length === 0;
 
   return (
     <Screen
@@ -108,29 +120,43 @@ export default function ActivityScreen() {
         ) : null}
       </View>
 
+      <Card style={styles.section}>
+        <Button label={de.activityTab.record} onPress={() => router.push('/run/index')} />
+        <Button
+          label={de.training.homeButton}
+          variant="secondary"
+          onPress={() => router.push('/training')}
+        />
+
+        {pathname === '/activity' &&
+        recorder.status !== 'recording' &&
+        recorder.status !== 'paused' ? (
+          <SpeedPreview />
+        ) : null}
+      </Card>
       <HealthBanner />
 
-      <Button
-        label={de.activityTab.record}
-        variant="secondary"
-        onPress={() => router.push('/run/index')}
+      <ChipGroup
+        label={de.activityTab.history}
+        options={historyOptions}
+        value={history}
+        onChange={setHistory}
       />
-      <Button
-        label={de.training.homeButton}
-        variant="secondary"
-        onPress={() => router.push('/training')}
-      />
-
-      {loading ? (
+      {history === 'gps' ? (
+        <View style={styles.section}>
+          <Text variant="label" color="textSecondary" accessibilityRole="header">
+            {de.activityTab.gpsRuns}
+          </Text>
+          <HistoryMap />
+          <RunList timezone={timezone} />
+        </View>
+      ) : current.isPending ? (
         <LoadingState />
-      ) : failed ? (
+      ) : current.isError ? (
         <ErrorState
           message={de.activityTab.loadError}
-          onRetry={() => {
-            void workouts.refetch();
-            void steps.refetch();
-          }}
-          retrying={workouts.isFetching || steps.isFetching}
+          onRetry={() => current.refetch()}
+          retrying={current.isFetching}
         />
       ) : empty ? (
         <EmptyState
@@ -138,63 +164,82 @@ export default function ActivityScreen() {
           title={de.activityTab.emptyTitle}
           text={health.connected ? de.activityTab.emptyText : de.activityTab.emptyNotConnected}
         />
-      ) : (
-        <>
-          <View style={styles.section}>
-            <Text variant="label" color="textSecondary" accessibilityRole="header">
-              {de.activityTab.runs}
-            </Text>
-            {workouts.data.length === 0 ? (
-              <Text color="textMuted">{de.activityTab.runsEmpty}</Text>
-            ) : (
-              <Card style={styles.list}>
-                {workouts.data.map((workout) => (
-                  <WorkoutRow key={workout.id} workout={workout} timezone={timezone} />
-                ))}
-              </Card>
-            )}
-          </View>
-
-          <View style={styles.section}>
-            <Text variant="label" color="textSecondary" accessibilityRole="header">
-              {de.activityTab.steps}
-            </Text>
-            {steps.data.length === 0 ? (
-              <Text color="textMuted">{de.activityTab.stepsEmpty}</Text>
-            ) : (
-              <Card style={styles.list}>
-                {steps.data.map((day) => (
-                  <View
-                    key={day.date}
-                    style={styles.row}
-                    accessible
-                    accessibilityLabel={`${formatDayLabel(day.date)}, ${formatSteps(day.steps)}`}
-                  >
-                    <View style={styles.rowText}>
-                      <Text>{formatDayLabel(day.date)}</Text>
-                      {day.isValid ? null : (
-                        <Text variant="caption" color="danger">
-                          {de.activities.stepsInvalid}
-                        </Text>
-                      )}
-                    </View>
-                    <Text color={day.isValid ? 'text' : 'textMuted'}>{formatSteps(day.steps)}</Text>
+      ) : history === 'runs' && workouts.data ? (
+        <View style={styles.section}>
+          <Text variant="label" color="textSecondary" accessibilityRole="header">
+            {de.activityTab.runs}
+          </Text>
+          {workouts.data.length === 0 ? (
+            <Text color="textMuted">{de.activityTab.runsEmpty}</Text>
+          ) : (
+            <Card style={styles.list}>
+              {workouts.data.map((workout) => (
+                <WorkoutRow key={workout.id} workout={workout} timezone={timezone} />
+              ))}
+            </Card>
+          )}
+        </View>
+      ) : steps.data ? (
+        <View style={styles.section}>
+          <Text variant="label" color="textSecondary" accessibilityRole="header">
+            {de.activityTab.steps}
+          </Text>
+          {steps.data.length === 0 ? (
+            <Text color="textMuted">{de.activityTab.stepsEmpty}</Text>
+          ) : (
+            <Card style={styles.list}>
+              {steps.data.map((day) => (
+                <View
+                  key={day.date}
+                  style={styles.row}
+                  accessible
+                  accessibilityLabel={`${formatDayLabel(day.date)}, ${formatSteps(day.steps)}`}
+                >
+                  <View style={styles.rowText}>
+                    <Text>{formatDayLabel(day.date)}</Text>
+                    {day.isValid ? null : (
+                      <Text variant="caption" color="danger">
+                        {de.activities.stepsInvalid}
+                      </Text>
+                    )}
                   </View>
-                ))}
-              </Card>
-            )}
-          </View>
-        </>
-      )}
-
-      <View style={styles.section}>
-        <Text variant="label" color="textSecondary" accessibilityRole="header">
-          {de.activityTab.gpsRuns}
-        </Text>
-        <HistoryMap />
-        <RunList timezone={timezone} />
-      </View>
+                  <Text color={day.isValid ? 'text' : 'textMuted'}>{formatSteps(day.steps)}</Text>
+                </View>
+              ))}
+            </Card>
+          )}
+        </View>
+      ) : null}
     </Screen>
+  );
+}
+
+function SpeedPreview() {
+  const [open, setOpen] = useState(false);
+  const { speed, unavailable } = useLiveSpeed(open);
+  return (
+    <View style={styles.section}>
+      <Button
+        label={open ? de.activityTab.speedClose : de.activityTab.speedCheck}
+        variant="secondary"
+        onPress={() => setOpen(!open)}
+      />
+      {open ? (
+        <View style={styles.section}>
+          <Text variant="label" color="textSecondary">
+            {de.run.liveSpeed}
+          </Text>
+          <Text variant="heading" color="accent">
+            {formatSpeed(speed)}
+          </Text>
+          {speed === null ? (
+            <Text variant="caption" color="textSecondary">
+              {unavailable ? de.activityTab.speedUnavailable : de.run.speedWaiting}
+            </Text>
+          ) : null}
+        </View>
+      ) : null}
+    </View>
   );
 }
 

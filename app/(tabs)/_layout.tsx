@@ -1,5 +1,5 @@
 import { ScreenHeaderContext } from '@/components/screen';
-import { GoalHeader } from '@/features/challenges/goal-header';
+import { TabHeader } from '@/components/tab-header';
 import { Tabs } from 'expo-router';
 
 import { Icon, type IconName } from '@/components';
@@ -9,7 +9,7 @@ import { colors, layout, typography } from '@/theme';
 
 function tabIcon(name: IconName, focusedName: IconName) {
   return function TabIcon({ focused }: { focused: boolean }) {
-    return <Icon name={focused ? focusedName : name} color={focused ? 'text' : 'textMuted'} />;
+    return <Icon name={focused ? focusedName : name} color={focused ? 'accent' : 'textMuted'} />;
   };
 }
 
@@ -19,9 +19,9 @@ export default function TabsLayout() {
       <Tabs
         screenOptions={{
           headerShown: true,
-          header: () => <GoalHeader />,
+          header: () => <TabHeader />,
           sceneStyle: { backgroundColor: colors.bg },
-          tabBarActiveTintColor: colors.text,
+          tabBarActiveTintColor: colors.accent,
           tabBarInactiveTintColor: colors.textMuted,
           tabBarLabelStyle: { ...typography.caption, fontFamily: typography.button.fontFamily },
           tabBarItemStyle: { minHeight: layout.minTouchTarget },
@@ -43,7 +43,7 @@ export default function TabsLayout() {
         <Tabs.Screen
           name="activity"
           options={{
-            title: de.improvements.running,
+            title: de.tabs.activity,
             tabBarAccessibilityLabel: de.tabs.activity,
             tabBarIcon: tabIcon('walk-outline', 'walk'),
           }}

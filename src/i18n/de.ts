@@ -139,7 +139,6 @@ export const de = {
     trainingTitles: ['Dein Laufziel', 'Dein Rhythmus', 'Dein Fortschritt'],
     testNotification: 'Testnachricht senden',
     testSent: 'Lokale Testnachricht gesendet. Server-Push braucht zusätzlich Firebase.',
-    nextGoal: 'Bereit für deinen nächsten Schritt?',
     today: 'HEUTE',
     stepsNote: 'Schritte und erfasste Laufkilometer sind unterschiedliche Werte.',
     hello: 'Willkommen zurück!',
@@ -149,8 +148,6 @@ export const de = {
     ongoing: 'Jeder Schritt bringt dich weiter. Dein Tempo zählt.',
     name: 'Pushy',
     stages: ['Dein neuer Laufcoach', 'Baby-Hase', 'Junger Hase', 'Laufpartner', 'Erfahrener Coach'],
-    speed: 'km/h',
-    move: 'Coach verschieben; antippen für Tempo',
     progress: 'Dein Ziel im Blick',
     winReturn:
       'Schaffst du dein Ziel, bekommst du nach dem Ende deinen Einsatz zurück und gegebenenfalls einen Gewinnanteil. Die Buchung erfolgt automatisch.',
@@ -160,8 +157,6 @@ export const de = {
       'Zielzeit beendet. Der gespeicherte Stand ist endgültig; die Buchung folgt automatisch.',
     locked: 'Die Verwendung deines Gewinnanteils ist ab dem Start festgelegt.',
     weekSteps: 'Schritte in den letzten sieben Tagen',
-    hide: 'Coach ausblenden',
-    show: 'Coach anzeigen',
   },
   improvements: {
     startDate: 'Startdatum (JJJJ-MM-TT)',
@@ -181,7 +176,7 @@ export const de = {
     slides: [
       'Ein Trainingsplan führt dich Schritt für Schritt zu deinem Laufziel.',
       'Drei Einheiten pro Woche steigern deine Ausdauer. Erholung gehört genauso dazu.',
-      'Deine erfassten Läufe zeigen deinen Fortschritt. Deinen aktiven Plan findest du jederzeit auf Home.',
+      'Deine erfassten Läufe zeigen deinen Fortschritt. Deinen aktiven Plan findest du jederzeit unter „Heute“.',
     ],
     next: 'Weiter',
     choose: 'Plan auswählen',
@@ -351,6 +346,14 @@ export const de = {
   },
   activityTab: {
     title: 'Aktivität',
+    history: 'Verlauf',
+    gpsFilter: 'GPS-Läufe',
+    importedFilter: 'Importierte Läufe',
+    stepsFilter: 'Schritte',
+    speedCheck: 'Live-Tempo testen',
+    speedClose: 'Tempoanzeige schließen',
+    speedUnavailable:
+      'Standort nicht verfügbar. Prüfe die Standortfreigabe und ob GPS eingeschaltet ist.',
     intro: (source: string) =>
       `Deine Läufe und Schritte werden automatisch aus ${source} übernommen. Ziehe zum Aktualisieren nach unten.`,
     record: 'Lauf aufzeichnen',
@@ -378,7 +381,7 @@ export const de = {
     signOut: 'Abmelden',
   },
   tabs: {
-    home: 'Home',
+    home: 'Heute',
     activity: 'Aktivität',
     pool: 'Pool',
     ranked: 'Ranked',
@@ -410,7 +413,13 @@ export const de = {
     error: 'Der Pool konnte nicht geladen werden.',
   },
   home: {
-    label: 'DEINE ZIELE',
+    label: 'Heute',
+    planTitle: 'Dein nächstes Training',
+    startPlan: 'Trainingsplan ansehen',
+    run: 'Lauf aufzeichnen',
+    extra: 'Wochenstatistik und Erfolge',
+    goalDetails: 'Öffnet die Details zum Ziel',
+    goalsUnavailable: 'Fortschritt ist gerade nicht verfügbar.',
     primaryLabel: 'WICHTIGSTES ZIEL',
     moreLabel: 'WEITERE ZIELE',
     emptyTitle: 'Noch kein Ziel',
@@ -418,13 +427,6 @@ export const de = {
     setGoal: 'Ziel setzen',
     notStarted: 'Startet bald',
     error: 'Deine Ziele konnten nicht geladen werden.',
-    howLabel: "SO FUNKTIONIERT'S",
-    howSteps: [
-      'Ziel setzen: Lauf oder Schritte, Zeitraum und Einsatz festlegen.',
-      'Aktivität wird automatisch aus der Gesundheits-App übernommen.',
-      'Den Fortschritt siehst du hier auf Home und im Tab Aktivität.',
-      'Ziel erreicht: Einsatz zurück plus Anteil. Verfehlt: Einsatz verfällt.',
-    ],
   },
   intro: {
     skip: 'Überspringen',
@@ -436,7 +438,7 @@ export const de = {
         {
           art: 'target' as const,
           title: "So funktioniert's",
-          text: 'Setz dir ein Ziel, leg einen Einsatz fest, lauf oder geh los – deine Aktivität wird automatisch übernommen und am Ende siehst du das Ergebnis. Den Fortschritt findest du auf Home und im Tab Aktivität.',
+          text: 'Setz dir ein Ziel, leg einen Einsatz fest, lauf oder geh los – deine Aktivität wird automatisch übernommen und am Ende siehst du das Ergebnis. Den Fortschritt findest du unter „Heute“ und im Tab Aktivität.',
         },
         {
           art: 'shield' as const,
@@ -482,7 +484,7 @@ export const de = {
         {
           art: 'target' as const,
           title: 'Ziel setzen',
-          text: 'Auf Home tippst du „Ziel setzen“: Lauf (ein Lauf oder insgesamt) oder Schritte, dazu Zielwert und Zeitraum (morgen, nächste Woche oder nächster Monat).',
+          text: 'Unter „Heute“ tippst du „Ziel setzen“: Lauf (ein Lauf oder insgesamt) oder Schritte, dazu Zielwert und Zeitraum (morgen, nächste Woche oder nächster Monat).',
         },
         {
           art: 'podium' as const,
@@ -587,6 +589,7 @@ export const de = {
     intro:
       'Feste Ranglisten ohne Einsatz: meiste Kilometer und meiste Schritte – täglich, wöchentlich und monatlich. Mach mit und sammle Punkte und Abzeichen.',
     cycleBadge: { day: 'Tag', week: 'Woche', month: 'Monat' },
+    rankingPeriod: 'Zeitraum der Rangliste',
     cycleLabel: { day: 'TÄGLICH', week: 'WÖCHENTLICH', month: 'MONATLICH' },
     create: 'Erstellen',
     joinByCode: 'Code eingeben',
@@ -758,22 +761,55 @@ export const de = {
   },
   create: {
     title: 'Ziel setzen',
-    intro:
-      'Setz dir ein Lauf- oder Schrittziel und hinterlege einen Einsatz. Deine Läufe und Schritte werden automatisch übernommen.',
+    steps: [
+      {
+        title: 'Was möchtest du schaffen?',
+        short: 'Ziel',
+        intro: 'Wähle, was zählen soll, und leg deinen Zielwert fest.',
+      },
+      {
+        title: 'Wann und mit wem?',
+        short: 'Zeitraum',
+        intro: 'Wähle deinen Zeitraum und entscheide, ob Freunde mitmachen können.',
+      },
+      {
+        title: 'Wie viele Credits setzt du?',
+        short: 'Einsatz',
+        intro: 'Wähle deinen Einsatz und prüfe alle Angaben vor der Buchung.',
+      },
+    ],
+    stepOf: (step: number, total: number) => `Schritt ${step} von ${total}`,
+    back: 'Zurück',
+    review: 'Angaben prüfen',
+    customTarget: 'Eigener Wert',
+    customDates: 'Eigene Daten wählen',
+    presetDates: 'Zeitraum-Vorlagen anzeigen',
+    who: 'WER MACHT MIT?',
+    friendsHint:
+      'Nach dem Speichern erhältst du einen Einladungscode. Der Start ist frühestens morgen.',
+    friendStart: 'Wähle für ein Ziel mit Freunden einen Start ab morgen.',
+    invalidTarget: (min: string, max: string) =>
+      `Gib einen Zielwert zwischen ${min} und ${max} ein.`,
+    range: (first: string, last: string) =>
+      first === last ? first : `${first} bis einschließlich ${last}`,
+    savingUnavailable:
+      'Ziele können gerade nicht gespeichert werden. Der Server für „Ziel setzen“ muss aktualisiert werden.',
+    reviewTitle: 'Deine Auswahl',
+    reviewAlone: 'Persönliches Ziel',
+    reviewFriends: 'Ziel mit Freunden',
+    noNgo: 'Wähle eine verfügbare Organisation oder behalte deinen Gewinnanteil.',
+    change: 'Angaben ändern',
     goalType: 'ZIELTYP',
     target: 'ZIELWERT',
     period: 'ZEITRAUM',
     periodLabel: { day: 'Heute bis Mitternacht', week: 'Nächste Woche', month: 'Nächster Monat' },
-    todayHint:
-      'Das Tagesziel läuft ab jetzt bis Mitternacht. Bereits heute erfasste Schritte zählen mit.',
+    todayHint: 'Das Tagesziel läuft ab der Bestätigung bis Mitternacht.',
+    todayStepsHint: 'Bereits heute erfasste Schritte zählen mit.',
     stake: 'EINSATZ',
     stakeHint:
       'Ziel erreicht: Einsatz zurück plus Anteil an den verfallenen Einsätzen. Ziel verfehlt: Einsatz verfällt.',
-    summary: (start: string, end: string) =>
-      start === end ? `Am ${start}` : `Vom ${start} bis einschließlich ${end}`,
     submit: 'Weiter',
     confirmTitle: 'Einsatz bestätigen',
-    confirmGoal: (goal: string, period: string) => `Dein Ziel: ${goal} · ${period}`,
     confirmStake: (amount: string) =>
       `Du setzt ${amount} Credits. Der Betrag wird jetzt von deinem Guthaben abgebucht.`,
     confirmReturn: (day: string) =>
@@ -834,7 +870,13 @@ export const de = {
     feed_entry_not_found: 'Diesen Eintrag gibt es nicht oder du bist nicht dabei.',
   },
   profile: {
-    label: 'PROFIL',
+    sections: {
+      credits: 'Credits und Pool',
+      account: 'Konto und Privatsphäre',
+      app: 'App und Verbindungen',
+      support: 'Hilfe',
+    },
+    poolDetail: 'Teilnahmen und gebundene Credits',
     emailLabel: 'E-Mail',
     signOut: 'Abmelden',
     signOutError: 'Abmelden hat nicht geklappt. Prüfe deine Internetverbindung.',
@@ -849,6 +891,9 @@ export const de = {
   },
   run: {
     title: 'GPS-Lauf',
+    averagePace: 'Ø Pace (min/km)',
+    liveSpeed: 'Jetzt (km/h)',
+    speedWaiting: 'Warte auf eine verlässliche GPS-Messung.',
     headerTitle: 'Lauf',
     homeButton: 'GPS-Lauf starten',
     notification: 'Dein Lauf wird aufgezeichnet.',
@@ -1104,7 +1149,7 @@ export const de = {
     faq: [
       {
         q: 'Wie funktioniert PUSH?',
-        a: 'Auf Home tippst du „Ziel setzen“: Lauf oder Schritte, Zielwert, Zeitraum und Einsatz. Du kannst eigene Kilometer- oder Schrittwerte und Start- sowie Enddatum eingeben. Für ein Ziel mit Freunden wählst du einen Start ab morgen und teilst anschließend den Einladungscode. Ein Tagesziel kannst du heute bis Mitternacht setzen; bereits erfasste Schritte von heute zählen mit. Deine Läufe und Schritte werden automatisch aus Health Connect bzw. Apple Health übernommen (oder du zeichnest einen Lauf im Tab Laufen auf). Den Fortschritt siehst du auf Home, das Ergebnis nach der Abrechnung.',
+        a: 'Unter „Heute“ tippst du „Ziel setzen“: Lauf oder Schritte, Zielwert, Zeitraum und Einsatz. Du kannst eigene Kilometer- oder Schrittwerte und Start- sowie Enddatum eingeben. Für ein Ziel mit Freunden wählst du einen Start ab morgen und teilst anschließend den Einladungscode. Ein Tagesziel kannst du heute bis Mitternacht setzen; bereits erfasste Schritte von heute zählen mit. Deine Läufe und Schritte werden automatisch aus Health Connect bzw. Apple Health übernommen (oder du zeichnest einen Lauf im Tab Laufen auf). Den Fortschritt siehst du unter „Heute“, das Ergebnis nach der Abrechnung.',
       },
       {
         q: 'Was sind Credits?',

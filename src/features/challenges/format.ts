@@ -8,7 +8,7 @@ export function isGoalType(value: string): value is GoalType {
   return (GOAL_TYPES as readonly string[]).includes(value);
 }
 
-const distanceFormat = new Intl.NumberFormat('de-DE', { maximumFractionDigits: 1 });
+const distanceFormat = new Intl.NumberFormat('de-DE', { maximumFractionDigits: 3 });
 const integerFormat = new Intl.NumberFormat('de-DE', { maximumFractionDigits: 0 });
 
 /** e.g. 5000 → '5 km', 21100 → '21,1 km' */

@@ -15,7 +15,7 @@ export function CompactGoal({
   now,
 }: {
   challenge: Challenge;
-  value: number;
+  value: number | null;
   now: Date;
 }) {
   const router = useRouter();
@@ -23,11 +23,16 @@ export function CompactGoal({
     return null;
   }
   const { days } = challengeDays(challenge);
-  const numbers = progressNumbers(challenge.goal_type, value, challenge.target_value, days);
-  const ratio = progressRatio(challenge.goal_type, value, challenge.target_value, days);
+  const numbers =
+    value === null
+      ? null
+      : progressNumbers(challenge.goal_type, value, challenge.target_value, days);
+  const ratio = progressRatio(challenge.goal_type, value ?? 0, challenge.target_value, days);
   const started = now >= new Date(challenge.starts_at);
   const line = started
-    ? `${numbers.current} / ${numbers.goal} ${numbers.unit}`
+    ? numbers
+      ? `${numbers.current} / ${numbers.goal} ${numbers.unit}`
+      : de.home.goalsUnavailable
     : de.home.notStarted;
 
   return (
@@ -44,7 +49,9 @@ export function CompactGoal({
           </Text>
           <Pill label={modeLabel(challenge.mode)} />
         </View>
-        <ProgressBar progress={started ? ratio : 0} accessibilityLabel={de.progress.barLabel} />
+        {started && numbers ? (
+          <ProgressBar progress={ratio} accessibilityLabel={de.progress.barLabel} />
+        ) : null}
         <Text variant="caption" color="textSecondary">
           {line}
         </Text>

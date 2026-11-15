@@ -1,5 +1,6 @@
 import { userEvent } from '@testing-library/react-native';
 import { renderRouter, screen } from 'expo-router/testing-library';
+import { de } from '@/i18n/de';
 
 jest.mock('@/lib/supabase');
 jest.mock('@/features/health/storage');
@@ -117,9 +118,11 @@ describe('goals', () => {
 
     await user.press(await screen.findByRole('radio', { name: 'Gesamtstrecke' }));
     await user.press(screen.getByRole('radio', { name: '10 km' }));
-    await user.press(screen.getByRole('radio', { name: 'Nächste Woche' }));
-    await user.press(screen.getByRole('radio', { name: '10,00 Credits' }));
     await user.press(screen.getByRole('button', { name: 'Weiter' }));
+    await user.press(screen.getByRole('radio', { name: 'Nächste Woche' }));
+    await user.press(screen.getByRole('button', { name: 'Weiter' }));
+    await user.press(screen.getByRole('radio', { name: '10,00 Credits' }));
+    await user.press(screen.getByRole('button', { name: 'Angaben prüfen' }));
 
     // Nothing is booked yet: first the confirmation with all consequences.
     expect(supabaseMock.rpc).not.toHaveBeenCalledWith(
@@ -156,6 +159,24 @@ describe('goals', () => {
       }),
     );
     expect(await screen.findByText('TOPF DIESES ZEITRAUMS')).toBeOnTheScreen();
+  });
+
+  it('validates custom dates and keeps a decimal distance when going back', async () => {
+    const user = userEvent.setup();
+    mockRpc();
+    await renderRouter('./app', { initialUrl: '/challenge/create' });
+
+    await user.press(await screen.findByRole('radio', { name: 'Eigener Wert' }));
+    const target = screen.getByLabelText(de.improvements.km);
+    await user.type(target, '3,5');
+    await user.press(screen.getByRole('button', { name: 'Weiter' }));
+    await user.press(screen.getByRole('button', { name: 'Eigene Daten wählen' }));
+    await user.clear(screen.getByLabelText(de.improvements.endDate));
+    await user.type(screen.getByLabelText(de.improvements.endDate), '2026-02-30');
+    await user.press(screen.getByRole('button', { name: 'Weiter' }));
+    expect(screen.getByRole('alert')).toHaveTextContent(de.improvements.invalidDates);
+    await user.press(screen.getByRole('button', { name: 'Zurück' }));
+    expect(screen.getByDisplayValue('3,5')).toBeOnTheScreen();
   });
 
   it('shows the goal of the period pot and lets the owner withdraw it before the start', async () => {

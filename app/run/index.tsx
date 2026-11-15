@@ -10,7 +10,7 @@ import { useSession } from '@/features/auth/auth-provider';
 import { useMyRecords } from '@/features/gps/analytics-api';
 import { useGpsRunRoute, useMyGpsRuns } from '@/features/gps/api';
 import { maybeAskForReview } from '@/features/review/review';
-import { formatClock, formatKm, formatPace } from '@/features/gps/format';
+import { formatClock, formatKm, formatPace, formatSpeed } from '@/features/gps/format';
 import { liveSplits, paceSecondsPerKm } from '@/features/gps/geo';
 import { useGps, type StartOutcome } from '@/features/gps/gps-provider';
 import { PeriodCard } from '@/features/gps/period-card';
@@ -18,6 +18,7 @@ import { liveStats } from '@/features/gps/recorder';
 import { RecordsCard } from '@/features/gps/records-card';
 import { RouteMap } from '@/features/gps/route-map';
 import { RunList } from '@/features/gps/run-list';
+import { currentSpeed } from '@/features/gps/speed';
 import { useClock } from '@/features/gps/use-clock';
 import { useKilometerAnnouncements } from '@/features/gps/voice';
 import { usePreferences } from '@/features/preferences/store';
@@ -206,6 +207,7 @@ function ActiveRun({ onInset }: { onInset: (height: number) => void }) {
   const sinceLast = !paused && last ? Math.min(10, Math.max(0, (now - last.t) / 1000)) : 0;
   const elapsed = stats.elapsedS + sinceLast;
   const pace = paceSecondsPerKm(stats.distanceM, stats.elapsedS);
+  const speed = paused ? null : currentSpeed(recorder.points, now, recorder.segment);
   const { voice } = usePreferences();
   useKilometerAnnouncements(recorder.points, stats.elapsedS, voice && !paused);
 
@@ -242,13 +244,19 @@ function ActiveRun({ onInset }: { onInset: (height: number) => void }) {
             >
               {formatClock(elapsed)}
             </Text>
+            <Stat label={de.run.liveSpeed} value={formatSpeed(speed)} />
           </View>
         }
       >
         <View style={styles.statRow}>
           <Stat label={de.run.distance} value={formatKm(stats.distanceM)} />
-          <Stat label={de.run.pace} value={formatPace(pace)} />
+          <Stat label={de.run.averagePace} value={formatPace(pace)} />
         </View>
+        {!paused && speed === null ? (
+          <Text variant="caption" color="textSecondary">
+            {de.run.speedWaiting}
+          </Text>
+        ) : null}
         {lastSplit ? (
           <Stat
             label={`${de.runStats.lastKm} (${lastSplit.km})`}

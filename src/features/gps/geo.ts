@@ -28,6 +28,8 @@ export type TrackPoint = {
   mocked: boolean;
   /** Altitude in metres above sea level, if the phone knows it. */
   altitude: number | null;
+  /** Native speed in m/s, used only for the live display. */
+  speedMs?: number | null;
 };
 
 export type Measurement = {

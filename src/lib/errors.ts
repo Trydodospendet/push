@@ -54,6 +54,13 @@ export function toUserMessage(error: unknown): string {
     return de.common.genericError;
   }
   if (hasStringProperty(error, 'message')) {
+    if (
+      hasStringProperty(error, 'code') &&
+      error.code === 'PGRST202' &&
+      error.message.includes('create_goal_with_preferences')
+    ) {
+      return de.create.savingUnavailable;
+    }
     const known = databaseErrorMessages[error.message];
     if (known) {
       return known;

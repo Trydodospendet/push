@@ -19,7 +19,7 @@ import { LogoEgg } from '@/features/badges/logo-egg';
 import { StatsCard } from '@/features/stats/stats-card';
 import { de } from '@/i18n/de';
 import { toUserMessage } from '@/lib/errors';
-import { spacing } from '@/theme';
+import { colors, highlightBorder, spacing } from '@/theme';
 
 type Target =
   | '/wallet'
@@ -34,32 +34,66 @@ type Target =
   | '/help';
 
 const GROUPS: readonly {
+  section: keyof typeof de.profile.sections;
   target: Target;
   icon: Parameters<typeof SettingsRow>[0]['icon'];
   text: { label: string; detail: string };
 }[] = [
   {
+    section: 'credits',
     target: '/wallet',
     icon: 'wallet-outline',
     text: { label: de.improvements.wallet, detail: de.common.virtualCreditsNotice },
   },
   {
+    section: 'credits',
     target: '/pool',
     icon: 'flag-outline',
-    text: { label: de.improvements.pool, detail: de.tabs.pool },
+    text: { label: de.improvements.pool, detail: de.profile.poolDetail },
   },
-  { target: '/settings/account', icon: 'person-circle-outline', text: de.settings.account },
-  { target: '/settings/privacy', icon: 'eye-off-outline', text: de.settings.privacy },
   {
+    section: 'account',
+    target: '/settings/account',
+    icon: 'person-circle-outline',
+    text: de.settings.account,
+  },
+  {
+    section: 'account',
+    target: '/settings/privacy',
+    icon: 'eye-off-outline',
+    text: de.settings.privacy,
+  },
+  {
+    section: 'app',
     target: '/settings/notifications',
     icon: 'notifications-outline',
     text: de.settings.notifications,
   },
-  { target: '/settings/donations', icon: 'heart-outline', text: de.settings.donations },
-  { target: '/settings/connections', icon: 'pulse-outline', text: de.settings.connections },
-  { target: '/settings/appearance', icon: 'color-wand-outline', text: de.settings.appearance },
-  { target: '/settings/data', icon: 'shield-checkmark-outline', text: de.settings.data },
-  { target: '/help', icon: 'help-buoy-outline', text: de.settings.help },
+  {
+    section: 'credits',
+    target: '/settings/donations',
+    icon: 'heart-outline',
+    text: de.settings.donations,
+  },
+  {
+    section: 'app',
+    target: '/settings/connections',
+    icon: 'pulse-outline',
+    text: de.settings.connections,
+  },
+  {
+    section: 'app',
+    target: '/settings/appearance',
+    icon: 'color-wand-outline',
+    text: de.settings.appearance,
+  },
+  {
+    section: 'account',
+    target: '/settings/data',
+    icon: 'shield-checkmark-outline',
+    text: de.settings.data,
+  },
+  { section: 'support', target: '/help', icon: 'help-buoy-outline', text: de.settings.help },
 ];
 
 /** Overview: who I am, my numbers and badges, and the groups of settings. */
@@ -71,8 +105,8 @@ export default function ProfileScreen() {
 
   return (
     <Screen scroll contentStyle={styles.content}>
-      <Text variant="label" color="textSecondary">
-        {de.profile.label}
+      <Text variant="title" accessibilityRole="header">
+        {de.tabs.profile}
       </Text>
       {profile.isPending ? (
         <LoadingState />
@@ -84,7 +118,7 @@ export default function ProfileScreen() {
         />
       ) : (
         <View style={styles.details}>
-          <View style={styles.identity}>
+          <Card style={styles.identity}>
             <Avatar
               name={profile.data.display_name}
               size="lg"
@@ -99,32 +133,35 @@ export default function ProfileScreen() {
                 {session.user.email}
               </Text>
             </View>
-          </View>
+          </Card>
           <StatsCard userId={session.user.id} />
           <BadgesCard userId={session.user.id} />
         </View>
       )}
 
-      <View style={styles.group}>
-        <Text variant="label" color="textSecondary" accessibilityRole="header">
-          {de.settings.title}
-        </Text>
-        {GROUPS.map((group) => (
-          <SettingsRow
-            key={group.target}
-            icon={group.icon}
-            label={group.text.label}
-            detail={group.text.detail}
-            onPress={() => router.push(group.target)}
-          />
-        ))}
-        <SettingsRow
-          icon="help-circle-outline"
-          label={de.profile.howItWorks}
-          onPress={() => router.push('/how-it-works')}
-        />
-      </View>
-
+      {Object.entries(de.profile.sections).map(([section, label]) => (
+        <View key={section} style={styles.group}>
+          <Text variant="label" color="textSecondary" accessibilityRole="header">
+            {label}
+          </Text>
+          {GROUPS.filter((group) => group.section === section).map((group) => (
+            <SettingsRow
+              key={group.target}
+              icon={group.icon}
+              label={group.text.label}
+              detail={group.text.detail}
+              onPress={() => router.push(group.target)}
+            />
+          ))}
+          {section === 'support' ? (
+            <SettingsRow
+              icon="help-circle-outline"
+              label={de.profile.howItWorks}
+              onPress={() => router.push('/how-it-works')}
+            />
+          ) : null}
+        </View>
+      ))}
       <Card style={styles.footer}>
         {signOut.isError ? (
           <Text variant="caption" color="danger" accessibilityRole="alert">
@@ -147,7 +184,7 @@ export default function ProfileScreen() {
 
 const styles = StyleSheet.create({
   content: {
-    paddingTop: spacing.xl,
+    paddingTop: spacing.md,
     paddingBottom: spacing.xl,
     gap: spacing.lg,
   },
@@ -155,6 +192,8 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   identity: {
+    backgroundColor: colors.surfaceRaised,
+    borderColor: highlightBorder,
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.md,

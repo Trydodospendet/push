@@ -75,6 +75,7 @@ function toPoint(location: Location.LocationObject): Omit<TrackPoint, 'segment'>
     accuracy: location.coords.accuracy ?? Number.MAX_SAFE_INTEGER,
     mocked: location.mocked === true,
     altitude: location.coords.altitude ?? null,
+    speedMs: location.coords.speed,
   };
 }
 
