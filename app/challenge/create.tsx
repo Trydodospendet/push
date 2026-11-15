@@ -1,17 +1,8 @@
-import { Stack, usePreventRemove, useRouter } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import { useRef, useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 
-import {
-  Button,
-  Card,
-  ChipGroup,
-  Screen,
-  Sheet,
-  Text,
-  TextField,
-  type ChipOption,
-} from '@/components';
+import { Button, ChipGroup, Screen, Sheet, Text, TextField, type ChipOption } from '@/components';
 import {
   CHALLENGE_TITLE_MAX_LENGTH,
   DEFAULT_TIMEZONE,
@@ -34,7 +25,7 @@ import { de } from '@/i18n/de';
 import { addDays, formatDayLabel, toLocalDate } from '@/lib/dates';
 import { toUserMessage } from '@/lib/errors';
 import { formatAmount } from '@/lib/money';
-import { colors, radius, spacing } from '@/theme';
+import { spacing } from '@/theme';
 
 const DEFAULT_TARGET: Record<GoalType, number> = {
   run_single: 5_000,
@@ -50,8 +41,6 @@ function isValidDate(value: string) {
     new Date(value).toISOString().slice(0, 10) === value
   );
 }
-
-type Step = 0 | 1 | 2;
 
 export default function SetGoalScreen() {
   const router = useRouter();
@@ -69,7 +58,6 @@ export default function SetGoalScreen() {
   const [goalType, setGoalType] = useState<GoalType>('run_total');
   const [presetTarget, setPresetTarget] = useState(DEFAULT_TARGET.run_total);
   const [editingTarget, setEditingTarget] = useState(false);
-  const [step, setStep] = useState<Step>(0);
   const [customTarget, setCustomTarget] = useState('');
   const [period, setPeriod] = useState<GoalPeriod>('week');
   const [stakeCents, setStakeCents] = useState<number>(1_000);
@@ -173,22 +161,9 @@ export default function SetGoalScreen() {
     return result.data;
   };
 
-  const next = () => {
-    if (step === 2) {
-      if (validate()) setConfirming(true);
-      return;
-    }
-    const problem = step === 0 ? targetError() : dateError();
-    setError(problem);
-    if (!problem) setStep(step === 0 ? 1 : 2);
+  const openConfirmation = () => {
+    if (validate()) setConfirming(true);
   };
-
-  const back = () => {
-    if (submitting.current) return;
-    setError(null);
-    setStep(step === 2 ? 1 : 0);
-  };
-  const allowNavigation = usePreventRemove(step > 0, back);
 
   const closeConfirmation = () => {
     if (submitting.current) return;
@@ -205,8 +180,6 @@ export default function SetGoalScreen() {
     create.mutate(input, {
       onSuccess: (challenge) => {
         setConfirming(false);
-        setStep(0);
-        allowNavigation();
         router.replace({ pathname: '/challenge/[id]', params: { id: challenge.id, started: '1' } });
       },
       onError: (mutationError) => setError(toUserMessage(mutationError)),
@@ -217,7 +190,6 @@ export default function SetGoalScreen() {
   };
 
   const stake = formatAmount(stakeCents);
-  const stepText = de.create.steps[step];
   const audience = withFriends ? de.create.reviewFriends : de.create.reviewAlone;
   const todayHint =
     first === today && first === last
@@ -232,188 +204,144 @@ export default function SetGoalScreen() {
     ) : null;
 
   return (
-    <Screen key={step} scroll edges={['bottom', 'left', 'right']} contentStyle={styles.content}>
+    <Screen scroll edges={['bottom', 'left', 'right']} contentStyle={styles.content}>
       <Stack.Screen options={{ title: de.create.title }} />
-      <View style={styles.group}>
-        <Text variant="label" color="accent">
-          {de.create.stepOf(step + 1, de.create.steps.length)}
-        </Text>
-        <View
-          style={styles.steps}
-          importantForAccessibility="no-hide-descendants"
-          accessibilityElementsHidden
-        >
-          {de.create.steps.map(({ short }, index) => (
-            <View key={short} style={styles.step}>
-              <View style={[styles.stepLine, index <= step && styles.stepActive]} />
-              <Text variant="caption" color={index === step ? 'text' : 'textMuted'}>
-                {short}
-              </Text>
-            </View>
-          ))}
-        </View>
-        <Text variant="title" accessibilityRole="header">
-          {stepText.title}
-        </Text>
-        <Text color="textSecondary">{stepText.intro}</Text>
+      <Text color="textSecondary">{de.create.intro}</Text>
+      <View style={styles.fields}>
+        <ChipGroup
+          label={de.create.goalType}
+          options={goalOptions}
+          value={goalType}
+          onChange={(type) => {
+            if (type === goalType) return;
+            setGoalType(type);
+            setPresetTarget(DEFAULT_TARGET[type]);
+            setEditingTarget(false);
+            setCustomTarget('');
+            setError(null);
+          }}
+        />
+        <ChipGroup
+          label={de.create.target}
+          options={targetOptions}
+          value={editingTarget ? 'custom' : presetTarget}
+          onChange={(value) => {
+            setEditingTarget(value === 'custom');
+            if (value !== 'custom') setPresetTarget(value);
+            setError(null);
+          }}
+        />
+        {editingTarget ? (
+          <TextField
+            label={running ? de.improvements.km : de.improvements.steps}
+            keyboardType={running ? 'decimal-pad' : 'number-pad'}
+            value={customTarget}
+            onChangeText={(value) => {
+              setCustomTarget(value);
+              setError(null);
+            }}
+          />
+        ) : null}
+        {!targetError() ? (
+          <Text color="textSecondary">{goalRule(goalType, targetValue)}</Text>
+        ) : null}
       </View>
 
-      {step === 0 ? (
-        <Card style={styles.fields}>
-          <ChipGroup
-            label={de.create.goalType}
-            options={goalOptions}
-            value={goalType}
-            onChange={(type) => {
-              if (type === goalType) return;
-              setGoalType(type);
-              setPresetTarget(DEFAULT_TARGET[type]);
-              setEditingTarget(false);
-              setCustomTarget('');
-              setError(null);
-            }}
-          />
-          <ChipGroup
-            label={de.create.target}
-            options={targetOptions}
-            value={editingTarget ? 'custom' : presetTarget}
-            onChange={(value) => {
-              setEditingTarget(value === 'custom');
-              if (value !== 'custom') setPresetTarget(value);
-              setError(null);
-            }}
-          />
-          {editingTarget ? (
+      <View style={styles.fields}>
+        <ChipGroup
+          label={de.create.who}
+          value={withFriends ? 'friends' : 'alone'}
+          options={[
+            { value: 'alone', label: de.improvements.alone },
+            { value: 'friends', label: de.improvements.together },
+          ]}
+          onChange={(value) => {
+            setWithFriends(value === 'friends');
+            if (value === 'friends' && period === 'day') setPeriod('week');
+            setError(null);
+          }}
+        />
+        {withFriends ? <Text color="textSecondary">{de.create.friendsHint}</Text> : null}
+        {customDates ? (
+          <>
             <TextField
-              label={running ? de.improvements.km : de.improvements.steps}
-              keyboardType={running ? 'decimal-pad' : 'number-pad'}
-              value={customTarget}
-              onChangeText={(value) => {
-                setCustomTarget(value);
-                setError(null);
-              }}
+              label={de.improvements.startDate}
+              value={startDate}
+              onChangeText={setStartDate}
             />
-          ) : null}
-          {!targetError() ? (
-            <Text color="textSecondary">{goalRule(goalType, targetValue)}</Text>
-          ) : null}
-        </Card>
-      ) : null}
-
-      {step === 1 ? (
-        <Card style={styles.fields}>
-          <ChipGroup
-            label={de.create.who}
-            value={withFriends ? 'friends' : 'alone'}
-            options={[
-              { value: 'alone', label: de.improvements.alone },
-              { value: 'friends', label: de.improvements.together },
-            ]}
-            onChange={(value) => {
-              setWithFriends(value === 'friends');
-              if (value === 'friends' && period === 'day') setPeriod('week');
-              setError(null);
-            }}
-          />
-          {withFriends ? <Text color="textSecondary">{de.create.friendsHint}</Text> : null}
-          {customDates ? (
-            <>
-              <TextField
-                label={de.improvements.startDate}
-                value={startDate}
-                onChangeText={setStartDate}
-              />
-              <TextField
-                label={de.improvements.endDate}
-                value={endDate}
-                onChangeText={setEndDate}
-              />
-              <Text variant="caption" color="textSecondary">
-                {de.improvements.datesHint}
-              </Text>
-            </>
-          ) : (
-            <ChipGroup
-              label={de.create.period}
-              options={periodOptions}
-              value={period}
-              onChange={(value) => {
-                setPeriod(value);
-                setError(null);
-              }}
-            />
-          )}
-          <Button
-            label={customDates ? de.create.presetDates : de.create.customDates}
-            variant="secondary"
-            onPress={() => {
-              if (!customDates && !startDate && !endDate) {
-                setStartDate(presetDates.first);
-                setEndDate(presetDates.last);
-              }
-              setCustomDates(!customDates);
-              setError(null);
-            }}
-          />
-          {datesValid ? <Text color="accent">{label}</Text> : null}
-          {todayHint ? <Text color="textSecondary">{todayHint}</Text> : null}
-        </Card>
-      ) : null}
-
-      {step === 2 ? (
-        <>
-          <Card style={styles.fields}>
-            <ChipGroup
-              label={de.create.stake}
-              options={stakeOptions}
-              value={stakeCents}
-              onChange={(value) => {
-                setStakeCents(value);
-                setError(null);
-              }}
-            />
-            {balance.data !== undefined ? (
-              <Text variant="caption" color="textSecondary">
-                {de.joinSheet.balance(formatAmount(balance.data))}
-              </Text>
-            ) : null}
-            <Text color="textSecondary">{de.create.stakeHint}</Text>
-            <ChipGroup
-              label={de.donations.choice}
-              options={[
-                { value: 'keep', label: de.donations.keep },
-                { value: 'donate', label: de.donations.donate },
-              ]}
-              value={donate ? 'donate' : 'keep'}
-              onChange={(value) => {
-                setDonate(value === 'donate');
-                setError(null);
-              }}
-            />
-            {donate ? (
-              <ChipGroup
-                label={de.donations.ngo}
-                options={(ngos.data ?? []).map((ngo) => ({ value: ngo.id, label: ngo.name }))}
-                value={selectedNgo ?? ''}
-                onChange={setNgoId}
-              />
-            ) : null}
-          </Card>
-          <Card style={[styles.group, styles.review]}>
-            <Text variant="label" color="accent">
-              {de.create.reviewTitle}
+            <TextField label={de.improvements.endDate} value={endDate} onChangeText={setEndDate} />
+            <Text variant="caption" color="textSecondary">
+              {de.improvements.datesHint}
             </Text>
-            <Text variant="heading">{describeGoal(goalType, targetValue)}</Text>
-            <Text color="textSecondary">{label}</Text>
-            <Text color="textSecondary">{audience}</Text>
-          </Card>
-        </>
-      ) : null}
+          </>
+        ) : (
+          <ChipGroup
+            label={de.create.period}
+            options={periodOptions}
+            value={period}
+            onChange={(value) => {
+              setPeriod(value);
+              setError(null);
+            }}
+          />
+        )}
+        <Button
+          label={customDates ? de.create.presetDates : de.create.customDates}
+          variant="secondary"
+          onPress={() => {
+            if (!customDates && !startDate && !endDate) {
+              setStartDate(presetDates.first);
+              setEndDate(presetDates.last);
+            }
+            setCustomDates(!customDates);
+            setError(null);
+          }}
+        />
+        {datesValid ? <Text color="accent">{label}</Text> : null}
+        {todayHint ? <Text color="textSecondary">{todayHint}</Text> : null}
+      </View>
+
+      <View style={styles.fields}>
+        <ChipGroup
+          label={de.create.stake}
+          options={stakeOptions}
+          value={stakeCents}
+          onChange={(value) => {
+            setStakeCents(value);
+            setError(null);
+          }}
+        />
+        {balance.data !== undefined ? (
+          <Text variant="caption" color="textSecondary">
+            {de.joinSheet.balance(formatAmount(balance.data))}
+          </Text>
+        ) : null}
+        <Text color="textSecondary">{de.create.stakeHint}</Text>
+        <ChipGroup
+          label={de.donations.choice}
+          options={[
+            { value: 'keep', label: de.donations.keep },
+            { value: 'donate', label: de.donations.donate },
+          ]}
+          value={donate ? 'donate' : 'keep'}
+          onChange={(value) => {
+            setDonate(value === 'donate');
+            setError(null);
+          }}
+        />
+        {donate ? (
+          <ChipGroup
+            label={de.donations.ngo}
+            options={(ngos.data ?? []).map((ngo) => ({ value: ngo.id, label: ngo.name }))}
+            value={selectedNgo ?? ''}
+            onChange={setNgoId}
+          />
+        ) : null}
+      </View>
 
       <View style={styles.group}>
         {!confirming ? renderError() : null}
-        <Button label={step === 2 ? de.create.review : de.create.submit} onPress={next} />
-        {step > 0 ? <Button label={de.create.back} variant="secondary" onPress={back} /> : null}
+        <Button label={de.create.review} onPress={openConfirmation} />
       </View>
 
       <Sheet
@@ -464,9 +392,4 @@ const styles = StyleSheet.create({
   content: { paddingTop: spacing.md, paddingBottom: spacing.xl, gap: spacing.lg },
   group: { gap: spacing.sm },
   fields: { gap: spacing.lg },
-  steps: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.sm },
-  step: { flexGrow: 1, gap: spacing.xs },
-  stepLine: { height: spacing.xxs, borderRadius: radius.pill, backgroundColor: colors.border },
-  stepActive: { backgroundColor: colors.accent },
-  review: { backgroundColor: colors.surfaceRaised },
 });

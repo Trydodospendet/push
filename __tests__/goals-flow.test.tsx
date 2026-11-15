@@ -1,5 +1,4 @@
-import { act, userEvent } from '@testing-library/react-native';
-import { router } from 'expo-router';
+import { userEvent } from '@testing-library/react-native';
 import { renderRouter, screen } from 'expo-router/testing-library';
 import { de } from '@/i18n/de';
 import { addDays, formatDayLabel, toLocalDate } from '@/lib/dates';
@@ -121,9 +120,7 @@ describe('goals', () => {
 
     await user.press(await screen.findByRole('radio', { name: de.goal.typeLabel.steps_daily }));
     await user.press(screen.getByRole('radio', { name: '8.000 Schritte' }));
-    await user.press(screen.getByRole('button', { name: 'Weiter' }));
     await user.press(screen.getByRole('radio', { name: de.create.periodLabel.day }));
-    await user.press(screen.getByRole('button', { name: 'Weiter' }));
     await user.press(screen.getByRole('radio', { name: '10,00 Credits' }));
     await user.press(screen.getByRole('button', { name: 'Angaben prüfen' }));
 
@@ -143,8 +140,7 @@ describe('goals', () => {
     expect(
       screen.getByText('Verfehlst du dein Ziel, verfällt dein Einsatz in den Pool.'),
     ).toBeOnTheScreen();
-    expect(screen.getByText(/Bereits heute erfasste Schritte zählen mit/)).toBeOnTheScreen();
-    expect(screen.getByText(/bis Mitternacht/)).toBeOnTheScreen();
+    expect(screen.getAllByText(/Bereits heute erfasste Schritte zählen mit/)).toHaveLength(2);
     expect(screen.getByText(/ab der Bestätigung sofort gebunden/)).toBeOnTheScreen();
     expect(
       screen.getByText('Testphase: Credits sind virtuell und können nicht ausgezahlt werden.'),
@@ -166,7 +162,7 @@ describe('goals', () => {
     expect(await screen.findByText('TOPF DIESES ZEITRAUMS')).toBeOnTheScreen();
   });
 
-  it('preserves a decimal friend goal through back navigation and custom date changes', async () => {
+  it('preserves a decimal friend goal when editing its dates after the review', async () => {
     const user = userEvent.setup();
     const today = toLocalDate(new Date(), profile.timezone);
     const first = addDays(today, 1);
@@ -180,25 +176,20 @@ describe('goals', () => {
     await user.press(await screen.findByRole('radio', { name: 'Eigener Wert' }));
     const target = screen.getByLabelText(de.improvements.km);
     await user.type(target, '3,5');
-    await user.press(screen.getByRole('button', { name: 'Weiter' }));
     await user.press(screen.getByRole('radio', { name: de.improvements.together }));
     await user.press(screen.getByRole('button', { name: 'Eigene Daten wählen' }));
     await user.clear(screen.getByLabelText(de.improvements.endDate));
     await user.type(screen.getByLabelText(de.improvements.endDate), '2026-02-30');
-    await user.press(screen.getByRole('button', { name: 'Weiter' }));
+    await user.press(screen.getByRole('button', { name: 'Angaben prüfen' }));
     expect(screen.getByRole('alert')).toHaveTextContent(de.improvements.invalidDates);
-    await act(async () => router.back());
-    expect(screen.getByDisplayValue('3,5')).toBeOnTheScreen();
-    await user.press(screen.getByRole('button', { name: 'Weiter' }));
     const start = screen.getByLabelText(de.improvements.startDate);
     const end = screen.getByLabelText(de.improvements.endDate);
     await user.clear(start);
     await user.type(start, first);
     await user.clear(end);
     await user.type(end, last);
-    await user.press(screen.getByRole('button', { name: 'Weiter' }));
     await user.press(screen.getByRole('button', { name: 'Angaben prüfen' }));
-    expect(await screen.findByText(/Alle deine Läufe im Zeitraum.*3,5 km/)).toBeOnTheScreen();
+    expect(screen.getAllByText(/Alle deine Läufe im Zeitraum.*3,5 km/)).toHaveLength(2);
     expect(
       screen.getByText(
         `${de.create.range(formatDayLabel(first), formatDayLabel(last))} · ${de.create.reviewFriends}`,
@@ -206,7 +197,16 @@ describe('goals', () => {
     ).toBeOnTheScreen();
     expect(screen.getByText(/Ab dem Start ist der Einsatz gebunden/)).toBeOnTheScreen();
     await user.press(screen.getByRole('button', { name: 'Angaben ändern' }));
-    expect(screen.getByRole('button', { name: 'Angaben prüfen' })).toBeOnTheScreen();
+    expect(screen.getByDisplayValue('3,5')).toBeOnTheScreen();
+    await user.clear(end);
+    const changedEnd = addDays(today, 4);
+    await user.type(end, changedEnd);
+    await user.press(screen.getByRole('button', { name: 'Angaben prüfen' }));
+    expect(
+      screen.getByText(
+        `${de.create.range(formatDayLabel(first), formatDayLabel(changedEnd))} · ${de.create.reviewFriends}`,
+      ),
+    ).toBeOnTheScreen();
     expect(supabaseMock.rpc).not.toHaveBeenCalledWith(
       'create_goal_with_preferences',
       expect.anything(),

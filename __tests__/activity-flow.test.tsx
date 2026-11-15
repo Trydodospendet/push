@@ -70,7 +70,6 @@ describe('activity tab', () => {
   });
 
   it('lists taken-over runs and steps and shows why a run does not count', async () => {
-    const user = userEvent.setup();
     mockHealthState.set({
       introDone: true,
       connected: true,
@@ -102,14 +101,7 @@ describe('activity tab', () => {
           platform: 'ios',
         },
       ],
-      activity_daily_steps: [
-        {
-          user_id: USER_ID,
-          date: new Date(Date.now() - 86_400_000).toISOString().slice(0, 10),
-          steps: 8123,
-          is_valid: true,
-        },
-      ],
+      activity_daily_steps: [{ user_id: USER_ID, date: '2026-11-12', steps: 8123, is_valid: true }],
       gps_runs: [],
     });
 
@@ -120,8 +112,7 @@ describe('activity tab', () => {
     expect(
       screen.getByText('Manuell eingetragen – manuelle Einträge zählen nie.'),
     ).toBeOnTheScreen();
-    await user.press(screen.getByRole('radio', { name: 'Schritte' }));
-    expect(await screen.findByText('8.123 Schritte')).toBeOnTheScreen();
+    expect(screen.getByText('8.123 Schritte')).toBeOnTheScreen();
     expect(screen.queryByText('Noch keine Aktivitäten')).toBeNull();
   });
 

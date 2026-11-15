@@ -1,16 +1,7 @@
 import { useRouter } from 'expo-router';
-import { useState } from 'react';
 import { RefreshControl, StyleSheet, View } from 'react-native';
 
-import {
-  ChipGroup,
-  EmptyState,
-  ErrorState,
-  LoadingState,
-  Screen,
-  SettingsRow,
-  Text,
-} from '@/components';
+import { Button, Card, EmptyState, ErrorState, LoadingState, Screen, Text } from '@/components';
 import { useSession } from '@/features/auth/auth-provider';
 import { useMyChallenges, useOpenChallenges } from '@/features/challenges/api';
 import { ChallengeCard } from '@/features/challenges/challenge-card';
@@ -21,7 +12,6 @@ import { de } from '@/i18n/de';
 import { colors, spacing } from '@/theme';
 
 const CYCLES: readonly RankedCycle[] = ['day', 'week', 'month'];
-const cycleOptions = CYCLES.map((value) => ({ value, label: de.challenges.cycleLabel[value] }));
 
 /**
  * Ranked: fixed rankings (most km, most steps) per day, week and month – no stake, no payout –
@@ -32,7 +22,6 @@ export default function RankedScreen() {
   const session = useSession();
   const mine = useMyChallenges(session.user.id);
   const open = useOpenChallenges('ranked');
-  const [cycle, setCycle] = useState<RankedCycle | null>(null);
 
   const myRanked = mine.data?.filter(isRanked);
   const myIds = new Set(myRanked?.filter((c) => c.isParticipant).map((c) => c.id));
@@ -56,8 +45,6 @@ export default function RankedScreen() {
           (rankedCycle(a)?.metric ?? '').localeCompare(rankedCycle(b)?.metric ?? ''),
       );
 
-  const selectedCycle = cycle ?? CYCLES.find((value) => byCycle(value).length > 0) ?? 'day';
-  const items = byCycle(selectedCycle);
   const loading = mine.isPending || open.isPending;
   const failed = mine.isError || open.isError;
   const refresh = () => {
@@ -86,39 +73,44 @@ export default function RankedScreen() {
         <Text color="textSecondary">{de.challenges.intro}</Text>
       </View>
 
-      <SettingsRow
-        icon="people-outline"
-        label={de.social.homeButton}
-        detail={de.social.rankedHint}
-        onPress={() => router.push('/social')}
-      />
-      <ChipGroup
-        label={de.challenges.rankingPeriod}
-        options={cycleOptions}
-        value={selectedCycle}
-        onChange={setCycle}
-      />
+      <Card style={styles.social}>
+        <Text variant="heading">{de.social.homeButton}</Text>
+        <Text color="textSecondary">{de.social.rankedHint}</Text>
+        <Button
+          label={de.social.homeButton}
+          variant="secondary"
+          onPress={() => router.push('/social')}
+        />
+      </Card>
 
       {loading ? (
         <LoadingState />
       ) : failed ? (
         <ErrorState message={de.challenges.error} onRetry={refresh} retrying={mine.isFetching} />
-      ) : items.length === 0 ? (
+      ) : current.size === 0 ? (
         <EmptyState
           icon="trophy-outline"
           title={de.emptyStates.rankedOpenTitle}
           text={de.emptyStates.rankedOpenText}
         />
       ) : (
-        <View style={styles.group}>
-          {items.map((challenge) => (
-            <ChallengeCard
-              key={challenge.id}
-              challenge={challenge}
-              joined={myIds.has(challenge.id)}
-            />
-          ))}
-        </View>
+        CYCLES.map((cycle) => {
+          const items = byCycle(cycle);
+          return items.length === 0 ? null : (
+            <View key={cycle} style={styles.group}>
+              <Text variant="label" color="accent" accessibilityRole="header">
+                {de.challenges.cycleLabel[cycle]}
+              </Text>
+              {items.map((challenge) => (
+                <ChallengeCard
+                  key={challenge.id}
+                  challenge={challenge}
+                  joined={myIds.has(challenge.id)}
+                />
+              ))}
+            </View>
+          );
+        })
       )}
 
       <ChallengeSection
@@ -144,12 +136,15 @@ export default function RankedScreen() {
 
 const styles = StyleSheet.create({
   content: {
-    paddingTop: spacing.md,
+    paddingTop: spacing.xl,
     paddingBottom: spacing.xl,
     gap: spacing.lg,
   },
   header: {
     gap: spacing.xs,
+  },
+  social: {
+    gap: spacing.sm,
   },
   group: {
     gap: spacing.sm,

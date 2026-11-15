@@ -24,5 +24,3 @@ export const glow = {
 
 /** Dimmed backdrop behind sheets (the background color with 70 % opacity). */
 export const scrim = 'rgba(10, 10, 10, 0.7)';
-
-export const highlightBorder = '#455526';

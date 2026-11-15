@@ -1,24 +1,37 @@
-import { useEffect, useRef, useState } from 'react';
-import { Animated, AppState, StyleSheet, useAnimatedValue, View } from 'react-native';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  Animated,
+  AppState,
+  PanResponder,
+  Pressable,
+  StyleSheet,
+  useWindowDimensions,
+  useAnimatedValue,
+  View,
+} from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { z } from 'zod';
-
-import { Card, Text } from '@/components';
-import { DEFAULT_TIMEZONE } from '@/config/app';
-import { useMyProfile } from '@/features/auth/api';
+import { Text } from '@/components';
 import { useSession } from '@/features/auth/auth-provider';
+import { useMyProfile } from '@/features/auth/api';
 import { useMyChallenges } from '@/features/challenges/api';
 import { challengeDays, isGoalType } from '@/features/challenges/format';
 import { useMyDailySteps, useMyProgress, useRecentWorkouts } from '@/features/health/api';
 import { useHealth } from '@/features/health/health-provider';
 import { progressRatio } from '@/features/health/progress';
-import { useMotionEnabled } from '@/features/preferences/motion';
-import { de } from '@/i18n/de';
+import { useGps } from '@/features/gps/gps-provider';
+import { formatSpeed } from '@/features/gps/format';
+import { currentSpeed } from '@/features/gps/speed';
+import { useClock } from '@/features/gps/use-clock';
+import { useLiveSpeed } from '@/features/gps/use-live-speed';
+import { DEFAULT_TIMEZONE } from '@/config/app';
 import { addDays, toLocalDate } from '@/lib/dates';
 import { secureStorage } from '@/lib/secure-storage';
-import { colors, spacing } from '@/theme';
-import { Mascot } from './mascot';
+import { de } from '@/i18n/de';
+import { colors, radius, spacing } from '@/theme';
 import { coachStage } from './model';
-
+import { useMotionEnabled } from '@/features/preferences/motion';
+import { Mascot } from './mascot';
 const memorySchema = z.object({
   days: z.array(z.string()),
   startedDay: z.string().optional(),
@@ -36,13 +49,101 @@ export function Coach() {
   const workouts = useRecentWorkouts(uid);
   const challenges = useMyChallenges(uid);
   const progress = useMyProgress(uid);
+  const { recorder } = useGps();
+  const { width, height } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
   const [stage, setStage] = useState(0);
-  const [message, setMessage] = useState<string>(de.coach.ongoing);
+  const [message, setMessage] = useState<string | null>(null);
+  const [speedMode, setSpeedMode] = useState(false);
+  const [dragging, setDragging] = useState(false);
+  const [hidden, setHidden] = useState(false);
+  const showingSpeed = speedMode && !hidden;
+  const recording = recorder.status === 'recording';
+  const now = useClock(showingSpeed && recording);
+  const [flip, setFlip] = useState(0);
   const [visit, setVisit] = useState(0);
   const handled = useRef(-1);
+  const lastQuote = useRef(-1);
   const motionOn = useMotionEnabled();
   const bounce = useAnimatedValue(0);
-
+  const celebration = useAnimatedValue(0);
+  const wiggle = useAnimatedValue(0);
+  const [position] = useState(
+    () =>
+      new Animated.ValueXY({
+        x: Math.max(8, width - 90),
+        y: Math.max(insets.top, height - insets.bottom - 190),
+      }),
+  );
+  const origin = useRef({
+    x: Math.max(8, width - 90),
+    y: Math.max(insets.top, height - insets.bottom - 190),
+  });
+  const [gaze, setGaze] = useState(0);
+  const [bubbleLeft, setBubbleLeft] = useState(-130);
+  const switchMode = useCallback(() => {
+    setSpeedMode((wasShowingSpeed) => {
+      if (wasShowingSpeed && motionOn) {
+        celebration.setValue(0);
+        Animated.sequence([
+          Animated.timing(celebration, { toValue: 1, duration: 210, useNativeDriver: true }),
+          Animated.timing(celebration, { toValue: 2, duration: 210, useNativeDriver: true }),
+        ]).start();
+        setFlip((value) => value + 1);
+      }
+      return !wasShowingSpeed;
+    });
+  }, [celebration, motionOn]);
+  const bounds = useCallback(
+    (x: number, y: number) => ({
+      x: Math.max(8, Math.min(width - 88, x)),
+      y: Math.max(insets.top + 50, Math.min(height - insets.bottom - 150, y)),
+    }),
+    [width, height, insets.top, insets.bottom],
+  );
+  const responder = useMemo(
+    () =>
+      // Gesture callbacks read refs only when a touch occurs.
+      // eslint-disable-next-line react-hooks/refs
+      PanResponder.create({
+        onStartShouldSetPanResponder: () => true,
+        onPanResponderGrant: () => setDragging(true),
+        onPanResponderMove: (_, g) => {
+          position.setValue({
+            x: Math.max(8, Math.min(width - 88, origin.current.x + g.dx)),
+            y: Math.max(
+              insets.top + 50,
+              Math.min(height - insets.bottom - 150, origin.current.y + g.dy),
+            ),
+          });
+          setGaze(g.dx > 0 ? 2 : -2);
+        },
+        onPanResponderRelease: (_, g) => {
+          const next = {
+            x: Math.max(8, Math.min(width - 88, origin.current.x + g.dx)),
+            y: Math.max(
+              insets.top + 50,
+              Math.min(height - insets.bottom - 150, origin.current.y + g.dy),
+            ),
+          };
+          origin.current = next;
+          setBubbleLeft(next.x > width / 2 ? -130 : 0);
+          position.setValue(next);
+          setDragging(false);
+          if (Math.abs(g.dx) + Math.abs(g.dy) < 8) switchMode();
+        },
+        onPanResponderTerminate: () => {
+          position.setValue(origin.current);
+          setDragging(false);
+        },
+      }),
+    [height, width, insets.top, insets.bottom, position, switchMode],
+  );
+  useEffect(() => {
+    const next = bounds(origin.current.x, origin.current.y);
+    origin.current = next;
+    position.setValue(next);
+  }, [width, height, insets.top, insets.bottom, position, bounds]);
   useEffect(() => {
     const sub = AppState.addEventListener('change', (state) => {
       if (state === 'active') setVisit((v) => v + 1);
@@ -143,55 +244,154 @@ export function Coach() {
     today,
   ]);
   useEffect(() => {
+    if (!message) return;
+    const timer = setTimeout(() => setMessage(null), 10000);
+    return () => clearTimeout(timer);
+  }, [message]);
+  useEffect(() => {
+    const timer = setInterval(() => {
+      if (AppState.currentState !== 'active') return;
+      const next = (lastQuote.current + 1) % de.challengeStart.quotes.length;
+      lastQuote.current = next;
+      setMessage(de.challengeStart.quotes[next]);
+    }, 60000);
+    return () => clearInterval(timer);
+  }, []);
+  const { speed: previewSpeed } = useLiveSpeed(
+    showingSpeed && !recording && recorder.status !== 'paused',
+  );
+  useEffect(() => {
     if (!motionOn) return;
     const animation = Animated.loop(
       Animated.sequence([
         Animated.timing(bounce, {
-          toValue: -4,
-          duration: 1250,
+          toValue: 1,
+          duration: dragging ? 100 : 1200,
           useNativeDriver: true,
-          isInteraction: false,
         }),
         Animated.timing(bounce, {
           toValue: 0,
-          duration: 1250,
+          duration: dragging ? 100 : 1200,
           useNativeDriver: true,
-          isInteraction: false,
         }),
       ]),
     );
     animation.start();
+    const eyes = setInterval(() => setGaze((g) => (g === 2 ? -2 : 2)), 4000);
     return () => {
       animation.stop();
+      clearInterval(eyes);
       bounce.setValue(0);
     };
-  }, [motionOn, bounce]);
-
-  return (
-    <Card style={styles.card}>
-      <Animated.View
-        importantForAccessibility="no-hide-descendants"
-        accessibilityElementsHidden
-        style={{ transform: [{ translateY: bounce }] }}
+  }, [motionOn, dragging, bounce]);
+  useEffect(() => {
+    if (!motionOn || speedMode || hidden) return;
+    const timer = setInterval(() => {
+      wiggle.setValue(0);
+      Animated.sequence([
+        Animated.timing(wiggle, { toValue: -1, duration: 120, useNativeDriver: true }),
+        Animated.timing(wiggle, { toValue: 1, duration: 160, useNativeDriver: true }),
+        Animated.timing(wiggle, { toValue: 0, duration: 120, useNativeDriver: true }),
+      ]).start();
+    }, 18000);
+    return () => clearInterval(timer);
+  }, [hidden, motionOn, speedMode, wiggle]);
+  const speed =
+    showingSpeed && recording ? currentSpeed(recorder.points, now, recorder.segment) : previewSpeed;
+  if (hidden)
+    return (
+      <Pressable
+        style={[styles.restore, { bottom: insets.bottom + 75 }]}
+        accessibilityLabel={de.coach.show}
+        onPress={() => setHidden(false)}
       >
-        <Mascot stage={stage} dizzy={false} gaze={0} />
-      </Animated.View>
-      <View style={styles.copy}>
-        <Text variant="heading">{de.coach.name}</Text>
-        <Text variant="caption" color="textSecondary">
-          {message}
-        </Text>
+        <Text color="accent">●</Text>
+      </Pressable>
+    );
+  return (
+    <Animated.View
+      style={[styles.root, { transform: position.getTranslateTransform() }]}
+      pointerEvents="box-none"
+    >
+      {message && !speedMode ? (
+        <View pointerEvents="none" style={[styles.bubble, { left: bubbleLeft }]}>
+          <Text variant="caption">{message}</Text>
+        </View>
+      ) : null}
+      <View
+        {...responder.panHandlers}
+        accessible
+        accessibilityRole="button"
+        accessibilityLabel={de.coach.move}
+        onAccessibilityTap={switchMode}
+      >
+        {speedMode ? (
+          <View style={styles.speed}>
+            <Text variant="heading" color="accent">
+              {formatSpeed(speed)}
+            </Text>
+            <Text variant="caption">{de.coach.speed}</Text>
+          </View>
+        ) : (
+          <Animated.View
+            key={flip}
+            style={{
+              transform: [
+                {
+                  translateY: Animated.add(
+                    bounce.interpolate({ inputRange: [0, 1], outputRange: [0, -3] }),
+                    celebration.interpolate({ inputRange: [0, 1, 2], outputRange: [0, -17, 0] }),
+                  ),
+                },
+                {
+                  rotate: dragging
+                    ? bounce.interpolate({ inputRange: [0, 1], outputRange: ['-12deg', '12deg'] })
+                    : Animated.add(
+                        celebration.interpolate({
+                          inputRange: [0, 1, 2],
+                          outputRange: [0, 180, 360],
+                        }),
+                        wiggle.interpolate({ inputRange: [-1, 0, 1], outputRange: [-8, 0, 8] }),
+                      ).interpolate({
+                        inputRange: [-8, 0, 360, 368],
+                        outputRange: ['-8deg', '0deg', '360deg', '368deg'],
+                      }),
+                },
+              ],
+            }}
+          >
+            <Mascot stage={stage} dizzy={dragging} gaze={gaze} />
+          </Animated.View>
+        )}
       </View>
-    </Card>
+      <Text variant="caption" color="accent">
+        {de.coach.name}
+      </Text>
+      <Pressable accessibilityLabel={de.coach.hide} onPress={() => setHidden(true)}>
+        <Text variant="caption" color="textMuted">
+          ×
+        </Text>
+      </Pressable>
+    </Animated.View>
   );
 }
-
 const styles = StyleSheet.create({
-  card: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.md,
+  root: { position: 'absolute', top: 0, left: 0, width: 80, alignItems: 'center', zIndex: 20 },
+  bubble: {
+    position: 'absolute',
+    bottom: 120,
+    width: 200,
+    padding: spacing.sm,
+    borderRadius: radius.card,
     backgroundColor: colors.surfaceRaised,
+    borderColor: colors.border,
+    borderWidth: 1,
   },
-  copy: { flex: 1, gap: spacing.xs },
+  speed: {
+    width: '100%',
+    padding: spacing.xs,
+    backgroundColor: colors.surface,
+    borderRadius: radius.card,
+  },
+  restore: { position: 'absolute', right: 8, padding: spacing.sm, zIndex: 20 },
 });

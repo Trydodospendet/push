@@ -109,6 +109,8 @@ function startMessage(outcome: StartOutcome): string | null {
       return de.run.permissionDenied;
     case 'blocked':
       return de.run.permissionBlocked;
+    case 'servicesDisabled':
+      return de.run.servicesDisabled;
     case 'error':
       return de.run.startError;
     case 'started':
@@ -127,7 +129,7 @@ function IdleRun({ timezone }: { timezone: string }) {
   return (
     <ScrollView
       style={StyleSheet.absoluteFill}
-      contentContainerStyle={{ paddingTop: Math.round(height * 0.4) }}
+      contentContainerStyle={{ paddingTop: Math.min(224, Math.round(height * 0.4)) }}
       showsVerticalScrollIndicator={false}
     >
       <View style={styles.sheet}>
@@ -197,6 +199,7 @@ function ActiveRun({ onInset }: { onInset: (height: number) => void }) {
   const paused = recorder.status === 'paused';
   const [stopOpen, setStopOpen] = useState(false);
   const [busy, setBusy] = useState(false);
+  const [controlError, setControlError] = useState<string | null>(null);
   const now = useClock(!paused);
 
   const stats = liveStats(recorder.points);
@@ -214,7 +217,10 @@ function ActiveRun({ onInset }: { onInset: (height: number) => void }) {
 
   const act = (task: () => Promise<unknown>) => {
     setBusy(true);
-    void task().finally(() => setBusy(false));
+    setControlError(null);
+    void task()
+      .catch(() => setControlError(paused ? de.run.resumeError : de.run.pauseError))
+      .finally(() => setBusy(false));
   };
 
   return (
@@ -263,6 +269,11 @@ function ActiveRun({ onInset }: { onInset: (height: number) => void }) {
         {recorder.full ? (
           <Text color="danger" accessibilityRole="alert">
             {de.run.full}
+          </Text>
+        ) : null}
+        {controlError ? (
+          <Text color="danger" accessibilityRole="alert">
+            {controlError}
           </Text>
         ) : null}
         <Button

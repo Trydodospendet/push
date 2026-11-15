@@ -88,7 +88,7 @@ TaskManager.defineTask<LocationTaskData>(LOCATION_TASK, async ({ data, error }) 
   dispatchRecorder({ type: 'points', points: data.locations.map(toPoint) });
 });
 
-export type PermissionResult = 'granted' | 'denied' | 'blocked';
+export type PermissionResult = 'granted' | 'denied' | 'blocked' | 'servicesDisabled';
 
 /**
  * Only "while using the app" is asked for. The run is started from the open app, and from
@@ -97,6 +97,9 @@ export type PermissionResult = 'granted' | 'denied' | 'blocked';
  * permission for that, so ACCESS_BACKGROUND_LOCATION is not requested at all.
  */
 export async function requestLocationPermission(): Promise<PermissionResult> {
+  if (!(await Location.hasServicesEnabledAsync())) {
+    return 'servicesDisabled';
+  }
   const foreground = await Location.requestForegroundPermissionsAsync();
   if (foreground.granted) {
     return 'granted';
@@ -140,13 +143,8 @@ export function newRunId(): string {
 }
 
 export async function startRun(): Promise<void> {
+  await startUpdates();
   dispatchRecorder({ type: 'start', runId: newRunId() });
-  try {
-    await startUpdates();
-  } catch (error) {
-    dispatchRecorder({ type: 'reset' });
-    throw error;
-  }
 }
 
 export async function pauseRun(): Promise<void> {
@@ -155,8 +153,8 @@ export async function pauseRun(): Promise<void> {
 }
 
 export async function resumeRun(): Promise<void> {
-  dispatchRecorder({ type: 'resume' });
   await startUpdates();
+  dispatchRecorder({ type: 'resume' });
 }
 
 /** Ends the run and returns it (null if there is nothing worth keeping). */

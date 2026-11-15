@@ -23,6 +23,7 @@ import {
   clearRun,
   getRecorderState,
   pauseRun,
+  type PermissionResult,
   requestLocationPermission,
   restoreRun,
   resumeRun,
@@ -35,7 +36,7 @@ import {
 import { clearActiveRun, enqueueRun, loadActiveRun } from './storage';
 import { uploadQueuedRuns, type UploadedRun } from './upload';
 
-export type StartOutcome = 'started' | 'denied' | 'blocked' | 'error';
+export type StartOutcome = 'started' | Exclude<PermissionResult, 'granted'> | 'error';
 
 export type StopOutcome =
   /** The run was too short and thrown away. */
@@ -144,11 +145,9 @@ export function GpsProvider({ userId, children }: { userId: string | null; child
   }, [queryClient, report, userId]);
 
   const start = useCallback(async (): Promise<StartOutcome> => {
-    const permission = await requestLocationPermission();
-    if (permission !== 'granted') {
-      return permission;
-    }
     try {
+      const permission = await requestLocationPermission();
+      if (permission !== 'granted') return permission;
       await startRun();
       return 'started';
     } catch {

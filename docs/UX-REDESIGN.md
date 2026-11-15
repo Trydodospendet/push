@@ -1,24 +1,25 @@
-# PUSH – Ablaufskript für die überarbeitete App
+# PUSH – Ablaufskript für Gerätetests
 
-## Heute
+## Home
 
-1. Öffne **Heute**. Oben stehen das Datum und das wichtigste Ziel. Die Karte zeigt den synchronisierten Fortschritt sowie die Restzeit oder den geplanten Start. Tippe die Karte an, um Regeln, Aktivität und Ergebnis zu sehen.
-2. Ohne Ziel führt die hervorgehobene Karte zu **Ziel setzen**. Darunter sind **Lauf aufzeichnen** und der Trainingsplan erreichbar. Bei einem laufenden Plan zeigt die Karte den nächsten offenen Lauf ab heute, sobald er berechnet ist.
-3. Weiter unten stehen die heutigen Schritte, der Verbindungsstatus bei Bedarf und Pushy. Die Animation folgt den Einstellungen der App und des Systems. Unter **Wochenstatistik und Erfolge** lassen sich die zusätzlichen Zahlen aufklappen.
+1. Öffne **Home**. Das wichtigste Ziel zeigt den synchronisierten Fortschritt sowie die Restzeit oder den geplanten Start. Tippe auf die Karte, um Regeln, Aktivität und Ergebnis zu sehen.
+2. Unter **Ziel setzen** sind **Lauf aufzeichnen** und der Trainingsplan erreichbar. Bei einem laufenden Plan zeigt die Karte den nächsten offenen Lauf ab heute.
+3. Die Schritte, Wochenstatistik und Erfolge stehen weiter unten. Pushy ist ein verschiebbares Symbol. Antippen wechselt zur Tempoansicht, das Kreuz blendet Pushy aus und der kleine Punkt zeigt ihn wieder an.
 
 ## Ein Ziel setzen
 
+Ziel, Zeitraum und Einsatz stehen auf einer Seite.
+
 1. **Ziel.** Wähle einen einzelnen Lauf, eine Gesamtstrecke, Schritte pro Tag oder Schritte insgesamt. Nimm einen Vorschlag oder gib einen eigenen Wert ein, etwa **3,5 km**. Unter der Auswahl steht, was für das Ziel zählt.
 2. **Zeitraum.** Entscheide, ob du allein oder mit Freunden startest. Wähle eine Vorlage oder stelle Anfang und letzten Tag selbst ein. Die App zeigt den Zeitraum mit Wochentagen. Ein Freundesziel muss frühestens morgen starten. Nach dem Speichern steht der Einladungscode in den Zieldetails.
-3. **Einsatz.** Wähle virtuelle Credits. Unter der Auswahl siehst du dein verfügbares Guthaben, sobald es geladen ist. Lege fest, ob du einen möglichen Gewinnanteil behältst oder einer Organisation zuordnest. Ziel und Zeitraum stehen zur Kontrolle auf derselben Seite.
+3. **Einsatz.** Wähle virtuelle Credits. Unter der Auswahl siehst du dein verfügbares Guthaben, sobald es geladen ist. Lege fest, ob du einen möglichen Gewinnanteil behältst oder einer Organisation zuordnest.
 4. **Angaben prüfen.** Lies, wie viel jetzt abgebucht wird, wann der Einsatz gebunden ist und was beim Erreichen oder Verfehlen passiert. Mit **Angaben ändern** kannst du zurückgehen. Die Abbuchung erfolgt erst mit **Credits setzen**. Am Zielende zählt der bis dahin synchronisierte Stand.
 
 ## Laufen und Verlauf
 
-1. Öffne **Aktivität → Live-Tempo testen**, um GPS ohne Laufaufzeichnung zu prüfen. Erlaube dafür den Standort. Das Tempo wird beim Schließen der Vorschau oder Verlassen des Tabs abgeschaltet.
+1. Tippe auf **Pushy**, um GPS ohne Laufaufzeichnung zu prüfen. Erlaube den Standort. Tippe erneut auf die Anzeige, um die Vorschau zu schließen.
 2. Öffne **Lauf aufzeichnen**. Beim Lauf stehen die aktuelle **Geschwindigkeit in km/h** und die **durchschnittliche Pace in min/km** getrennt im Bedienfeld. **—** steht für eine fehlende, ungenaue oder veraltete Messung. Bei gemessenem Stillstand steht **0**. Wenn das Gerät keine Geschwindigkeit liefert, kann die App sie über mehrere Sekunden aus ausreichend genauen Positionen schätzen.
-3. Öffne nach dem Speichern den Filter **GPS-Läufe**. **Importierte Läufe** und **Schritte** haben eigene Filter. Der Bericht eines importierten Laufs nennt den Grund, wenn er für ein Ziel ungültig ist.
-4. Unter **Ranked** lässt sich die Rangliste nach Tag, Woche und Monat filtern. **Freunde & Liga** ist direkt erreichbar. Im Profil sind Credits, Konto, App-Einstellungen und Hilfe gruppiert.
+3. Unter **Laufen** erscheinen die GPS-Aufzeichnungen, importierte Läufe und Schritte in der vertrauten Übersicht. Der Bericht eines importierten Laufs nennt den Grund, wenn er für ein Ziel ungültig ist.
 
 ## Welche Studien sind dafür relevant?
 
@@ -28,10 +29,10 @@
 
 ## Vergleich auf dem Gerät
 
-- Auf „Heute“ das Datum, die Ziele, den Laufstart, den nächsten Trainingslauf und Pushy prüfen. „Wochenstatistik und Erfolge“ öffnen und schließen. Unter Aktivität die drei Verlaufsfilter, unter Ranked Tag/Woche/Monat und „Freunde & Liga“, im Profil die Einstellungsgruppen prüfen.
-- Im leeren Testkonto unter „Heute“ → „Ziel setzen“ → „Tägliche Schritte“ → „8.000 Schritte“ wählen. Weiter zu „Heute bis Mitternacht“, dann „1,00 Credits“ und „Angaben prüfen“. Vor dem Buchen festhalten, welche Schritte zählen und ab wann der Einsatz gebunden ist.
-- Unter „Ziel setzen“ → „Gesamtstrecke“ → „Eigener Wert“ **3,5** eingeben. Weiter zu „Mit Freunden“ und „Eigene Daten wählen“. Mit dem System-Zurück zum Zielwert zurückgehen, erneut weiter und die Daten auf morgen bis übermorgen ändern. In „Angaben prüfen“ Wert, Zeitraum, Einsatz und Bindung ab Start kontrollieren. „Angaben ändern“ muss zum Einsatz zurückführen. Nach der Migration für eine echte Testbuchung ein Testkonto nutzen und prüfen, ob genau einmal abgebucht wurde und der Einladungscode erscheint.
-- Draußen unter „Aktivität“ → „Live-Tempo testen“ den Standort erlauben. Rund 20 Sekunden stehen, dann gleichmäßig gehen und laufen. Pro Abschnitt den angezeigten Bereich in km/h und bei einer Uhr deren Wert im gleichen Abschnitt festhalten. In „Lauf aufzeichnen“ → „Pause“ → „Fortsetzen“ prüfen, ob die Anzeige bis zur neuen Messung einen Strich zeigt und die Uhr keine Pausenzeit addiert. Vorschau schließen und einmal mit verweigerter Standortfreigabe öffnen. Geräte-/Android-Version und exakte Fehlermeldung festhalten, falls ein Schritt scheitert.
+- Auf **Home** die Zielkarte, den Laufstart, den nächsten Trainingslauf und den verschiebbaren Pushy prüfen. Mit großer Schrift prüfen, ob der Zieltitel, die Eingabefelder und die Schaltflächen in ihren Rahmen bleiben.
+- Im leeren Testkonto unter „Ziel setzen“ ein persönliches Tagesziel mit 8.000 Schritten und 1 Credit vorbereiten. In „Angaben prüfen“ kontrollieren, welche Schritte zählen und ab wann der Einsatz gebunden ist.
+- Ein Freundesziel mit **3,5 km** vorbereiten und einen eigenen Zeitraum wählen. In „Angaben prüfen“ Wert, Zeitraum, Einsatz und Bindung ab Start kontrollieren. Über „Angaben ändern“ zurückgehen, das Enddatum ändern und den erhaltenen Kommawert prüfen. Nach den Migrationen mit einem Testkonto buchen und Guthaben sowie Einladungscode kontrollieren.
+- Draußen Pushys Tempoanzeige öffnen. Rund 20 Sekunden stehen, dann gleichmäßig gehen und laufen. Den Bereich in km/h und gegebenenfalls den Wert einer Uhr im selben Abschnitt festhalten. In „Lauf aufzeichnen“ die Standortberechtigung ablehnen und danach erlauben. Bei ausgeschaltetem Standort muss beim Start ein Hinweis sichtbar bleiben. Nach „Pause“ und „Fortsetzen“ darf die App bis zur neuen Messung kein altes Tempo und keine Pausenzeit anzeigen.
 - Mit großer Schrift und reduzierter Bewegung prüfen, ob alle Schritte und Einstellungen erreichbar sind. Für den Vergleich Fragen, Fehlversuche und benötigte Zeit je Aufgabe festhalten.
 
 ## Vorversion öffnen

@@ -53,7 +53,7 @@ export function ChipGroup<T extends string | number>({
                 pressed && styles.pressed,
               ]}
             >
-              <Text variant="button" color={selected ? 'bg' : 'text'}>
+              <Text variant="button" color={selected ? 'bg' : 'text'} align="center">
                 {option.label}
               </Text>
             </Pressable>
@@ -76,7 +76,9 @@ const styles = StyleSheet.create({
   chip: {
     minHeight: layout.chipHeight,
     minWidth: layout.minTouchTarget,
+    maxWidth: '100%',
     paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs,
     borderRadius: radius.pill,
     borderWidth: layout.borderWidth,
     borderColor: colors.border,

@@ -1,3 +1,4 @@
+import { Coach } from '@/features/coach/coach';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { useFonts } from 'expo-font';
 import { router, Stack } from 'expo-router';
@@ -231,6 +232,7 @@ function AppStack({ isSignedIn, isOnboarded }: { isSignedIn: boolean; isOnboarde
         </Stack.Protected>
         <Stack.Screen name="legal" />
       </Stack>
+      {isSetUp ? <Coach key={home} /> : null}
     </>
   );
 }

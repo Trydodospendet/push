@@ -1,5 +1,12 @@
 # Übergabe – Branch `ausbau`
 
+## Frühere Oberfläche mit gezielten Korrekturen (15.11.2026)
+
+- Oberfläche von `0cf92c6` als Basis. Tab-Navigation, Header, Laufübersicht, Ranked, Profil und verschiebbarer Pushy sind wieder wie vor dem Umbau. Home zeigt den Zielfortschritt, einen direkten Laufstart und bei aktivem Trainingsplan den nächsten offenen Lauf. Lange Zieltitel und Auswahltexte bleiben innerhalb ihrer Rahmen.
+- „Ziel setzen“ ist wieder ein Formular auf einer Seite. Tagesziele, eigene Werte wie 3,5 km und Freundesziele bleiben möglich. „Angaben prüfen“ erklärt Zeitraum, Zielregel, Einsatz und Bindung. „Angaben ändern“ behält die Eingaben. Der lesende Produktions-Dry-run listet weiterhin beide erforderlichen Zielmigrationen. Echte Zielbuchungen stehen bis zur Anwendung nach [Setup](SETUP.md#coach-header-und-endgültige-zielauswertung) aus.
+- Pushy und die Laufaufzeichnung verwenden dieselbe Tempo-Berechnung. Die App wechselt erst nach erfolgreichem Start des Standortdienstes zur Laufansicht. Bei deaktiviertem Standort bleibt ein Hinweis sichtbar. Schlägt Fortsetzen fehl, bleibt der Lauf pausiert. Die GPS-Messwerte und das Layout mit großer Schrift müssen am Android-Gerät nach [Ablaufskript](UX-REDESIGN.md#vergleich-auf-dem-gerät) bestätigt werden.
+- Typecheck, Lint, 291 Jest-Tests und 564 lokale Datenbanktests erfolgreich. Der interne Play-Test enthält Build 5. Die Änderungen benötigen für die Play-Verteilung ein neues AAB.
+
 ## Android-Release 5 im internen Google-Play-Test (15.11.2026)
 
 - `PUSH-v1.0.0-5.aab` liegt im Projektordner. Der vollständige Android-Release von `f6fe360` wurde lokal mit Gradle und SDK 37 gebaut und mit dem Upload-Schlüssel von Version 4 signiert. Paket `com.pushchallenge.app`, Versionscode 5 und Produktions-Supabase im Bundle geprüft. Für diesen Release ist kein Metro nötig.
