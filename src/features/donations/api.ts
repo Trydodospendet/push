@@ -166,7 +166,7 @@ export function useCommunityDonations() {
       if (error) {
         throw error;
       }
-      return data;
+      return Number.isSafeInteger(data) ? data : 0;
     },
   });
 }

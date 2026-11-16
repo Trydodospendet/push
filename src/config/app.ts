@@ -72,6 +72,26 @@ export const STAKE_MIN_CENTS = 100;
 export const STAKE_MAX_CENTS = 5_000;
 export const STAKE_PRESETS_CENTS = [100, 500, 1_000, 2_000] as const;
 
+/** Default pledge of the two-step flow and the step of the +/- buttons. */
+export const DEFAULT_PLEDGE_CENTS = 500;
+export const PLEDGE_STEP_CENTS = 100;
+
+/**
+ * The three suggestions on Home. 'today' runs from now until midnight, 'week' from today until
+ * Sunday (local dates, see quickGoalDates).
+ */
+export const QUICK_GOALS = [
+  { id: 'run-3-today', goalType: 'run_total', targetValue: 3_000, scope: 'today' },
+  { id: 'steps-8000-today', goalType: 'steps_daily', targetValue: 8_000, scope: 'today' },
+  { id: 'run-10-week', goalType: 'run_total', targetValue: 10_000, scope: 'week' },
+] as const satisfies readonly {
+  id: string;
+  goalType: GoalType;
+  targetValue: number;
+  scope: 'today' | 'week';
+}[];
+export type QuickGoalScope = (typeof QUICK_GOALS)[number]['scope'];
+
 /** DB: create_challenge – start date from tomorrow up to 30 days ahead, 1 to 42 days long. */
 export const START_MIN_DAYS_AHEAD = 1;
 export const START_MAX_DAYS_AHEAD = 30;

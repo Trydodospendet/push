@@ -51,7 +51,7 @@ beforeEach(() => {
 
 describe('activity tab', () => {
   it.each([
-    ['/', 'Lauf aufzeichnen'],
+    ['/', 'Lauf starten'],
     ['/activity', 'Lauf aufzeichnen'],
     ['/settings/connections', 'GPS-Lauf starten'],
   ])(
@@ -59,6 +59,9 @@ describe('activity tab', () => {
     async (initialUrl, label) => {
       const user = userEvent.setup();
       await renderRouter('./app', { initialUrl });
+      if (initialUrl === '/') {
+        await user.press(await screen.findByRole('button', { name: 'Mehr' }));
+      }
       await user.press(await screen.findByRole('button', { name: label }));
       expect(await screen.findByRole('button', { name: 'Lauf starten' })).toBeOnTheScreen();
       expect(screen).toHavePathname('/run');

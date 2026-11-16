@@ -1,7 +1,7 @@
 import { TodaySteps } from './today-card';
 import { StyleSheet, View } from 'react-native';
 
-import { ProgressBar, ProgressRing, Text } from '@/components';
+import { ProgressBar, Text } from '@/components';
 import { challengeDays, describeGoal, isGoalType } from '@/features/challenges/format';
 import type { Challenge } from '@/features/challenges/types';
 import { de } from '@/i18n/de';
@@ -17,18 +17,10 @@ export type ProgressSummaryProps = {
   now: Date;
   /** Rendered below the bar, e.g. the last sync time. */
   footer?: string | null;
-  /** Ring with the number inside instead of the bar (Home). */
-  ring?: boolean;
 };
 
-/** The big number, the lime bar (or ring) and the remaining time of one challenge. */
-export function ProgressSummary({
-  challenge,
-  value,
-  now,
-  footer,
-  ring = false,
-}: ProgressSummaryProps) {
+/** The big number, the lime bar and the remaining time of one challenge. */
+export function ProgressSummary({ challenge, value, now, footer }: ProgressSummaryProps) {
   if (!isGoalType(challenge.goal_type)) {
     return null;
   }
@@ -41,42 +33,15 @@ export function ProgressSummary({
     : de.progress.startsOn(formatDayLabel(firstDay));
 
   const status = (
-    <Text
-      variant="caption"
-      color={ratio >= 1 ? 'accent' : 'textSecondary'}
-      align={ring ? 'center' : undefined}
-    >
+    <Text variant="caption" color={ratio >= 1 ? 'accent' : 'textSecondary'}>
       {ratio >= 1 ? de.progress.goalReached : timeLine}
     </Text>
   );
   const footerText = footer ? (
-    <Text variant="caption" color="textMuted" align={ring ? 'center' : undefined}>
+    <Text variant="caption" color="textMuted">
       {footer}
     </Text>
   ) : null;
-
-  if (ring) {
-    return (
-      <View style={styles.root}>
-        <Text variant="caption" color="textSecondary" align="center">
-          {describeGoal(challenge.goal_type, challenge.target_value)}
-        </Text>
-        <ProgressRing
-          progress={ratio}
-          accessibilityLabel={`${de.progress.barLabel}: ${numbers.spoken}`}
-        >
-          <Text variant="display" numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.4}>
-            {numbers.current}
-          </Text>
-          <Text variant="caption" color="textSecondary" align="center">
-            {`${de.progress.of(numbers.goal)} ${numbers.unit}`}
-          </Text>
-        </ProgressRing>
-        {status}
-        {footerText}
-      </View>
-    );
-  }
 
   return (
     <View style={styles.root}>

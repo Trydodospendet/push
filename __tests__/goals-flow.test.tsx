@@ -115,8 +115,8 @@ describe('goals', () => {
     });
 
     await renderRouter('./app', { initialUrl: '/' });
-    expect(await screen.findByText('Noch kein Ziel')).toBeOnTheScreen();
-    await user.press(screen.getAllByRole('button', { name: 'Ziel setzen' })[0]);
+    expect(await screen.findByText('Was packst du an?')).toBeOnTheScreen();
+    await user.press(screen.getByRole('button', { name: 'Eigenes Ziel' }));
 
     await user.press(await screen.findByRole('radio', { name: de.goal.typeLabel.steps_daily }));
     await user.press(screen.getByRole('radio', { name: '8.000 Schritte' }));
@@ -172,8 +172,8 @@ describe('goals', () => {
     mockDb.set({ challenges: [], challenge_participants: [], wallets: { balance_cents: 10000 } });
     mockRpc();
     await renderRouter('./app', { initialUrl: '/' });
-    expect(await screen.findByText('Noch kein Ziel')).toBeOnTheScreen();
-    await user.press(screen.getAllByRole('button', { name: 'Ziel setzen' })[0]);
+    expect(await screen.findByText('Was packst du an?')).toBeOnTheScreen();
+    await user.press(screen.getByRole('button', { name: 'Eigenes Ziel' }));
 
     await user.press(await screen.findByRole('radio', { name: 'Eigener Wert' }));
     const target = screen.getByLabelText(de.improvements.km);
@@ -260,6 +260,7 @@ describe('goals', () => {
   });
 
   it('shows the most important goal big and further goals in a small overview', async () => {
+    const user = userEvent.setup();
     const first = goal({
       id: 'goal-a',
       title: 'Wochenziel',
@@ -276,7 +277,10 @@ describe('goals', () => {
 
     await renderRouter('./app', { initialUrl: '/' });
 
-    expect(await screen.findByText('WICHTIGSTES ZIEL')).toBeOnTheScreen();
+    expect(
+      await screen.findByRole('progressbar', { name: /Fortschritt der Challenge/ }),
+    ).toBeOnTheScreen();
+    await user.press(screen.getByRole('button', { name: 'Mehr' }));
     expect(screen.getByText('WEITERE ZIELE')).toBeOnTheScreen();
     expect(screen.getByRole('button', { name: /^Monatsziel/ })).toBeOnTheScreen();
     expect(screen.queryByRole('button', { name: 'Challenge finden' })).toBeNull();

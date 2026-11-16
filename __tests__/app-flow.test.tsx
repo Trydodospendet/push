@@ -64,7 +64,7 @@ describe('app flow', () => {
     }
     await user.press(screen.getByRole('button', { name: "Los geht's" }));
 
-    expect(await screen.findByText('Noch kein Ziel')).toBeOnTheScreen();
+    expect(await screen.findByText('Was packst du an?')).toBeOnTheScreen();
     expect(saveIntroSeen).toHaveBeenCalledWith('user-1');
   });
 
@@ -144,7 +144,7 @@ describe('app flow', () => {
     await user.press(screen.getByRole('button', { name: 'Apple Health verbinden' }));
     expect(mockAdapter.authorize).toHaveBeenCalledTimes(1);
 
-    expect(await screen.findByText('Noch kein Ziel')).toBeOnTheScreen();
+    expect(await screen.findByText('Was packst du an?')).toBeOnTheScreen();
     expect(saveHealthState).toHaveBeenCalledWith(
       'user-1',
       expect.objectContaining({ introDone: true, connected: true }),
@@ -162,7 +162,7 @@ describe('app flow', () => {
     expect(await screen.findByText('Automatisch geprüft statt behauptet')).toBeOnTheScreen();
     await user.press(screen.getByRole('button', { name: 'Später' }));
 
-    expect(await screen.findByText('Noch kein Ziel')).toBeOnTheScreen();
+    expect(await screen.findByText('Was packst du an?')).toBeOnTheScreen();
     expect(mockAdapter.authorize).not.toHaveBeenCalled();
     expect(saveHealthState).toHaveBeenCalledWith(
       'user-1',
@@ -180,7 +180,7 @@ describe('app flow', () => {
     await renderRouter('./app', { initialUrl: '/' });
     await user.press(await screen.findByRole('button', { name: 'Apple Health verbinden' }));
 
-    expect(await screen.findByText('Noch kein Ziel')).toBeOnTheScreen();
+    expect(await screen.findByText('Was packst du an?')).toBeOnTheScreen();
     expect(saveHealthState).toHaveBeenCalledWith(
       'user-1',
       expect.objectContaining({ introDone: true, connected: false }),
@@ -195,7 +195,7 @@ describe('app flow', () => {
 
     await renderRouter('./app', { initialUrl: '/' });
 
-    expect(await screen.findByText('Noch kein Ziel')).toBeOnTheScreen();
+    expect(await screen.findByText('Was packst du an?')).toBeOnTheScreen();
 
     await user.press(await screen.findByRole('button', { name: 'Profil' }));
     await user.press(await screen.findByRole('button', { name: /^Wallet\./ }));

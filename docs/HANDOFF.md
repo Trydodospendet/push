@@ -1,5 +1,13 @@
 # Übergabe – Branch `ausbau`
 
+## Schnelle Bedienung und Fidget-Gefühl (16.11.2026)
+
+- **Zwei Schritte:** Home zeigt ohne Ziel drei große Karten (3 km heute, 8.000 Schritte heute, 10 km diese Woche; Konfiguration `QUICK_GOALS` in `src/config/app.ts`) plus „Eigenes Ziel“ (das bisherige Formular). Antippen öffnet `PledgeSheet` (Pfand 1–50, Standard 5, +/−), `HoldButton` (0,8 s gedrückt halten, Haptik-Ticks, Erfolgsanimation) legt das Ziel über `create_goal_with_preferences` an (Start heute, Ende heute bzw. Sonntag). Mit Screenreader genügt Doppeltippen.
+- **Home vereinfacht:** ein aktives Ziel als `HeroGoal` mit `FidgetRing`, ein Hauptknopf, Streak-Flamme; alles andere hinter „Mehr“. Neue Ziele, weitere Ziele, Tagesschritte, Trainingsplan, Wochenstatistik, letzte Gewinne, Spendenzähler und die Kurzanleitung liegen dort.
+- **Fidget:** Ring dreht sich mit dem Finger und federt zurück (native Animation, Tick-Haptik), Tippen lässt ihn hüpfen; Flamme wackelt beim Antippen; Pushy hüpft beim Tippen, wird beim Ziehen schwindelig und dreht sich, wenn man ihn kräftig hin- und herschüttelt (Geste, kein Gerätesensor). Töne (`assets/sounds/*.wav`, `expo-audio`) sind standardmäßig aus und unter Profil → Darstellung schaltbar, ebenso Animationen und Haptik. „Bewegung reduzieren“ des Systems wird beachtet.
+- **Neue native Bibliothek:** `expo-audio` (nur Wiedergabe, ohne Mikrofon-Plugin). Dafür ist ein neuer Android-/iOS-Build nötig; ohne neuen Build fehlen die Töne (die App startet dann nicht mit dem alten Dev-Build, weil das Modul fehlt).
+- FAQ und Intro-Texte auf das Pfand-Modell und die neue Bedienung angepasst. Tests: neue `__tests__/pledge-flow.test.tsx`, `hold-button.test.tsx`, `quick-goals.test.ts`, `sounds.test.ts`; bestehende Home-Tests auf „Mehr“/neue Texte umgestellt.
+
 ## Pfand-Modell statt Pool (16.11.2026)
 
 - Neue Migration `20261201090000_pledge_model.sql`: Ziel erreicht → eigenes Pfand vollständig zurück (`payout` = Pfand). Ziel verfehlt → `private.settings.fee_bps` (Standard 10 %) ans Haus (`fee`), der Rest (90 %) als Spende an die gewählte Organisation (Konto `donation`). Je Ziel Summe 0, idempotent über den Status unter Zeilensperre. Die Pool-Aufteilung unter Gewinnern und die Fensterabrechnung (`settle_goal_window`) sind entfernt; jede Challenge wird einzeln abgerechnet (Pool und Ziel gleich).

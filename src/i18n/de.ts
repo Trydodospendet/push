@@ -150,6 +150,8 @@ export const de = {
     name: 'Pushy',
     stages: ['Dein neuer Laufcoach', 'Baby-Hase', 'Junger Hase', 'Laufpartner', 'Erfahrener Coach'],
     speed: 'km/h',
+    pokes: ['Hihi!', 'Das kitzelt!', 'Hopp!', 'Na, Lust auf eine Runde?'],
+    shaken: 'Uff, mir wird schwindelig!',
     move: 'Coach verschieben; antippen für Tempo',
     progress: 'Dein Ziel im Blick',
     winReturn:
@@ -410,8 +412,12 @@ export const de = {
     error: 'Der Pool konnte nicht geladen werden.',
   },
   home: {
-    label: 'DEINE ZIELE',
-    run: 'Lauf aufzeichnen',
+    label: 'HEUTE',
+    run: 'Lauf starten',
+    refreshSteps: 'Schritte aktualisieren',
+    more: 'Mehr',
+    less: 'Weniger',
+    openGoal: 'Öffnet die Details des Ziels',
     startPlan: 'Trainingsplan ansehen',
     nextRun: (date: string, distance: string) => `Nächster Lauf: ${date} · ${distance}`,
     goalsUnavailable: 'Fortschritt ist gerade nicht verfügbar.',
@@ -440,7 +446,7 @@ export const de = {
         {
           art: 'target' as const,
           title: "So funktioniert's",
-          text: 'Setz dir ein Ziel, leg einen Einsatz fest, lauf oder geh los – deine Aktivität wird automatisch übernommen und am Ende siehst du das Ergebnis. Den Fortschritt findest du auf Home und im Tab Aktivität.',
+          text: 'Tipp ein Ziel an, halte den Knopf für dein Pfand gedrückt und lauf oder geh los – deine Aktivität wird automatisch übernommen. Den Fortschritt siehst du als Ring auf Heute.',
         },
         {
           art: 'shield' as const,
@@ -530,6 +536,7 @@ export const de = {
     streak: (days: number) => (days === 1 ? '1 Tag in Folge' : `${days} Tage in Folge`),
     streakNone: 'Starte heute deine Serie',
     streakHint: 'Ein Tag zählt mit einem gültigen Lauf oder mindestens 8.000 Schritten.',
+    flameLines: ['Heiß!', 'Weiter so!', 'Nicht ausgehen lassen!', 'Feuer frei!'],
     weekLabel: 'DIESE WOCHE',
     weekSummary: (km: string) => `${km} km in den letzten 7 Tagen`,
     recentWinsLabel: 'ZULETZT GEWONNEN',
@@ -716,6 +723,36 @@ export const de = {
     leaveGoal: 'Ziel zurückziehen',
     deletedAccount: 'Gelöschtes Konto',
     creatorHint: 'Du hast diese Challenge erstellt. Tritt selbst bei, um mitzumachen.',
+  },
+  pledge: {
+    pickLabel: 'WÄHLE DEIN ZIEL',
+    pickTitle: 'Was packst du an?',
+    scopeToday: 'heute',
+    scopeWeek: 'diese Woche',
+    custom: 'Eigenes Ziel',
+    customHint: 'Eigene Strecke, Schritte und Zeitraum',
+    sheetTitle: 'Pfand setzen',
+    cardLabel: (target: string, scope: string) => `${target} ${scope}`,
+    cardHint: 'Öffnet das Pfand',
+    set: (amount: string) => `${amount} Pfand setzen`,
+    holding: 'Weiter halten …',
+    holdHint: 'Gedrückt halten, bis der Knopf voll ist.',
+    holdHintReader: 'Doppeltippen zum Setzen.',
+    less: 'Weniger Pfand',
+    more: 'Mehr Pfand',
+    unit: 'Pfand',
+    amount: (amount: string) => `${amount} Pfand`,
+    oneLine: 'Erreicht: Pfand zurück. Verfehlt: gespendet.',
+    balance: (amount: string) => `Guthaben: ${amount}`,
+    detailsShow: 'Mehr',
+    detailsHide: 'Weniger',
+    details: [
+      'Das Pfand wird sofort von deinem Guthaben abgebucht.',
+      'Schaffst du dein Ziel, bekommst du es vollständig zurück.',
+      'Verfehlst du es, gehen 90 % an deine Organisation und 10 % an PUSH.',
+      'Manuelle Einträge zählen nie. Nach Zielende zählt nur der gespeicherte Stand.',
+    ],
+    noNetwork: 'Das Pfand konnte nicht gesetzt werden. Versuch es noch einmal.',
   },
   joinSheet: {
     title: 'Challenge beitreten',
@@ -1121,7 +1158,7 @@ export const de = {
     faq: [
       {
         q: 'Wie funktioniert PUSH?',
-        a: 'Unter „Heute“ tippst du „Ziel setzen“: Lauf oder Schritte, Zielwert, Zeitraum und Einsatz. Du kannst eigene Kilometer- oder Schrittwerte und Start- sowie Enddatum eingeben. Für ein Ziel mit Freunden wählst du einen Start ab morgen und teilst anschließend den Einladungscode. Ein Tagesziel kannst du heute bis Mitternacht setzen; bereits erfasste Schritte von heute zählen mit. Deine Läufe und Schritte werden automatisch aus Health Connect bzw. Apple Health übernommen (oder du zeichnest einen Lauf im Tab Laufen auf). Den Fortschritt siehst du unter „Heute“, das Ergebnis nach der Abrechnung.',
+        a: 'Auf „Heute“ tippst du eines von drei Zielen an (zum Beispiel 3 km heute) und hältst den Knopf „5 Pfand setzen“ gedrückt – mit + und − änderst du das Pfand. Unter „Eigenes Ziel“ legst du eigene Kilometer oder Schritte, Start- und Enddatum fest oder lädst Freunde per Einladungscode ein. Deine Läufe und Schritte werden automatisch aus Health Connect bzw. Apple Health übernommen (oder du zeichnest einen Lauf im Tab Laufen auf). Den Fortschritt siehst du als Ring auf „Heute“, das Ergebnis nach dem Zielende.',
       },
       {
         q: 'Was sind Credits?',
@@ -1130,6 +1167,10 @@ export const de = {
       {
         q: 'Wann ist mein Einsatz gebunden, zurückgebucht oder verfallen?',
         a: 'Beim Bestätigen wird das Pfand von deinem Guthaben abgebucht. Bis zum Start kannst du das Ziel zurückziehen und bekommst alles zurück. Ab dem Start ist es gebunden: kein Zurückziehen, kein Abbrechen mit Erstattung. Schaffst du dein Ziel, kommt es nach der Abrechnung vollständig zurück. Verfehlst du es, wird es gespendet.',
+      },
+      {
+        q: 'Was kann ich auf „Heute“ anfassen?',
+        a: 'Den Ring kannst du mit dem Finger drehen – er federt zurück. Die Flamme und Pushy reagieren auf Tippen, Pushy auch auf Ziehen und kräftiges Hin- und Herschütteln. Vibration, Bewegung und Töne lassen sich unter Profil → Darstellung einzeln abschalten; „Bewegung reduzieren“ in den Systemeinstellungen wird beachtet.',
       },
       {
         q: 'Was passiert mit einem verfallenen Pfand?',
@@ -1399,9 +1440,11 @@ export const de = {
     label: 'BEWEGUNG & FEEDBACK',
     animations: 'Animationen',
     animationsHint:
-      'Übergänge, Konfetti und hochzählende Zahlen. Die Systemeinstellung „Bewegung reduzieren“ wird immer beachtet.',
+      'Übergänge, Konfetti, drehbarer Ring und Pushys Reaktionen. Die Systemeinstellung „Bewegung reduzieren“ wird immer beachtet.',
     haptics: 'Haptisches Feedback',
     hapticsHint: 'Kurze Vibration bei Erfolgen, Fehlern und Auswahl.',
+    sounds: 'Töne',
+    soundsHint: 'Kurze Klänge bei Tippen, Drehen und Erfolgen. Standardmäßig aus.',
     voice: 'Sprachansagen beim Laufen',
     voiceHint:
       'Nach jedem Kilometer sagt dein Handy Zeit und Tempo an. Du hörst es über Lautsprecher oder Kopfhörer.',

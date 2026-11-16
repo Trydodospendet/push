@@ -13,6 +13,8 @@ export type ProgressRingProps = {
   /** Content in the middle of the ring, e.g. the big number. */
   children?: ReactNode;
   testID?: string;
+  /** Rotation of the bars in degrees (native-driven, for the fidget ring). */
+  spin?: Animated.Value;
 };
 
 const { size, segments, segmentWidth, segmentLength } = layout.ring;
@@ -33,6 +35,7 @@ export function ProgressRing({
   accessibilityLabel,
   children,
   testID,
+  spin,
 }: ProgressRingProps) {
   const clamped = clampProgress(progress);
   const animated = useAnimatedValue(clamped);
@@ -64,21 +67,38 @@ export function ProgressRing({
       testID={testID}
       style={styles.root}
     >
-      {Array.from({ length: segments }, (_, index) => (
-        <View
-          key={index}
-          style={[
-            styles.segment,
-            index < filled && styles.segmentFilled,
-            {
-              transform: [
-                { rotate: `${(index / segments) * 360}deg` },
-                { translateY: -radiusToSegmentCenter },
-              ],
-            },
-          ]}
-        />
-      ))}
+      <Animated.View
+        pointerEvents="none"
+        style={[
+          StyleSheet.absoluteFill,
+          spin && {
+            transform: [
+              {
+                rotate: spin.interpolate({
+                  inputRange: [-1440, 1440],
+                  outputRange: ['-1440deg', '1440deg'],
+                }),
+              },
+            ],
+          },
+        ]}
+      >
+        {Array.from({ length: segments }, (_, index) => (
+          <View
+            key={index}
+            style={[
+              styles.segment,
+              index < filled && styles.segmentFilled,
+              {
+                transform: [
+                  { rotate: `${(index / segments) * 360}deg` },
+                  { translateY: -radiusToSegmentCenter },
+                ],
+              },
+            ]}
+          />
+        ))}
+      </Animated.View>
       <View style={styles.center}>{children}</View>
     </View>
   );

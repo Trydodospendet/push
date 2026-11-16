@@ -12,6 +12,8 @@ const preferencesSchema = z.object({
   haptics: z.boolean(),
   /** Spoken kilometre announcements while running (off until the runner switches it on). */
   voice: z.boolean().default(false),
+  /** Short tones for taps and successes (off until the user switches them on). */
+  sounds: z.boolean().default(false),
 });
 
 export type Preferences = z.infer<typeof preferencesSchema>;
@@ -20,6 +22,7 @@ export const defaultPreferences: Preferences = {
   animations: true,
   haptics: true,
   voice: false,
+  sounds: false,
 };
 
 const STORAGE_KEY = 'push.preferences';

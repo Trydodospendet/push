@@ -173,3 +173,25 @@ supabase test db
 Alle vier müssen grün sein. Die Datenbanktests liegen in `supabase/tests/` (`11_security` prüft
 generisch alle Tabellen, Funktionen und den Storage, `12_modes` das Pool-/Ranked-Modell inkl.
 Spenden).
+
+## I. Pfand-Modell und Fidget-Home (16.11.2026)
+
+Gilt vor den älteren Abschnitten: Ein erreichtes Ziel gibt das Pfand vollständig zurück, ein
+verfehltes wird zu 90 % gespendet und zu 10 % an PUSH gebucht. Anteile aus Pfändern anderer gibt es
+nicht mehr. Für diesen Test braucht die Cloud die Migration `20261201090000_pledge_model.sql`.
+
+1. **Zwei Schritte:** Auf _Heute_ ohne Ziel erscheinen drei große Karten und „Eigenes Ziel“. Karte
+   antippen → Fenster „Pfand setzen“. Mit + und − das Pfand ändern (Standard 5), den Knopf gedrückt
+   halten, bis er voll ist. Früh loslassen setzt nichts. Danach öffnet sich das Ziel mit Konfetti.
+2. **Home mit Ziel:** ein Ring, ein Hauptknopf („Lauf starten“ bzw. „Schritte aktualisieren“), die
+   Flamme. „Mehr“ klappt Statistik, Trainingsplan, weitere Ziele, Zähler „Gemeinsam gespendet“ und
+   neue Ziele auf.
+3. **Fidget:** Ring mit dem Finger drehen (er federt zurück, Tick-Vibration), kurz antippen
+   (Hüpfer). Flamme antippen (Wackeln und kurzer Spruch). Pushy antippen (hüpft), ziehen
+   (schwindelig), kräftig hin- und herziehen (dreht sich, „Uff, mir wird schwindelig!“).
+4. **Abschalten:** Profil → Darstellung: Animationen, Haptik und Töne einzeln aus. Töne sind
+   standardmäßig aus. Mit „Bewegung reduzieren“ im System bleiben Ring und Pushy still, der
+   Haltenknopf funktioniert weiterhin.
+5. **Abrechnung:** Mit `supabase/scripts/simulate_challenge.sql` oder einem Testziel prüfen: Erfolg →
+   „Pfand zurück“, Fehlschlag → „Dein Pfand wurde gespendet an …“, im Wallet „Spende“ bzw. kein
+   Gewinnanteil.

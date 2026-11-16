@@ -2,6 +2,7 @@ import { StyleSheet } from 'react-native';
 
 import { Card, Screen, SwitchRow, Text } from '@/components';
 import { hapticSelect } from '@/features/preferences/haptics';
+import { playSound } from '@/features/preferences/sounds';
 import { setPreference, usePreferences } from '@/features/preferences/store';
 import { de } from '@/i18n/de';
 import { spacing } from '@/theme';
@@ -45,6 +46,18 @@ export default function AppearanceScreen() {
           onChange={(value) => {
             hapticSelect();
             void setPreference('voice', value);
+          }}
+        />
+        <SwitchRow
+          label={de.appearance.sounds}
+          hint={de.appearance.soundsHint}
+          value={preferences.sounds}
+          onChange={(value) => {
+            hapticSelect();
+            void setPreference('sounds', value);
+            if (value) {
+              playSound('pop');
+            }
           }}
         />
       </Card>

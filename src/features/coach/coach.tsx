@@ -30,7 +30,9 @@ import { secureStorage } from '@/lib/secure-storage';
 import { de } from '@/i18n/de';
 import { colors, radius, spacing } from '@/theme';
 import { coachStage } from './model';
+import { hapticSelect, hapticTap } from '@/features/preferences/haptics';
 import { useMotionEnabled } from '@/features/preferences/motion';
+import { playSound } from '@/features/preferences/sounds';
 import { Mascot } from './mascot';
 const memorySchema = z.object({
   days: z.array(z.string()),
@@ -68,6 +70,9 @@ export function Coach() {
   const bounce = useAnimatedValue(0);
   const celebration = useAnimatedValue(0);
   const wiggle = useAnimatedValue(0);
+  const hop = useAnimatedValue(0);
+  const pokes = useRef(0);
+  const shaking = useRef({ direction: 0, flips: 0, startedAt: 0, lastX: 0 });
   const [position] = useState(
     () =>
       new Animated.ValueXY({
@@ -81,19 +86,41 @@ export function Coach() {
   });
   const [gaze, setGaze] = useState(0);
   const [bubbleLeft, setBubbleLeft] = useState(-130);
+  const spinOnce = useCallback(() => {
+    if (!motionOn) return;
+    celebration.setValue(0);
+    Animated.sequence([
+      Animated.timing(celebration, { toValue: 1, duration: 210, useNativeDriver: true }),
+      Animated.timing(celebration, { toValue: 2, duration: 210, useNativeDriver: true }),
+    ]).start();
+    setFlip((value) => value + 1);
+  }, [celebration, motionOn]);
+  /** A tap: Pushy hops, says something short and gives a little feedback. */
+  const poke = useCallback(() => {
+    hapticTap();
+    playSound('pop');
+    pokes.current += 1;
+    setMessage(de.coach.pokes[pokes.current % de.coach.pokes.length]);
+    if (!motionOn) return;
+    hop.setValue(0);
+    Animated.sequence([
+      Animated.timing(hop, { toValue: 1, duration: 130, useNativeDriver: true }),
+      Animated.timing(hop, { toValue: 2, duration: 170, useNativeDriver: true }),
+    ]).start();
+  }, [hop, motionOn]);
+  /** Shaking Pushy to and fro makes it dizzy: one spin and a complaint. */
+  const dizzy = useCallback(() => {
+    hapticSelect();
+    playSound('tick');
+    setMessage(de.coach.shaken);
+    spinOnce();
+  }, [spinOnce]);
   const switchMode = useCallback(() => {
     setSpeedMode((wasShowingSpeed) => {
-      if (wasShowingSpeed && motionOn) {
-        celebration.setValue(0);
-        Animated.sequence([
-          Animated.timing(celebration, { toValue: 1, duration: 210, useNativeDriver: true }),
-          Animated.timing(celebration, { toValue: 2, duration: 210, useNativeDriver: true }),
-        ]).start();
-        setFlip((value) => value + 1);
-      }
+      if (wasShowingSpeed) spinOnce();
       return !wasShowingSpeed;
     });
-  }, [celebration, motionOn]);
+  }, [spinOnce]);
   const bounds = useCallback(
     (x: number, y: number) => ({
       x: Math.max(8, Math.min(width - 88, x)),
@@ -107,8 +134,34 @@ export function Coach() {
       // eslint-disable-next-line react-hooks/refs
       PanResponder.create({
         onStartShouldSetPanResponder: () => true,
-        onPanResponderGrant: () => setDragging(true),
-        onPanResponderMove: (_, g) => {
+        onPanResponderGrant: (event) => {
+          hapticTap();
+          shaking.current = {
+            direction: 0,
+            flips: 0,
+            startedAt: event.nativeEvent.timestamp,
+            lastX: 0,
+          };
+          setDragging(true);
+        },
+        onPanResponderMove: (event, g) => {
+          const shake = shaking.current;
+          const step = g.dx - shake.lastX;
+          if (Math.abs(step) >= 14) {
+            const direction = step > 0 ? 1 : -1;
+            if (shake.direction !== 0 && direction !== shake.direction) shake.flips += 1;
+            shake.direction = direction;
+            shake.lastX = g.dx;
+            if (event.nativeEvent.timestamp - shake.startedAt > 900) {
+              shake.flips = 0;
+              shake.startedAt = event.nativeEvent.timestamp;
+            }
+            if (shake.flips >= 4) {
+              shake.flips = 0;
+              shake.startedAt = event.nativeEvent.timestamp;
+              dizzy();
+            }
+          }
           position.setValue({
             x: Math.max(8, Math.min(width - 88, origin.current.x + g.dx)),
             y: Math.max(
@@ -130,14 +183,17 @@ export function Coach() {
           setBubbleLeft(next.x > width / 2 ? -130 : 0);
           position.setValue(next);
           setDragging(false);
-          if (Math.abs(g.dx) + Math.abs(g.dy) < 8) switchMode();
+          if (Math.abs(g.dx) + Math.abs(g.dy) < 8) {
+            poke();
+            switchMode();
+          }
         },
         onPanResponderTerminate: () => {
           position.setValue(origin.current);
           setDragging(false);
         },
       }),
-    [height, width, insets.top, insets.bottom, position, switchMode],
+    [height, width, insets.top, insets.bottom, position, switchMode, poke, dizzy],
   );
   useEffect(() => {
     const next = bounds(origin.current.x, origin.current.y);
@@ -340,7 +396,10 @@ export function Coach() {
                 {
                   translateY: Animated.add(
                     bounce.interpolate({ inputRange: [0, 1], outputRange: [0, -3] }),
-                    celebration.interpolate({ inputRange: [0, 1, 2], outputRange: [0, -17, 0] }),
+                    Animated.add(
+                      celebration.interpolate({ inputRange: [0, 1, 2], outputRange: [0, -17, 0] }),
+                      hop.interpolate({ inputRange: [0, 1, 2], outputRange: [0, -22, 0] }),
+                    ),
                   ),
                 },
                 {
