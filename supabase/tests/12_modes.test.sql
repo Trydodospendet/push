@@ -103,10 +103,9 @@ select pg_temp.u(n), 'user' || n || '@pgtap.test', 'authenticated', 'authenticat
 
 update public.profiles set display_name = 'Nutzer ' || right(id::text, 1);
 
--- Different stakes: the pot is split in proportion to the stakes ------------------------------
+-- Different stakes: winners always get exactly their own pledge back ------------------------------
 
--- Winners 10.00 and 30.00, losers 20.00 and 10.00: lost pot 30.00, winners' stakes 40.00
--- → shares 7.50 and 22.50.
+-- Winners 10.00 and 30.00, losers 20.00 and 10.00: the lost 30.00 are donated (no house share).
 select pg_temp.finished('prop', 0, 0, array[1, 2, 3, 4], array[1000, 3000, 2000, 1000]::bigint[]);
 select pg_temp.run(1, 'prop', 5000);
 select pg_temp.run(2, 'prop', 6000);
@@ -114,18 +113,19 @@ select public.settle_challenge(pg_temp.c('prop'));
 
 select results_eq(
   $$ select * from pg_temp.entries('prop') $$,
-  $$ values ('user'::text, 1, 'payout'::text, 1750::bigint), ('user', 2, 'payout', 5250) $$,
-  'proportional: every winner gets the own stake plus a share in proportion to it'
+  $$ values ('user'::text, 1, 'payout'::text, 1000::bigint), ('user', 2, 'payout', 3000),
+            ('donation', null, 'donation', 3000) $$,
+  'every winner gets exactly the own pledge, the lost pledges are donated'
 );
 
 select results_eq(
   $$ select right(user_id::text, 1)::int, result, payout_cents from public.challenge_participants
       where challenge_id = pg_temp.c('prop') order by user_id $$,
-  $$ values (1, 'success'::text, 1750::bigint), (2, 'success', 5250), (3, 'failed', 0), (4, 'failed', 0) $$,
-  'proportional: results and payouts are stored'
+  $$ values (1, 'success'::text, 1000::bigint), (2, 'success', 3000), (3, 'failed', 0), (4, 'failed', 0) $$,
+  'results and payouts are stored'
 );
 
--- Winners 10.00 and 20.00, loser 10.00: shares floor(333.33) and floor(666.66), 1 cent rounding.
+-- Winners 10.00 and 20.00, loser 10.00: the lost 10.00 are donated.
 select pg_temp.finished('prop_round', 1, 0, array[1, 2, 3], array[1000, 2000, 1000]::bigint[]);
 select pg_temp.run(1, 'prop_round', 5000);
 select pg_temp.run(2, 'prop_round', 5000);
@@ -133,12 +133,12 @@ select public.settle_challenge(pg_temp.c('prop_round'));
 
 select results_eq(
   $$ select * from pg_temp.entries('prop_round') $$,
-  $$ values ('user'::text, 1, 'payout'::text, 1333::bigint), ('user', 2, 'payout', 2666),
-            ('house', null, 'rounding', 1) $$,
-  'proportional rounding: winners get the floor, the leftover cent goes to the house'
+  $$ values ('user'::text, 1, 'payout'::text, 1000::bigint), ('user', 2, 'payout', 2000),
+            ('donation', null, 'donation', 1000) $$,
+  'no rounding any more: the own pledge back, the lost pledge donated'
 );
 
--- Fee 10 %: lost 20.00, fee 2.00, distributable 18.00 over stakes 10.00 + 30.00.
+-- Fee 10 %: lost 20.00 → 2.00 house, 18.00 donated.
 select pg_temp.finished('prop_fee', 2, 1000, array[1, 2, 3], array[1000, 3000, 2000]::bigint[]);
 select pg_temp.run(1, 'prop_fee', 5000);
 select pg_temp.run(2, 'prop_fee', 5000);
@@ -146,9 +146,9 @@ select public.settle_challenge(pg_temp.c('prop_fee'));
 
 select results_eq(
   $$ select * from pg_temp.entries('prop_fee') $$,
-  $$ values ('user'::text, 1, 'payout'::text, 1450::bigint), ('user', 2, 'payout', 4350),
-            ('house', null, 'fee', 200) $$,
-  'proportional with a 10 % fee: the fee comes off the lost pot only'
+  $$ values ('user'::text, 1, 'payout'::text, 1000::bigint), ('user', 2, 'payout', 3000),
+            ('house', null, 'fee', 200), ('donation', null, 'donation', 1800) $$,
+  'with a 10 % house share the fee comes off the lost pledges only'
 );
 
 -- Special cases: nobody wins, everybody wins, alone ---------------------------------------------
@@ -157,8 +157,8 @@ select pg_temp.finished('nobody', 3, 1000, array[1, 2], array[1000, 3000]::bigin
 select public.settle_challenge(pg_temp.c('nobody'));
 select results_eq(
   $$ select * from pg_temp.entries('nobody') $$,
-  $$ values ('house'::text, null::int, 'forfeit'::text, 4000::bigint) $$,
-  'nobody reaches the goal: all stakes go to the house'
+  $$ values ('house'::text, null::int, 'fee'::text, 400::bigint), ('donation', null, 'donation', 3600) $$,
+  'nobody reaches the goal: all pledges are split 10 % house / 90 % donation'
 );
 
 select pg_temp.finished('all_win', 4, 1000, array[1, 2], array[1000, 3000]::bigint[]);
@@ -184,8 +184,8 @@ select pg_temp.finished('alone_lose', 6, 1000, array[1], array[2000]::bigint[]);
 select public.settle_challenge(pg_temp.c('alone_lose'));
 select results_eq(
   $$ select * from pg_temp.entries('alone_lose') $$,
-  $$ values ('house'::text, null::int, 'forfeit'::text, 2000::bigint) $$,
-  'alone in the pool, missed: the stake goes to the house'
+  $$ values ('house'::text, null::int, 'fee'::text, 200::bigint), ('donation', null, 'donation', 1800) $$,
+  'alone in the pool, missed: 10 % house, 90 % donated'
 );
 
 -- Idempotency ------------------------------------------------------------------------------------
@@ -209,13 +209,12 @@ select is(
   'the NGOs are placeholders without real names'
 );
 
--- Same pool as "prop"; user 1 donates the share by choice for this challenge, user 2 through the
--- default in the profile, user 4 has a default but turns it off for this challenge.
+-- Losers donate: user 1 chose NGO 1 for this challenge, user 2 (loser) uses the default NGO 2 of the
+-- profile, winners 3 and 4 get their pledge back.
 update public.profiles set donate_default=true, default_ngo_id='00000000-0000-4000-a000-000000000002' where id=pg_temp.u(2);
 update public.profiles set donate_default=true, default_ngo_id='00000000-0000-4000-a000-000000000003' where id=pg_temp.u(4);
 select pg_temp.finished('donate', 7, 0, array[1, 2, 3, 4], array[1000, 3000, 2000, 1000]::bigint[]);
-select pg_temp.run(1, 'donate', 5000);
-select pg_temp.run(2, 'donate', 5000);
+select pg_temp.run(3, 'donate', 5000);
 select pg_temp.run(4, 'donate', 5000);
 -- Choices are made before the start; restore the past window for settlement afterwards.
 create temp table donation_window as select starts_at,ends_at,status from public.challenges where id=pg_temp.c('donate');
@@ -255,8 +254,7 @@ select throws_ok(
 );
 select pg_temp.logout();
 
--- Winners 1 (1.00), 2 (3.00), 4 (1.00); loser 3 (2.00) → distributable 20.00 over 5.00 of stakes:
--- shares 4.00, 12.00, 4.00.
+-- Winners 3 (2.00) and 4 (1.00) get the pledge back; losers 1 (1.00) and 2 (3.00) donate.
 update public.challenges c set starts_at=w.starts_at,ends_at=w.ends_at,status=w.status from donation_window w where c.id=pg_temp.c('donate');
 select public.settle_challenge(pg_temp.c('donate'));
 
@@ -264,26 +262,24 @@ select public.settle_challenge(pg_temp.c('donate'));
 select results_eq(
   $$ select account, user_n, type, amount_cents from pg_temp.entries('donate')
       where account <> 'house' order by account desc, 2, 3 $$,
-  $$ values ('user'::text, 1, 'donation'::text, -400::bigint), ('user', 1, 'payout', 1400),
-            ('user', 2, 'donation', -1200), ('user', 2, 'payout', 4200),
-            ('user', 4, 'payout', 1400),
-            ('donation', null, 'donation', 400), ('donation', null, 'donation', 1200) $$,
-  'donations: user 1 and user 2 donate their share, user 4 keeps it'
+  $$ values ('user'::text, 3, 'payout'::text, 2000::bigint), ('user', 4, 'payout', 1000),
+            ('donation', null, 'donation', 1000), ('donation', null, 'donation', 3000) $$,
+  'donations: the losers donate their pledge, the winners get theirs back'
 );
 
 select results_eq(
   $$ select ngo_id, amount_cents from public.ledger_entries
       where challenge_id = pg_temp.c('donate') and account = 'donation' order by ngo_id $$,
-  $$ values ('00000000-0000-4000-a000-000000000001'::uuid, 400::bigint),
-            ('00000000-0000-4000-a000-000000000002'::uuid, 1200::bigint) $$,
+  $$ values ('00000000-0000-4000-a000-000000000001'::uuid, 1000::bigint),
+            ('00000000-0000-4000-a000-000000000002'::uuid, 3000::bigint) $$,
   'each NGO receives one summed credit: user 1 chose NGO 1, user 2 defaults to NGO 2'
 );
 
 select results_eq(
   $$ select right(user_id::text, 1)::int, payout_cents, donated_cents from public.challenge_participants
-      where challenge_id = pg_temp.c('donate') and result = 'success' order by user_id $$,
-  $$ values (1, 1400::bigint, 400::bigint), (2, 4200, 1200), (4, 1400, 0) $$,
-  'the participation stores the payout and what was donated of it'
+      where challenge_id = pg_temp.c('donate') order by user_id $$,
+  $$ values (1, 0::bigint, 1000::bigint), (2, 0, 3000), (3, 2000, 0), (4, 1000, 0) $$,
+  'the participation stores the payout and what was donated'
 );
 
 select is(
@@ -304,20 +300,20 @@ select throws_ok(
   'P0001', 'donation_locked', 'after the settlement the choice is locked'
 );
 select results_eq(
-  $$ select title, ngo_name, amount_cents from public.get_my_donations() $$,
-  $$ values ('donate'::text, 'NGO-Partner 1'::text, 400::bigint) $$,
+  $$ select title, ngo_name, amount_cents from public.get_my_donations() where title = 'donate' $$,
+  $$ values ('donate'::text, 'NGO-Partner 1'::text, 1000::bigint) $$,
   'my donations list shows the donation with NGO and amount'
 );
 select results_eq(
   $$ select ngo_name, total_cents, donations from public.get_my_donation_totals() $$,
-  $$ values ('NGO-Partner 1'::text, 400::bigint, 1) $$,
+  $$ values ('NGO-Partner 1'::text, 3700::bigint, 3) $$,
   'my donation totals are summed per NGO by the server'
 );
 select pg_temp.logout();
 
 select pg_temp.login(pg_temp.u(3));
 select is(
-  (select count(*)::int from public.get_my_donations()), 0,
+  (select count(*)::int from public.get_my_donations() where title = 'donate'), 0,
   'someone who did not donate sees no donations (and nobody else''s)'
 );
 select is(
@@ -500,8 +496,8 @@ select results_eq(
 );
 select results_eq(
   $$ select payout_cents, donated_cents from public.get_my_challenge_result(pg_temp.c('donate')) $$,
-  $$ values (4200::bigint, 1200::bigint) $$,
-  'the own pool result shows the payout and how much of it was donated'
+  $$ values (0::bigint, 3000::bigint) $$,
+  'the own pool result shows no payout and how much was donated'
 );
 select is(
   (select count(*)::int from public.get_my_challenge_result(pg_temp.c('alone_win'))), 0,

@@ -36,7 +36,7 @@ const privacySections: readonly LegalSection[] = [
       'GPS-Läufe (nur wenn du einen Lauf in der App aufzeichnest): Während der Aufzeichnung speichert die App deine Position (Breiten- und Längengrad), den Zeitpunkt, die Genauigkeit und ob das Handy die Position als gefälscht meldet. Sie läuft bei gesperrtem Bildschirm weiter, bis du den Lauf beendest; Android zeigt dafür eine dauerhafte Benachrichtigung. Außerhalb eines Laufs wird dein Standort nicht erfasst. Nach dem Lauf wird die Strecke auf den Server übertragen; dort werden Distanz und Zeit neu berechnet und auf Fälschungen geprüft.',
       'Die Strecke eines GPS-Laufs siehst ausschließlich du. Andere Teilnehmer sehen höchstens die Distanz. Auf der Karte in der App werden die ersten und letzten 200 Meter deiner Strecke ausgeblendet; diese Teile verlassen den Server nicht.',
       'Profil und Sichtbarkeit: optional ein Profilbild (auf 256 × 256 Pixel verkleinert, in einem privaten Speicher; nur du kannst es sehen) und die Einstellung, in Ranglisten anonym zu bleiben – dann sehen andere „Anonym“ statt deines Namens.',
-      'Spenden: Entscheidest du dich, deinen Gewinnanteil zu spenden, wird das als Buchung (Betrag, Challenge, gewählte Organisation) gespeichert. Die Organisation erhält Summen ohne die Namen der Spender. Aktuell sind Credits virtuell.',
+      'Spenden: Verfehlst du ein Ziel, wird dein Pfand als Buchung (Betrag, Ziel, gewählte Organisation) gespeichert. Die Organisation erhält Summen ohne die Namen der Spender. Aktuell sind Credits virtuell.',
       'Auskunft: In der App unter Profil → Daten & Datenschutz kannst du alle über dich gespeicherten Daten als Datei herunterladen.',
       'Freunde, Gruppen und Kommentare: Wenn du Freunde hinzufügst oder einer Gruppe beitrittst, sehen diese deinen Anzeigenamen sowie – solange du es nicht in den Privatsphäre-Einstellungen ausschaltest – Distanz und Zeit deiner Läufe (keine Strecke). Kommentare und Anfeuern sind für die jeweiligen Freunde sichtbar.',
       'Teilen-Bilder: Das Teilen-Bild eines Laufs oder Siegs wird auf deinem Handy erzeugt und nur über das Teilen-Menü weitergegeben, das du auswählst. Es zeigt nur die Form der Strecke, keine Karte und keinen Standort.',
@@ -153,12 +153,12 @@ export const de = {
     move: 'Coach verschieben; antippen für Tempo',
     progress: 'Dein Ziel im Blick',
     winReturn:
-      'Schaffst du dein Ziel, bekommst du nach dem Ende deinen Einsatz zurück und gegebenenfalls einen Gewinnanteil. Die Buchung erfolgt automatisch.',
+      'Schaffst du dein Ziel, bekommst du nach dem Ende dein Pfand zurück. Die Buchung erfolgt automatisch.',
     cutoff:
       'Am Zielende zählt nur der bereits synchronisierte Stand. Später übertragene Aktivitäten zählen nicht mehr.',
     closed:
       'Zielzeit beendet. Der gespeicherte Stand ist endgültig; die Buchung folgt automatisch.',
-    locked: 'Die Verwendung deines Gewinnanteils ist ab dem Start festgelegt.',
+    locked: 'Die Organisation ist ab dem Start festgelegt.',
     weekSteps: 'Schritte in den letzten sieben Tagen',
     hide: 'Coach ausblenden',
     show: 'Coach anzeigen',
@@ -418,16 +418,16 @@ export const de = {
     primaryLabel: 'WICHTIGSTES ZIEL',
     moreLabel: 'WEITERE ZIELE',
     emptyTitle: 'Noch kein Ziel',
-    emptyText: 'Setz dir ein Lauf- oder Schrittziel und hinterlege einen Einsatz.',
+    emptyText: 'Tipp ein Ziel an und setz dein Pfand.',
     setGoal: 'Ziel setzen',
     notStarted: 'Startet bald',
     error: 'Deine Ziele konnten nicht geladen werden.',
     howLabel: "SO FUNKTIONIERT'S",
     howSteps: [
-      'Ziel setzen: Lauf oder Schritte, Zeitraum und Einsatz festlegen.',
+      'Ziel antippen, Pfand setzen.',
       'Aktivität wird automatisch aus der Gesundheits-App übernommen.',
       'Den Fortschritt siehst du hier auf Home und im Tab Aktivität.',
-      'Ziel erreicht: Einsatz zurück plus Anteil. Verfehlt: Einsatz verfällt.',
+      'Ziel erreicht: Pfand zurück. Verfehlt: Pfand wird gespendet.',
     ],
   },
   intro: {
@@ -449,8 +449,8 @@ export const de = {
         },
         {
           art: 'pool' as const,
-          title: 'So wird ausgezahlt',
-          text: 'Ab dem Start ist dein Einsatz gebunden. Schaffst du dein Ziel, bekommst du ihn zurück plus einen Anteil an den verfallenen Einsätzen aller, die im selben Zeitraum ihr Ziel erreicht haben. Verfehlst du es, verfällt dein Einsatz in den Pool. Aktuell sind Credits virtuell und können nicht ausgezahlt werden.',
+          title: 'Pfand',
+          text: 'Ab dem Start ist dein Pfand gebunden. Schaffst du dein Ziel, bekommst du es zurück. Verfehlst du es, wird es gespendet. Aktuell sind Credits virtuell und können nicht ausgezahlt werden.',
         },
         {
           art: 'podium' as const,
@@ -459,8 +459,8 @@ export const de = {
         },
         {
           art: 'heart' as const,
-          title: 'Gewinn teilen',
-          text: 'Wenn du gewinnst, kannst du deinen Gewinnanteil an eine NGO spenden – oder behalten. Du entscheidest, jedes Mal neu.',
+          title: 'Gutes tun',
+          text: 'Ein verfehltes Ziel ist nicht verloren: 90 % deines Pfands gehen an die Organisation, die du wählst.',
         },
       ] as const,
   },
@@ -511,12 +511,12 @@ export const de = {
         {
           art: 'coins' as const,
           title: 'Abrechnung',
-          text: 'Wer sein Ziel schafft, bekommt den Einsatz zurück plus einen Anteil an den verfallenen Einsätzen aller, die im selben Zeitraum ihr Ziel erreicht haben (im Verhältnis zum Einsatz). Schafft es niemand, verfallen alle Einsätze.',
+          text: 'Wer sein Ziel schafft, bekommt das Pfand zurück. Wer es verfehlt, spendet: 90 % an die gewählte Organisation, 10 % behält PUSH.',
         },
         {
           art: 'heart' as const,
-          title: 'Gewinn spenden',
-          text: 'Deinen Gewinnanteil kannst du an eine NGO spenden – als Standard im Profil oder für jede Challenge einzeln, bis zur Abrechnung. Deinen Einsatz bekommst du immer zurück.',
+          title: 'Organisation wählen',
+          text: 'Deine Organisation stellst du im Profil ein oder für jedes Ziel einzeln bis zum Start.',
         },
         {
           art: 'trophy' as const,
@@ -540,29 +540,25 @@ export const de = {
     profileLabel: 'DEINE BILANZ',
     totalDistance: 'Kilometer gesamt',
     totalWins: 'Gewonnene Challenges',
-    totalWon: 'Gewinn gesamt',
-    totalWonHint: 'Credits über deinem Einsatz',
     statsError: 'Die Statistik konnte nicht geladen werden.',
     km: (km: string) => `${km} km`,
   },
   celebration: {
     title: 'GESCHAFFT!',
-    withBonus: (bonus: string) => `Dein Einsatz ist zurück – plus ${bonus} Credits Gewinn.`,
-    stakeBack: 'Dein Einsatz ist zurück.',
+    stakeBack: 'Pfand zurück.',
     close: 'Weiter',
     accessibility: (title: string, amount: string) =>
       `Challenge gewonnen: ${title}. Auszahlung ${amount} Credits.`,
   },
   detail: {
-    potLabel: 'TOPF',
+    potLabel: 'GEBUNDENES PFAND',
     potCaption: (count: number) => `${count === 1 ? '1 Person' : `${count} Personen`} im Spiel`,
-    windowLabel: 'TOPF DIESES ZEITRAUMS',
-    windowCaption: (goals: number) => (goals === 1 ? 'in 1 Ziel' : `in ${goals} Zielen`),
-    windowHint:
-      'Alle Einsätze von Zielen mit demselben Zeitraum. Wer sein Ziel schafft, bekommt den Einsatz zurück plus einen Anteil der verfallenen Einsätze.',
-    possibleWinLabel: 'DEIN MÖGLICHER GEWINN',
-    possibleWinHint: 'Höchstens: wenn alle anderen ihr Ziel verfehlen. Dein Einsatz ist inklusive.',
-    possibleWinHintSolo: 'Allein im Pool bekommst du nur deinen Einsatz zurück.',
+    windowLabel: 'DEIN PFAND',
+    windowCaption: () => 'gebunden bis zum Ende des Ziels',
+    windowHint: 'Erreicht: zurück. Verfehlt: gespendet.',
+    possibleWinLabel: 'DEIN PFAND',
+    possibleWinHint: 'Kommt zurück, wenn du dein Ziel erreichst.',
+    possibleWinHintSolo: 'Kommt zurück, wenn du dein Ziel erreichst.',
     possibleWinSetting: 'Wird berechnet …',
     verified: 'Automatisch geprüft',
     verifiedHint: (source: string) => `Ergebnisse kommen aus ${source}.`,
@@ -648,9 +644,9 @@ export const de = {
     error: 'Die Challenge konnte nicht geladen werden.',
     goal: 'ZIEL',
     period: 'ZEITRAUM',
-    stake: 'EINSATZ',
+    stake: 'PFAND',
     participants: 'TEILNEHMER',
-    pot: 'TOPF',
+    pot: 'PFAND',
     participantCount: (count: number) => (count === 1 ? '1 Person' : `${count} Personen`),
     maxParticipants: (max: number) => `max. ${max}`,
     inviteCode: 'EINLADUNGSCODE',
@@ -666,43 +662,41 @@ export const de = {
         ? 'Synchronisiere vor dem Ende. Danach wird der gespeicherte Stand endgültig abgerechnet.'
         : `Nach dem Ende hast du ${hours} Stunden Zeit, deine Daten zu synchronisieren.`,
     ruleMinParticipants: (min: number) =>
-      `Sind beim Start weniger als ${min} Personen dabei, wird die Challenge abgesagt und alle bekommen ihren Einsatz zurück.`,
+      `Sind beim Start weniger als ${min} Personen dabei, wird die Challenge abgesagt und alle bekommen ihr Pfand zurück.`,
     rulePayout:
-      'Jeder zahlt seinen eigenen Einsatz in den Topf. Wer das Ziel schafft, bekommt den Einsatz zurück und teilt sich die Einsätze der anderen im Verhältnis zum eigenen Einsatz.',
-    ruleAllWin: 'Schaffen es alle, bekommen alle genau ihren Einsatz zurück.',
-    ruleNobody: 'Schafft es niemand, verfallen alle Einsätze.',
-    ruleAlone: 'Bist du allein im Pool: Ziel geschafft = Einsatz zurück, sonst verfällt er.',
-    ruleFee: (percent: string) => `Von den verlorenen Einsätzen gehen ${percent} Gebühr ab.`,
-    ruleRounding: 'Lässt sich der Topf nicht in ganze Cent teilen, verfällt der Rest.',
-    ruleDonation:
-      'Deinen Gewinnanteil kannst du an eine NGO spenden. Deinen Einsatz bekommst du immer zurück.',
+      'Jeder setzt sein eigenes Pfand. Wer das Ziel schafft, bekommt es zurück – ohne Anteil an den Pfändern der anderen.',
+    ruleAllWin: 'Schaffen es alle, bekommen alle ihr Pfand zurück.',
+    ruleNobody: 'Schafft es niemand, werden alle Pfänder gespendet.',
+    ruleAlone: 'Bist du allein: Ziel geschafft = Pfand zurück, sonst wird es gespendet.',
+    ruleFee: (percent: string) => `Von einem verfallenen Pfand behält PUSH ${percent}.`,
+    ruleRounding: 'Cent-Reste gehen an die Organisation.',
+    ruleDonation: 'Verfallenes Pfand geht an die gewählte Organisation.',
     ruleRanking: 'Die Rangliste zeigt nur die Reihenfolge – ausgezahlt wird nicht nach Platz.',
     ruleRankedNoStake: 'In einer Rangliste gibt es keinen Einsatz und keine Credits-Bewegung.',
     ruleRankedPoints:
       'Für die Plätze gibt es Punkte (Platz 1: 30, 2: 20, 3: 10, danach 5) und Abzeichen.',
-    ruleGoalPayout:
-      'Schaffst du dein Ziel, bekommst du deinen Einsatz zurück plus einen Anteil an den verfallenen Einsätzen aller, die im selben Zeitraum ihr Ziel erreicht haben (im Verhältnis zum Einsatz).',
-    ruleGoalMissed: 'Verfehlst du dein Ziel, verfällt dein Einsatz in den Pool.',
-    ruleGoalNobody: 'Erreicht niemand sein Ziel, verfallen alle Einsätze des Zeitraums.',
+    ruleGoalPayout: 'Schaffst du dein Ziel, bekommst du dein Pfand vollständig zurück.',
+    ruleGoalMissed: 'Verfehlst du dein Ziel, wird dein Pfand gespendet.',
+    ruleGoalNobody: 'Dein Ergebnis hängt nur von dir ab, nicht von anderen.',
     ruleGoalBound:
-      'Bis zum Start kannst du das Ziel zurückziehen und bekommst alles zurück. Ab dem Start ist der Einsatz gebunden.',
-    ruleLeave:
-      'Bis zum Start kannst du jederzeit aussteigen (im Pool bekommst du deinen Einsatz zurück).',
+      'Bis zum Start kannst du das Ziel zurückziehen und bekommst alles zurück. Ab dem Start ist das Pfand gebunden.',
+    ruleLeave: 'Bis zum Start kannst du jederzeit aussteigen (du bekommst dein Pfand zurück).',
     ranking: 'RANGLISTE',
     rankingEmpty: 'Die Rangliste erscheint, sobald die Challenge läuft.',
     rankingError: 'Die Rangliste konnte nicht geladen werden.',
     rank: (rank: number) => `${rank}.`,
     result: 'ERGEBNIS',
     resultWon: 'Ziel geschafft!',
-    resultWonPayout: (amount: string) => `Dir wurden ${amount} Credits gutgeschrieben.`,
+    resultWonPayout: (amount: string) => `Pfand zurück: ${amount} Credits.`,
     resultLost: 'Ziel nicht geschafft.',
-    resultLostText: 'Dein Einsatz ist verfallen.',
+    resultLostText: 'Dein Pfand wurde gespendet.',
+    resultLostDonated: (ngo: string) => `Dein Pfand wurde gespendet an ${ngo}.`,
     resultRanked: (rank: number) => `Platz ${rank}`,
     resultRankedPoints: (points: number) =>
       points === 1 ? '1 Punkt für dein Level.' : `${points} Punkte für dein Level.`,
-    resultDonated: (amount: string) => `Davon hast du ${amount} Credits gespendet.`,
+    resultDonated: (amount: string) => `Gespendet: ${amount} Credits.`,
     resultCancelled: 'Challenge abgesagt.',
-    resultRefundText: (amount: string) => `Dein Einsatz von ${amount} Credits wurde erstattet.`,
+    resultRefundText: (amount: string) => `Dein Pfand von ${amount} Credits wurde erstattet.`,
     resultPending: 'Zielzeit beendet. Die automatische Ergebnisbuchung wird aktualisiert.',
     yourProgress: 'DEIN FORTSCHRITT',
     progressPending: 'Dein Fortschritt erscheint hier, sobald die Challenge läuft.',
@@ -726,16 +720,16 @@ export const de = {
   joinSheet: {
     title: 'Challenge beitreten',
     stake: (amount: string) =>
-      `Du setzt ${amount} Credits. Erreichst du dein Ziel, bekommst du sie zurück plus deinen Anteil am Topf.`,
+      `Du setzt ${amount} Credits Pfand. Erreichst du dein Ziel, bekommst du sie zurück.`,
     balance: (amount: string) => `Dein Guthaben: ${amount} Credits`,
     confirm: 'Jetzt beitreten',
     cancel: 'Abbrechen',
     rankedTitle: 'Rangliste beitreten',
     rankedText: 'Hier gibt es keinen Einsatz. Du trittst gegen die anderen an und sammelst Punkte.',
     rankedConfirm: 'Mitmachen',
-    stakeLabel: 'DEIN EINSATZ',
+    stakeLabel: 'DEIN PFAND',
     stakeChosen: (amount: string) =>
-      `Du setzt ${amount} Credits. Erreichst du dein Ziel, bekommst du sie zurück plus deinen Anteil an den Einsätzen der anderen.`,
+      `Du setzt ${amount} Credits Pfand. Erreichst du dein Ziel, bekommst du sie zurück.`,
   },
   challengeStart: {
     title: 'Dein Start ist gesetzt!',
@@ -763,7 +757,7 @@ export const de = {
   create: {
     title: 'Ziel setzen',
     intro:
-      'Setz dir ein Lauf- oder Schrittziel und hinterlege einen Einsatz. Deine Läufe und Schritte werden automatisch übernommen.',
+      'Tipp ein Ziel an und setz dein Pfand. Deine Läufe und Schritte werden automatisch übernommen.',
     review: 'Angaben prüfen',
     customTarget: 'Eigener Wert',
     customDates: 'Eigene Daten wählen',
@@ -780,7 +774,7 @@ export const de = {
       'Ziele können gerade nicht gespeichert werden. Der Server für „Ziel setzen“ muss aktualisiert werden.',
     reviewAlone: 'Persönliches Ziel',
     reviewFriends: 'Ziel mit Freunden',
-    noNgo: 'Wähle eine verfügbare Organisation oder behalte deinen Gewinnanteil.',
+    noNgo: 'Wähle eine verfügbare Organisation für dein Pfand.',
     change: 'Angaben ändern',
     goalType: 'ZIELTYP',
     target: 'ZIELWERT',
@@ -788,15 +782,14 @@ export const de = {
     periodLabel: { day: 'Heute bis Mitternacht', week: 'Nächste Woche', month: 'Nächster Monat' },
     todayHint: 'Das Tagesziel läuft ab der Bestätigung bis Mitternacht.',
     todayStepsHint: 'Bereits heute erfasste Schritte zählen mit.',
-    stake: 'EINSATZ',
-    stakeHint:
-      'Ziel erreicht: Einsatz zurück plus Anteil an den verfallenen Einsätzen. Ziel verfehlt: Einsatz verfällt.',
-    confirmTitle: 'Einsatz bestätigen',
+    stake: 'PFAND',
+    stakeHint: 'Erreicht: Pfand zurück. Verfehlt: Pfand wird gespendet.',
+    confirmTitle: 'Pfand bestätigen',
     confirmStake: (amount: string) =>
-      `Du setzt ${amount} Credits. Der Betrag wird jetzt von deinem Guthaben abgebucht.`,
-    confirmReturn: (day: string) =>
-      `Schaffst du dein Ziel, kommt dein Einsatz am ${day} zurück – plus ein Anteil an den verfallenen Einsätzen aller, die ihr Ziel im selben Zeitraum erreichen.`,
-    confirmMissed: 'Verfehlst du dein Ziel, verfällt dein Einsatz in den Pool.',
+      `Du setzt ${amount} Credits Pfand. Der Betrag wird jetzt von deinem Guthaben abgebucht.`,
+    confirmReturn: (day: string) => `Schaffst du dein Ziel, kommt dein Pfand am ${day} zurück.`,
+    confirmMissed:
+      'Verfehlst du dein Ziel, wird dein Pfand gespendet (90 %) bzw. geht an PUSH (10 %).',
     confirmBound: (start: string, startsToday: boolean) =>
       startsToday
         ? 'Dein Einsatz ist ab der Bestätigung sofort gebunden. Das Ziel kann danach nicht zurückgezogen oder mit Erstattung abgebrochen werden.'
@@ -1136,11 +1129,11 @@ export const de = {
       },
       {
         q: 'Wann ist mein Einsatz gebunden, zurückgebucht oder verfallen?',
-        a: 'Beim Bestätigen wird der Einsatz von deinem Guthaben abgebucht. Bis zum Start kannst du das Ziel zurückziehen und bekommst alles zurück. Ab dem Start ist der Einsatz gebunden: kein Zurückziehen, kein Abbrechen mit Erstattung. Schaffst du dein Ziel, kommt er nach der Abrechnung zurück – plus ein Anteil an den verfallenen Einsätzen. Verfehlst du es, verfällt er in den Pool.',
+        a: 'Beim Bestätigen wird das Pfand von deinem Guthaben abgebucht. Bis zum Start kannst du das Ziel zurückziehen und bekommst alles zurück. Ab dem Start ist es gebunden: kein Zurückziehen, kein Abbrechen mit Erstattung. Schaffst du dein Ziel, kommt es nach der Abrechnung vollständig zurück. Verfehlst du es, wird es gespendet.',
       },
       {
-        q: 'Wie wird der Gewinn berechnet?',
-        a: 'Die verfallenen Einsätze eines Zeitraums werden unter allen aufgeteilt, die ihr Ziel in diesem Zeitraum erreicht haben – im Verhältnis zu ihrem Einsatz. Es gibt kein Mindestziel. Krumme Beträge und eine eventuelle Gebühr gehen an das Haus. Erreicht niemand sein Ziel, verfallen alle Einsätze.',
+        q: 'Was passiert mit einem verfallenen Pfand?',
+        a: 'Es gibt keinen Gewinn aus den Pfändern anderer. Ein verfehltes Ziel verfällt: 90 % gehen als Spende an die gewählte Organisation, 10 % behält PUSH (beide Werte sind einstellbar). Alles wird einzeln gebucht und jedes Ziel ergibt in Summe null. Die Spenden aller siehst du als Zähler „Gemeinsam gespendet diesen Monat“.',
       },
       {
         q: 'Wie wird geprüft, ob ich mein Ziel geschafft habe?',
@@ -1152,15 +1145,15 @@ export const de = {
       },
       {
         q: 'Wofür sind Pool und Ranked da?',
-        a: 'Wallet und Community-Übersicht findest du im Profil. Der Pool zeigt die Anzahl der Personen in offenen oder laufenden Zielen und die dort gebundenen Credits. Ob jemand gerade läuft, lässt sich nicht feststellen. Ranked sind feste Ranglisten ohne Einsatz (meiste Kilometer, meiste Schritte – täglich, wöchentlich, monatlich) mit Punkten und Abzeichen, dazu Freunde und Liga. Eigene Ranglisten kannst du nicht erstellen.',
+        a: 'Wallet und Community-Übersicht findest du im Profil. Der Pool zeigt die Anzahl der Personen in offenen oder laufenden Zielen und das dort gebundene Pfand. Ob jemand gerade läuft, lässt sich nicht feststellen. Ranked sind feste Ranglisten ohne Einsatz (meiste Kilometer, meiste Schritte – täglich, wöchentlich, monatlich) mit Punkten und Abzeichen, dazu Freunde und Liga. Eigene Ranglisten kannst du nicht erstellen.',
       },
       {
-        q: 'Kann ich meinen Gewinn spenden?',
-        a: 'Ja. Du kannst deinen Gewinnanteil an eine NGO spenden – als Standard im Profil oder für jedes Ziel einzeln bis zur Abrechnung. Deinen Einsatz bekommst du immer zurück. Aktuell sind die NGO-Partner Platzhalter.',
+        q: 'Wohin geht ein verfallenes Pfand?',
+        a: 'An die Organisation, die du im Profil oder für das einzelne Ziel bis zum Start wählst. Aktuell sind die NGO-Partner Platzhalter.',
       },
       {
         q: 'Kann ich aussteigen?',
-        a: 'Bis zum Start jederzeit; du bekommst deinen Einsatz zurück. Danach nicht mehr – der Einsatz ist gebunden.',
+        a: 'Bis zum Start jederzeit; du bekommst dein Pfand zurück. Danach nicht mehr – das Pfand ist gebunden.',
       },
       {
         q: 'Wer sieht meine Daten?',
@@ -1285,24 +1278,26 @@ export const de = {
   },
   donations: {
     label: 'SPENDEN',
-    defaultToggle: 'Gewinnanteil spenden',
+    defaultToggle: 'Verfehltes Pfand spenden',
     defaultHint:
-      'Standard für alle Pools: Dein Anteil an den Einsätzen der anderen geht an eine NGO. Deinen Einsatz bekommst du immer zurück.',
-    ngo: 'NGO',
+      'Verfehlst du ein Ziel, geht dein Pfand zu 90 % an diese Organisation. Erreichte Ziele bekommen ihr Pfand zurück.',
+    ngo: 'ORGANISATION',
     placeholderNote: 'Die NGO-Partner sind vorerst Platzhalter.',
     error: 'Die Spenden-Einstellung konnte nicht geladen werden.',
-    challengeLabel: 'GEWINNANTEIL SPENDEN?',
-    challengeText:
-      'Wenn du das Ziel schaffst: behältst du deinen Anteil oder spendest du ihn? Du kannst das bis zur Abrechnung ändern.',
+    challengeLabel: 'ORGANISATION FÜR DIESES ZIEL',
+    challengeText: 'An wen geht dein Pfand, falls du das Ziel verfehlst? Änderbar bis zum Start.',
     choice: 'DEINE WAHL',
     useDefault: 'Standard',
     donate: 'Spenden',
     keep: 'Behalten',
-    nowDonating: 'Aktuell: Dein Anteil wird gespendet.',
+    nowDonating: 'Aktuell: Dein Pfand würde gespendet.',
     nowKeeping: 'Aktuell: Du behältst deinen Anteil.',
     overviewLabel: 'MEINE SPENDEN',
-    overviewEmpty: 'Noch keine Spende. Sie erscheint hier, sobald du einen Gewinnanteil spendest.',
+    overviewEmpty:
+      'Noch keine Spende. Sie erscheint hier, sobald ein Pfand von dir gespendet wird.',
     total: 'Insgesamt gespendet',
+    communityLabel: 'GEMEINSAM GESPENDET DIESEN MONAT',
+    communityValue: (amount: string) => `${amount} Credits`,
   },
   reminders: {
     label: 'ERINNERUNGEN',
@@ -1428,8 +1423,8 @@ export const de = {
     intro: 'Das kann nicht rückgängig gemacht werden.',
     points: [
       'Gelöscht werden deine E-Mail-Adresse, dein Anzeigename, dein Guthaben und alle synchronisierten Gesundheitsdaten.',
-      'Challenges, die noch nicht begonnen haben, verlässt du automatisch. Deinen Einsatz bekommst du vorher zurück.',
-      'In Challenges, die schon laufen, verfällt dein Einsatz. Er bleibt im Topf und wird regulär an die Gewinner verteilt.',
+      'Challenges, die noch nicht begonnen haben, verlässt du automatisch. Dein Pfand bekommst du vorher zurück.',
+      'In Challenges, die schon laufen, verfällt dein Pfand: Es wird wie ein verfehltes Ziel gespendet.',
       'Deine Buchungen bleiben ohne Bezug zu dir erhalten, damit die Abrechnungen der anderen stimmen.',
     ],
     healthHint: (source: string) =>

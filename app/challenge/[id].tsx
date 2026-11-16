@@ -41,7 +41,11 @@ import {
 import { PotCard } from '@/features/challenges/pot-card';
 import { JoinSheet } from '@/features/challenges/join-sheet';
 import { ChallengeDonationCard } from '@/features/donations/donation-cards';
-import { useMyChallengeResult, type ChallengeResult } from '@/features/donations/api';
+import {
+  useMyChallengeResult,
+  useMyDonations,
+  type ChallengeResult,
+} from '@/features/donations/api';
 import { ChallengeFeed } from '@/features/feed/challenge-feed';
 import { RankedDemoPreview } from '@/features/challenges/ranked-demo-preview';
 import { Leaderboard } from '@/features/challenges/leaderboard';
@@ -449,6 +453,8 @@ function ResultCard({
   result: ChallengeResult | null;
 }) {
   const ownProgress = useMyProgress(useSession().user.id);
+  const donations = useMyDonations();
+  const donatedTo = donations.data?.find((entry) => entry.challengeId === challenge.id)?.ngoName;
   let title: string;
   let text: string | null = null;
   if (challenge.status === 'settling') {
@@ -477,12 +483,12 @@ function ResultCard({
   } else if (me.result === 'success') {
     title = de.challenge.resultWon;
     text = de.challenge.resultWonPayout(formatAmount(me.payoutCents ?? 0));
+  } else {
+    title = de.challenge.resultLost;
+    text = donatedTo ? de.challenge.resultLostDonated(donatedTo) : de.challenge.resultLostText;
     if (result && result.donatedCents > 0) {
       text += ` ${de.challenge.resultDonated(formatAmount(result.donatedCents))}`;
     }
-  } else {
-    title = de.challenge.resultLost;
-    text = de.challenge.resultLostText;
   }
   const won =
     challenge.status === 'settled' &&

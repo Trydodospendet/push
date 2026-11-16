@@ -39,9 +39,9 @@ insert into public.activity_workouts (id, user_id, platform, source_record_id, a
   start_at, end_at, distance_m, duration_s, was_user_entered, is_valid)
 values
   ('a0000000-0000-4000-8000-000000000001', 'aaaaaaaa-0000-0000-0000-000000000001', 'android', 'a1', 'running',
-   now() - interval '1 day', now() - interval '1 day' + interval '30 minutes', 5000, 1800, false, true),
+   least(now() - interval '1 minute', greatest(now() - interval '1 day', date_trunc('week', now() at time zone 'Europe/Berlin') at time zone 'Europe/Berlin' + interval '1 minute')), least(now() - interval '1 minute', greatest(now() - interval '1 day', date_trunc('week', now() at time zone 'Europe/Berlin') at time zone 'Europe/Berlin' + interval '1 minute')) + interval '30 minutes', 5000, 1800, false, true),
   ('b0000000-0000-4000-8000-000000000001', 'bbbbbbbb-0000-0000-0000-000000000002', 'android', 'b1', 'running',
-   now() - interval '1 day', now() - interval '1 day' + interval '30 minutes', 7000, 2400, false, true);
+   least(now() - interval '1 minute', greatest(now() - interval '1 day', date_trunc('week', now() at time zone 'Europe/Berlin') at time zone 'Europe/Berlin' + interval '1 minute')), least(now() - interval '1 minute', greatest(now() - interval '1 day', date_trunc('week', now() at time zone 'Europe/Berlin') at time zone 'Europe/Berlin' + interval '1 minute')) + interval '30 minutes', 7000, 2400, false, true);
 
 -- Friends ---------------------------------------------------------------------------------------------
 

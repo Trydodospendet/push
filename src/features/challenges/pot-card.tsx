@@ -2,23 +2,17 @@ import { StyleSheet, View } from 'react-native';
 
 import { Card, Icon, Text } from '@/components';
 import { healthSourceName } from '@/features/health/platform';
-import { usePotentialWin } from '@/features/stats/api';
 import { de } from '@/i18n/de';
 import { formatAmount } from '@/lib/money';
 import { colors, layout, radius, spacing } from '@/theme';
 
-import { useGoalWindow } from './api';
-import { isFinished, isGoal, isPool, isRanked } from './format';
+import { isGoal, isPool } from './format';
 import type { Challenge } from './types';
 
-/** Big pot (pool), the most the user can win, and the "automatically checked" badge. */
+/** Bound pledge (pool or own goal) and the "automatically checked" badge. */
 export function PotCard({ challenge }: { challenge: Challenge }) {
   const pool = isPool(challenge);
-  const alone = pool && challenge.participant_count <= 1;
-  const over = isFinished(challenge) || challenge.status === 'settling';
   const goal = isGoal(challenge);
-  const potential = usePotentialWin(challenge.id, !over && !goal);
-  const window = useGoalWindow(challenge.id, goal);
 
   return (
     <Card style={styles.card}>
@@ -44,48 +38,19 @@ export function PotCard({ challenge }: { challenge: Challenge }) {
         <View
           style={styles.pot}
           accessible
-          accessibilityLabel={`${de.detail.windowLabel}: ${formatAmount(window.data?.stakesCents ?? 0)} ${de.common.credits}`}
+          accessibilityLabel={`${de.detail.windowLabel}: ${formatAmount(challenge.stake_cents)} ${de.common.credits}`}
         >
           <Text variant="label" color="textSecondary">
             {de.detail.windowLabel}
           </Text>
           <Text variant="display" color="accent" numberOfLines={1} adjustsFontSizeToFit>
-            {formatAmount(window.data?.stakesCents ?? challenge.stake_cents)}
+            {formatAmount(challenge.stake_cents)}
           </Text>
           <Text variant="caption" color="textSecondary">
-            {`${de.common.credits} · ${de.detail.windowCaption(window.data?.goals ?? 1)}`}
-          </Text>
-          <Text variant="caption" color="textMuted">
-            {de.detail.windowHint}
+            {`${de.common.credits} · ${de.detail.windowHint}`}
           </Text>
         </View>
       ) : null}
-
-      {over || isRanked(challenge) || goal ? null : (
-        <View
-          style={styles.win}
-          accessible
-          accessibilityLabel={
-            typeof potential.data === 'number'
-              ? `${de.detail.possibleWinLabel}: ${formatAmount(potential.data)} ${de.common.credits}`
-              : de.detail.possibleWinLabel
-          }
-        >
-          <Text variant="label" color="textSecondary">
-            {de.detail.possibleWinLabel}
-          </Text>
-          {potential.isError || potential.data === null ? null : (
-            <Text variant="title">
-              {potential.isPending
-                ? de.detail.possibleWinSetting
-                : `${formatAmount(potential.data ?? 0)} ${de.common.credits}`}
-            </Text>
-          )}
-          <Text variant="caption" color="textMuted">
-            {alone ? de.detail.possibleWinHintSolo : de.detail.possibleWinHint}
-          </Text>
-        </View>
-      )}
 
       <View
         style={styles.badge}
@@ -109,9 +74,6 @@ const styles = StyleSheet.create({
     gap: spacing.md,
   },
   pot: {
-    gap: spacing.xxs,
-  },
-  win: {
     gap: spacing.xxs,
   },
   badge: {

@@ -131,14 +131,16 @@ describe('goals', () => {
     );
     expect(
       await screen.findByText(
-        'Du setzt 10,00 Credits. Der Betrag wird jetzt von deinem Guthaben abgebucht.',
+        'Du setzt 10,00 Credits Pfand. Der Betrag wird jetzt von deinem Guthaben abgebucht.',
       ),
     ).toBeOnTheScreen();
     expect(
-      screen.getByText(/Schaffst du dein Ziel, bekommst du nach dem Ende deinen Einsatz zurück/),
+      screen.getByText(/Schaffst du dein Ziel, bekommst du nach dem Ende dein Pfand zurück/),
     ).toBeOnTheScreen();
     expect(
-      screen.getByText('Verfehlst du dein Ziel, verfällt dein Einsatz in den Pool.'),
+      screen.getByText(
+        'Verfehlst du dein Ziel, wird dein Pfand gespendet (90 %) bzw. geht an PUSH (10 %).',
+      ),
     ).toBeOnTheScreen();
     expect(screen.getAllByText(/Bereits heute erfasste Schritte zählen mit/)).toHaveLength(2);
     expect(screen.getByText(/ab der Bestätigung sofort gebunden/)).toBeOnTheScreen();
@@ -159,7 +161,7 @@ describe('goals', () => {
         p_with_friends: false,
       }),
     );
-    expect(await screen.findByText('TOPF DIESES ZEITRAUMS')).toBeOnTheScreen();
+    expect(await screen.findByText('DEIN PFAND')).toBeOnTheScreen();
   });
 
   it('preserves a decimal friend goal when editing its dates after the review', async () => {
@@ -225,8 +227,7 @@ describe('goals', () => {
 
     await renderRouter('./app', { initialUrl: '/challenge/goal-1' });
 
-    expect(await screen.findByText('TOPF DIESES ZEITRAUMS')).toBeOnTheScreen();
-    expect(screen.getByText(/in 3 Zielen/)).toBeOnTheScreen();
+    expect(await screen.findByText('DEIN PFAND')).toBeOnTheScreen();
     expect(screen.queryByText('EINLADUNGSCODE')).toBeNull();
 
     await user.press(screen.getByRole('button', { name: 'Ziel zurückziehen' }));
@@ -253,7 +254,7 @@ describe('goals', () => {
 
     await renderRouter('./app', { initialUrl: '/challenge/goal-1' });
 
-    expect(await screen.findByText('TOPF DIESES ZEITRAUMS')).toBeOnTheScreen();
+    expect(await screen.findByText('DEIN PFAND')).toBeOnTheScreen();
     expect(screen.queryByRole('button', { name: 'Ziel zurückziehen' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Challenge verlassen' })).toBeNull();
   });

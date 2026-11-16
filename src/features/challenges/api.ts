@@ -187,7 +187,7 @@ export function useCreateGoal() {
               p_end_date: input.endDate,
               p_with_friends: input.withFriends ?? false,
               p_donate: input.donate ?? false,
-              p_ngo_id: input.ngoId ?? null,
+              p_ngo_id: input.ngoId ?? undefined,
             })
           : await supabase.rpc('create_goal', {
               p_title: input.title,

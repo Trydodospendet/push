@@ -68,11 +68,7 @@ export function JoinSheet({
             onChange={setChosen}
           />
           {profile.data ? (
-            <DonationDefaultsCard
-              userId={session.user.id}
-              donate={profile.data.donate_default}
-              ngoId={profile.data.default_ngo_id}
-            />
+            <DonationDefaultsCard userId={session.user.id} ngoId={profile.data.default_ngo_id} />
           ) : null}
           <Text color="textMuted">{de.coach.locked}</Text>
           <Text>{de.joinSheet.stakeChosen(formatAmount(stake))}</Text>

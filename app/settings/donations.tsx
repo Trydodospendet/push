@@ -36,11 +36,7 @@ export default function DonationSettingsScreen() {
 
   return (
     <Screen scroll edges={SCREEN_EDGES} contentStyle={styles.content}>
-      <DonationDefaultsCard
-        userId={session.user.id}
-        donate={profile.data.donate_default}
-        ngoId={profile.data.default_ngo_id}
-      />
+      <DonationDefaultsCard userId={session.user.id} ngoId={profile.data.default_ngo_id} />
       <DonationsOverview timezone={profile.data.timezone ?? DEFAULT_TIMEZONE} />
     </Screen>
   );

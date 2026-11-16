@@ -1,14 +1,6 @@
 import { StyleSheet, View } from 'react-native';
 
-import {
-  Card,
-  ChipGroup,
-  ErrorState,
-  LoadingState,
-  SwitchRow,
-  Text,
-  type ChipOption,
-} from '@/components';
+import { Card, ChipGroup, ErrorState, LoadingState, Text, type ChipOption } from '@/components';
 import { de } from '@/i18n/de';
 import { formatDateTime } from '@/lib/dates';
 import { toUserMessage } from '@/lib/errors';
@@ -16,6 +8,7 @@ import { formatAmount } from '@/lib/money';
 import { spacing } from '@/theme';
 
 import {
+  useCommunityDonations,
   useMyChallengeDonation,
   useMyDonations,
   useMyDonationTotals,
@@ -29,16 +22,8 @@ function useNgoOptions(): ChipOption<string>[] {
   return (ngos.data ?? []).map((ngo) => ({ value: ngo.id, label: ngo.name }));
 }
 
-/** Profile: donate the winnings by default, and to whom. */
-export function DonationDefaultsCard({
-  userId,
-  donate,
-  ngoId,
-}: {
-  userId: string;
-  donate: boolean;
-  ngoId: string | null;
-}) {
+/** Profile: which organisation receives a missed pledge by default. */
+export function DonationDefaultsCard({ userId, ngoId }: { userId: string; ngoId: string | null }) {
   const save = useSetDonationDefaults(userId);
   const options = useNgoOptions();
   const selected = ngoId ?? options[0]?.value ?? '';
@@ -48,21 +33,13 @@ export function DonationDefaultsCard({
       <Text variant="label" color="textSecondary">
         {de.donations.label}
       </Text>
-      <SwitchRow
-        label={de.donations.defaultToggle}
-        hint={de.donations.defaultHint}
-        value={donate}
-        disabled={save.isPending}
-        onChange={(value) =>
-          save.mutate({ donate: value, ngoId: ngoId ?? options[0]?.value ?? null })
-        }
-      />
-      {donate && options.length > 0 ? (
+      <Text color="textSecondary">{de.donations.defaultHint}</Text>
+      {options.length > 0 ? (
         <ChipGroup
           label={de.donations.ngo}
           options={options}
           value={selected}
-          onChange={(value) => save.mutate({ donate, ngoId: value })}
+          onChange={(value) => save.mutate({ donate: true, ngoId: value })}
         />
       ) : null}
       {save.isError ? (
@@ -77,9 +54,7 @@ export function DonationDefaultsCard({
   );
 }
 
-type Choice = 'default' | 'donate' | 'keep';
-
-/** Challenge detail: decide for this pool whether the winnings are donated. */
+/** Challenge detail: the organisation that receives the pledge if the goal is missed. */
 export function ChallengeDonationCard({
   challengeId,
   locked = false,
@@ -105,26 +80,16 @@ export function ChallengeDonationCard({
   }
 
   const data = current.data;
-  if (locked)
+  const ngo = data.ngoId ?? data.effectiveNgoId ?? options[0]?.value ?? '';
+  const ngoName = options.find((option) => option.value === ngo)?.label ?? '';
+  if (locked) {
     return (
       <Card>
-        <Text>{data.effectiveDonate ? de.donations.nowDonating : de.donations.nowKeeping}</Text>
+        <Text>{ngoName ? `${de.donations.nowDonating} ${ngoName}` : de.donations.nowDonating}</Text>
         <Text variant="caption">{de.coach.locked}</Text>
       </Card>
     );
-  const choice: Choice = data.donate === null ? 'default' : data.donate ? 'donate' : 'keep';
-  const choices: ChipOption<Choice>[] = [
-    { value: 'default', label: de.donations.useDefault },
-    { value: 'donate', label: de.donations.donate },
-    { value: 'keep', label: de.donations.keep },
-  ];
-  const ngo = data.ngoId ?? data.effectiveNgoId ?? options[0]?.value ?? '';
-
-  const change = (next: Choice) =>
-    save.mutate({
-      donate: next === 'default' ? null : next === 'donate',
-      ngoId: next === 'donate' ? ngo || null : null,
-    });
+  }
 
   return (
     <Card style={styles.card}>
@@ -132,8 +97,7 @@ export function ChallengeDonationCard({
         {de.donations.challengeLabel}
       </Text>
       <Text color="textSecondary">{de.donations.challengeText}</Text>
-      <ChipGroup label={de.donations.choice} options={choices} value={choice} onChange={change} />
-      {choice === 'donate' && options.length > 0 ? (
+      {options.length > 0 ? (
         <ChipGroup
           label={de.donations.ngo}
           options={options}
@@ -141,15 +105,35 @@ export function ChallengeDonationCard({
           onChange={(value) => save.mutate({ donate: true, ngoId: value })}
         />
       ) : null}
-      <Text variant="caption" color="textMuted">
-        {data.effectiveDonate ? de.donations.nowDonating : de.donations.nowKeeping}
-      </Text>
       {save.isError ? (
         <Text variant="caption" color="danger" accessibilityRole="alert">
           {toUserMessage(save.error)}
         </Text>
       ) : null}
     </Card>
+  );
+}
+
+/** "Gemeinsam gespendet diesen Monat": one number for the whole community. */
+export function CommunityCounter() {
+  const total = useCommunityDonations();
+  if (total.isPending || total.isError) {
+    return null;
+  }
+  const amount = formatAmount(total.data);
+  return (
+    <View
+      style={styles.community}
+      accessible
+      accessibilityLabel={`${de.donations.communityLabel}: ${de.donations.communityValue(amount)}`}
+    >
+      <Text variant="label" color="textSecondary">
+        {de.donations.communityLabel}
+      </Text>
+      <Text variant="heading" color="accent">
+        {de.donations.communityValue(amount)}
+      </Text>
+    </View>
   );
 }
 
@@ -178,6 +162,7 @@ export function DonationsOverview({ timezone }: { timezone: string }) {
 
   return (
     <Card style={styles.card}>
+      <CommunityCounter />
       <Text variant="label" color="textSecondary">
         {de.donations.overviewLabel}
       </Text>
@@ -232,5 +217,8 @@ const styles = StyleSheet.create({
   },
   grow: {
     flex: 1,
+  },
+  community: {
+    gap: spacing.xxs,
   },
 });

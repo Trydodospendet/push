@@ -60,7 +60,7 @@ select results_eq(
   $$ select status, visibility, invite_code, participant_count, pot_cents, creator_id, fee_bps
        from public.challenges where id = (select id from ids where name = 'public') $$,
   $$ values ('open'::text, 'public'::text, null::text, 0, 0::bigint,
-             'aaaaaaaa-0000-0000-0000-000000000001'::uuid, 0) $$,
+             'aaaaaaaa-0000-0000-0000-000000000001'::uuid, 1000) $$,
   'a new public challenge is open, has no invite code and no participants'
 );
 

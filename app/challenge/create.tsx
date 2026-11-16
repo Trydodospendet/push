@@ -47,7 +47,6 @@ export default function SetGoalScreen() {
   const session = useSession();
   const profile = useMyProfile(session.user.id);
   const ngos = useNgos();
-  const [donate, setDonate] = useState(false);
   const [ngoId, setNgoId] = useState<string | null>(null);
   const balance = useWalletBalance(session.user.id);
   const create = useCreateGoal();
@@ -135,8 +134,7 @@ export default function SetGoalScreen() {
       dateError() ??
       (balance.data !== undefined && stakeCents > balance.data
         ? de.serverErrors.insufficient_funds
-        : null) ??
-      (donate && !selectedNgo ? de.create.noNgo : null);
+        : null);
     if (problem) {
       setError(problem);
       return null;
@@ -150,8 +148,8 @@ export default function SetGoalScreen() {
       startDate: first,
       endDate: last,
       withFriends,
-      donate,
-      ngoId: donate ? selectedNgo : null,
+      donate: true,
+      ngoId: selectedNgo,
     });
     if (!result.success) {
       setError(result.error.issues[0]?.message ?? de.create.invalidInput);
@@ -318,25 +316,11 @@ export default function SetGoalScreen() {
         ) : null}
         <Text color="textSecondary">{de.create.stakeHint}</Text>
         <ChipGroup
-          label={de.donations.choice}
-          options={[
-            { value: 'keep', label: de.donations.keep },
-            { value: 'donate', label: de.donations.donate },
-          ]}
-          value={donate ? 'donate' : 'keep'}
-          onChange={(value) => {
-            setDonate(value === 'donate');
-            setError(null);
-          }}
+          label={de.donations.ngo}
+          options={(ngos.data ?? []).map((ngo) => ({ value: ngo.id, label: ngo.name }))}
+          value={selectedNgo ?? ''}
+          onChange={setNgoId}
         />
-        {donate ? (
-          <ChipGroup
-            label={de.donations.ngo}
-            options={(ngos.data ?? []).map((ngo) => ({ value: ngo.id, label: ngo.name }))}
-            value={selectedNgo ?? ''}
-            onChange={setNgoId}
-          />
-        ) : null}
       </View>
 
       <View style={styles.group}>
@@ -357,11 +341,9 @@ export default function SetGoalScreen() {
         <Text color="textSecondary">{goalRule(goalType, targetValue)}</Text>
         {todayHint ? <Text color="textSecondary">{todayHint}</Text> : null}
         <Text>{de.create.confirmStake(stake)}</Text>
-        {donate ? (
-          <Text color="textSecondary">
-            {de.donations.donate} · {ngos.data?.find((ngo) => ngo.id === selectedNgo)?.name}
-          </Text>
-        ) : null}
+        <Text color="textSecondary">
+          {de.donations.nowDonating} {ngos.data?.find((ngo) => ngo.id === selectedNgo)?.name}
+        </Text>
         <Text color="textSecondary">{de.coach.winReturn}</Text>
         <Text color="textSecondary">{de.coach.cutoff}</Text>
         <Text color="textSecondary">{de.create.confirmMissed}</Text>

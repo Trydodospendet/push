@@ -58,7 +58,7 @@ describe('app flow', () => {
 
     expect(await screen.findByText("So funktioniert's")).toBeOnTheScreen();
     expect(screen.getByText('Automatisch geprüft über Apple Health')).toBeOnTheScreen();
-    expect(screen.getByText('So wird ausgezahlt')).toBeOnTheScreen();
+    expect(screen.getByText('Pfand')).toBeOnTheScreen();
     for (let page = 0; page < 4; page += 1) {
       await user.press(screen.getByRole('button', { name: 'Weiter' }));
     }
@@ -227,7 +227,7 @@ describe('app flow', () => {
     await user.press(await screen.findByRole('button', { name: 'Konto löschen' }));
     expect(screen.getByText('Konto endgültig löschen?')).toBeOnTheScreen();
     expect(
-      screen.getByText(/In Challenges, die schon laufen, verfällt dein Einsatz/),
+      screen.getByText(/In Challenges, die schon laufen, verfällt dein Pfand/),
     ).toBeOnTheScreen();
 
     await user.press(screen.getByRole('button', { name: 'Abbrechen' }));

@@ -1,5 +1,14 @@
 # Übergabe – Branch `ausbau`
 
+## Pfand-Modell statt Pool (16.11.2026)
+
+- Neue Migration `20261201090000_pledge_model.sql`: Ziel erreicht → eigenes Pfand vollständig zurück (`payout` = Pfand). Ziel verfehlt → `private.settings.fee_bps` (Standard 10 %) ans Haus (`fee`), der Rest (90 %) als Spende an die gewählte Organisation (Konto `donation`). Je Ziel Summe 0, idempotent über den Status unter Zeilensperre. Die Pool-Aufteilung unter Gewinnern und die Fensterabrechnung (`settle_goal_window`) sind entfernt; jede Challenge wird einzeln abgerechnet (Pool und Ziel gleich).
+- Spendenanteil konfigurierbar über `private.settings.fee_bps` (Hausanteil, wird beim Anlegen ins Ziel kopiert; die Spende ist der Rest). Offene/aktive Ziele werden in der Migration auf den aktuellen Wert gesetzt.
+- Neue RPC `get_community_donations()` (Summe der Spenden im aktuellen Monat, ohne Namen). `get_my_donations`/`get_my_donation_totals` lesen aus der Teilnahme. `create_goal_with_preferences` hat jetzt optionale Organisation (Standard: Profil, sonst erste aktive; wird beim Anlegen festgehalten). Alte App-Builds funktionieren weiter.
+- App: Texte auf „Pfand“, kein Gewinnanteil mehr, Organisation statt Spenden-Schalter, Zähler „Gemeinsam gespendet diesen Monat“ unter Profil → Spenden. Ergebnis „Pfand zurück“ bzw. „Dein Pfand wurde gespendet an …“.
+- Cloud-Schritt (nur durch den Nutzer): Migration `20261201090000_pledge_model.sql` auf Produktion anwenden (Backup davor). Bis dahin rechnet die Cloud nach dem alten Modell ab.
+- pgTAP: bestehende Abrechnungstests angepasst, neue Datei `23_pledge.test.sql`; `18_social` war am Montag wochentagsabhängig und ist repariert.
+
 ## Laufstart: falsche Route anhand des Screenshots behoben (15.11.2026)
 
 - Der Screenshot zeigt die Detailseite „Lauf“, nicht den Aufnahmebildschirm. Home, Aktivität und Verbindungen verlinkten auf `/run/index`. Expo Router deutet `index` dort als Lauf-ID; ohne passenden Lauf erscheint irreführend der Verlaufsfehler, obwohl die API erfolgreich antwortet. Die vorige Empfehlung, nach oben zu scrollen, war deshalb falsch.

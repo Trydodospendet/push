@@ -104,7 +104,6 @@ function CelebrationModal({ win, onClose }: { win: Win; onClose: () => void }) {
     };
   }, [progress]);
 
-  const bonusCents = win.payoutCents - win.stakeCents;
   const amount = formatAmount(win.payoutCents);
   const badgeScale = progress.interpolate({
     inputRange: [0, 0.5, 0.75, 1],
@@ -170,9 +169,7 @@ function CelebrationModal({ win, onClose }: { win: Win; onClose: () => void }) {
             </Text>
             <Text align="center">{win.title}</Text>
             <Text color="textSecondary" align="center">
-              {bonusCents > 0
-                ? de.celebration.withBonus(formatAmount(bonusCents))
-                : de.celebration.stakeBack}
+              {de.celebration.stakeBack}
             </Text>
           </Animated.View>
         </View>

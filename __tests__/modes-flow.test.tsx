@@ -140,7 +140,7 @@ describe('pool', () => {
     await renderRouter('./app', { initialUrl: '/challenge/challenge-1' });
     await user.press(await screen.findByRole('button', { name: 'Beitreten' }));
     await user.press(await screen.findByRole('radio', { name: '20,00 Credits' }));
-    expect(screen.getByText(/^Du setzt 20,00 Credits\./)).toBeOnTheScreen();
+    expect(screen.getByText(/^Du setzt 20,00 Credits Pfand./)).toBeOnTheScreen();
     await user.press(screen.getByRole('button', { name: 'Jetzt beitreten' }));
 
     expect(supabaseMock.rpc).toHaveBeenCalledWith('join_challenge', {
@@ -168,7 +168,7 @@ describe('pool', () => {
     await renderRouter('./app', { initialUrl: '/challenge/pool-2' });
 
     expect(await screen.findByText('Ziel nicht geschafft.')).toBeOnTheScreen();
-    expect(screen.getByText('Dein Einsatz ist verfallen.')).toBeOnTheScreen();
+    expect(screen.getByText('Dein Pfand wurde gespendet.')).toBeOnTheScreen();
   });
 });
 

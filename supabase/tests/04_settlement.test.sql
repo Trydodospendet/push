@@ -118,8 +118,8 @@ select is(
 
 select is(
   (select fee_bps from private.settings),
-  0,
-  'the configured fee is 0 by default'
+  1000,
+  'the house share of a forfeited pledge is 10 % by default (the rest is donated)'
 );
 
 select pg_temp.login(pg_temp.u(1));
@@ -138,7 +138,7 @@ select pg_temp.logout();
 
 -- Reference example (CLAUDE.md 6.3): 4 × 10.00, 3 winners, no fee ------------------------
 
-select pg_temp.finished('reference', 0, 1000, 0, array[1, 2, 3, 4]);
+select pg_temp.finished('reference', 0, 1000, 1000, array[1, 2, 3, 4]);
 select pg_temp.run(1, 'reference', 5000);
 select pg_temp.run(2, 'reference', 6000);
 select pg_temp.run(3, 'reference', 21100);
@@ -148,20 +148,21 @@ select ok(public.settle_challenge(pg_temp.c('reference')), 'the reference challe
 
 select results_eq(
   $$ select * from pg_temp.entries('reference') $$,
-  $$ values ('user'::text, 1, 'payout'::text, 1333::bigint), ('user', 1, 'stake', -1000),
-            ('user', 2, 'payout', 1333), ('user', 2, 'stake', -1000),
-            ('user', 3, 'payout', 1333), ('user', 3, 'stake', -1000),
+  $$ values ('user'::text, 1, 'payout'::text, 1000::bigint), ('user', 1, 'stake', -1000),
+            ('user', 2, 'payout', 1000), ('user', 2, 'stake', -1000),
+            ('user', 3, 'payout', 1000), ('user', 3, 'stake', -1000),
             ('user', 4, 'stake', -1000),
-            ('house', null, 'rounding', 1) $$,
-  'reference: every winner gets 13.33, the house gets 1 cent rounding'
+            ('house', null, 'fee', 100),
+            ('donation', null, 'donation', 900) $$,
+  'reference: winners get exactly their pledge back, the lost pledge is split 10 % house / 90 % donation'
 );
 
 select results_eq(
   $$ select right(user_id::text, 1)::int, result, payout_cents, progress_value
        from public.challenge_participants
       where challenge_id = pg_temp.c('reference') order by user_id $$,
-  $$ values (1, 'success'::text, 1333::bigint, 5000), (2, 'success', 1333, 6000),
-            (3, 'success', 1333, 21100), (4, 'failed', 0, 4999) $$,
+  $$ values (1, 'success'::text, 1000::bigint, 5000), (2, 'success', 1000, 6000),
+            (3, 'success', 1000, 21100), (4, 'failed', 0, 4999) $$,
   'reference: exactly reaching the goal wins, 1 m short loses'
 );
 
@@ -194,30 +195,30 @@ select is(
 
 select throws_ok(
   $$ insert into public.ledger_entries (account, challenge_id, type, amount_cents)
-     values ('house', pg_temp.c('reference'), 'rounding', 1) $$,
+     values ('house', pg_temp.c('reference'), 'fee', 100) $$,
   '23505', null, 'the house share of a challenge cannot be booked twice'
 );
 
 select throws_ok(
-  $$ select private.post_user_entry(pg_temp.u(1), 'payout', 1333, pg_temp.c('reference')) $$,
+  $$ select private.post_user_entry(pg_temp.u(1), 'payout', 1000, pg_temp.c('reference')) $$,
   '23505', null, 'a payout cannot be booked twice'
 );
 
 -- Fee > 0 ------------------------------------------------------------------------------------
 
--- 4 × 10.00, 1 winner, 10 % fee: lost 30.00, fee 3.00, winner gets 10.00 + 27.00.
+-- 4 × 10.00, 1 winner, 10 % house share: lost 30.00 → 3.00 house, 27.00 donated, winner gets 10.00.
 select pg_temp.finished('fee', 1, 1000, 1000, array[1, 2, 3, 4]);
 select pg_temp.run(2, 'fee', 7000);
 select public.settle_challenge(pg_temp.c('fee'));
 
 select results_eq(
   $$ select * from pg_temp.entries('fee') where type <> 'stake' $$,
-  $$ values ('user'::text, 2, 'payout'::text, 3700::bigint), ('house', null, 'fee', 300) $$,
-  'fee 10 %: the house gets 10 % of the lost pot, the winner the rest'
+  $$ values ('user'::text, 2, 'payout'::text, 1000::bigint), ('house', null, 'fee', 300),
+            ('donation', null, 'donation', 2700) $$,
+  'fee 10 %: the winner gets only the own pledge, the lost pledges are split 10 / 90'
 );
 
--- 3 × 10.01, 2 winners, 15 % fee: lost 10.01, fee floor(150.15) = 1.50, distributable 8.51,
--- bonus floor(4.255) = 4.25, rounding 1 cent.
+-- 3 × 10.01, 2 winners, 15 % house share: lost 10.01, house floor(150.15) = 1.50, donation 8.51.
 select pg_temp.finished('fee_rounding', 2, 1001, 1500, array[1, 2, 3]);
 select pg_temp.run(1, 'fee_rounding', 5000);
 select pg_temp.run(3, 'fee_rounding', 5000);
@@ -225,16 +226,16 @@ select public.settle_challenge(pg_temp.c('fee_rounding'));
 
 select results_eq(
   $$ select * from pg_temp.entries('fee_rounding') where type <> 'stake' $$,
-  $$ values ('user'::text, 1, 'payout'::text, 1426::bigint), ('user', 3, 'payout', 1426),
-            ('house', null, 'fee', 150), ('house', null, 'rounding', 1) $$,
-  'fee and rounding: winners get the floor, every leftover cent goes to the house'
+  $$ values ('user'::text, 1, 'payout'::text, 1001::bigint), ('user', 3, 'payout', 1001),
+            ('house', null, 'fee', 150), ('donation', null, 'donation', 851) $$,
+  'rounding: the house share is rounded down, every leftover cent is donated'
 );
 
 select is(
   (select min(payout_cents) from public.challenge_participants
     where result = 'success' and challenge_id in (pg_temp.c('fee'), pg_temp.c('fee_rounding'))),
-  1426::bigint,
-  'with a fee, winners still get at least their stake back'
+  1000::bigint,
+  'with a fee, winners get exactly their stake back (smallest stake of both)'
 );
 
 -- Pool special cases ---------------------------------------------------------------------
@@ -258,8 +259,9 @@ select public.settle_challenge(pg_temp.c('nobody'));
 
 select results_eq(
   $$ select * from pg_temp.entries('nobody') where type <> 'stake' $$,
-  $$ values ('house'::text, null::int, 'forfeit'::text, 1500::bigint) $$,
-  'nobody wins: all stakes go to the house as forfeit (no fee split)'
+  $$ values ('house'::text, null::int, 'fee'::text, 150::bigint),
+            ('donation', null, 'donation', 1350) $$,
+  'nobody wins: all pledges are split 10 % house / 90 % donation'
 );
 
 select results_eq(
@@ -286,8 +288,8 @@ select public.settle_challenge(pg_temp.c('single_lose'));
 select results_eq(
   $$ select * from pg_temp.entries('single_lose') $$,
   $$ values ('user'::text, 5, 'stake'::text, -2000::bigint),
-            ('house', null, 'forfeit', 2000) $$,
-  'single participant who loses: the stake goes to the house'
+            ('house', null, 'fee', 200), ('donation', null, 'donation', 1800) $$,
+  'single participant who loses: 10 % house, 90 % donated'
 );
 
 -- Steps: every day of the period must reach the target -----------------------------------
@@ -310,7 +312,7 @@ select public.settle_challenge(pg_temp.c('steps'));
 select results_eq(
   $$ select right(user_id::text, 1)::int, result, payout_cents from public.challenge_participants
       where challenge_id = pg_temp.c('steps') order by user_id $$,
-  $$ values (1, 'success'::text, 1000::bigint), (2, 'failed', 0) $$,
+  $$ values (1, 'success'::text, 500::bigint), (2, 'failed', 0) $$,
   'steps_daily: only all days count, implausible days never count'
 );
 
@@ -369,7 +371,7 @@ insert into ids select 'solo_open', (public.create_challenge('Mein Ziel', 'run_s
 select results_eq(
   $$ select mode, visibility, min_participants, max_participants, fee_bps, participant_count
        from public.challenges where title = 'Mein Ziel' $$,
-  $$ values ('pool'::text, 'private'::text, 1, null::int, 0, 0) $$,
+  $$ values ('pool'::text, 'private'::text, 1, null::int, 1000, 0) $$,
   'a pool can run with one person; creating it books nothing'
 );
 
@@ -448,8 +450,8 @@ select public.settle_challenge(pg_temp.c('solo_lose'));
 
 select results_eq(
   $$ select * from pg_temp.entries('solo_lose') $$,
-  $$ values ('user'::text, 6, 'stake'::text, -1500::bigint), ('house', null, 'forfeit', 1500) $$,
-  'alone in the pool, missed: the stake goes to the house account'
+  $$ values ('user'::text, 6, 'stake'::text, -1500::bigint), ('donation', null, 'donation', 1500) $$,
+  'alone in the pool, missed: the whole pledge is donated (house share 0 in this test)'
 );
 
 select results_eq(
@@ -655,8 +657,8 @@ select public.advance_challenges();
 
 select results_eq(
   $$ select * from pg_temp.entries('duo') $$,
-  $$ values ('user'::text, 2, 'payout'::text, 1400::bigint), ('user', 2, 'stake', -700),
-            ('user', 3, 'stake', -700) $$,
+  $$ values ('user'::text, 2, 'payout'::text, 700::bigint), ('user', 2, 'stake', -700),
+            ('user', 3, 'stake', -700), ('donation', null, 'donation', 700) $$,
   'the scheduler settles the challenge after the grace period'
 );
 

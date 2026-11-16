@@ -10,6 +10,7 @@ export const donationKeys = {
   result: (challengeId: string) => [...donationKeys.all, 'result', challengeId] as const,
   list: () => [...donationKeys.all, 'list'] as const,
   totals: () => [...donationKeys.all, 'totals'] as const,
+  community: () => [...donationKeys.all, 'community'] as const,
 };
 
 export type Ngo = { id: string; name: string };
@@ -152,6 +153,20 @@ export function useMyDonations() {
         amountCents: row.amount_cents,
         createdAt: row.created_at,
       }));
+    },
+  });
+}
+
+/** Everything donated by all users in the current month (one number, no names). */
+export function useCommunityDonations() {
+  return useQuery({
+    queryKey: donationKeys.community(),
+    queryFn: async (): Promise<number> => {
+      const { data, error } = await supabase.rpc('get_community_donations');
+      if (error) {
+        throw error;
+      }
+      return data;
     },
   });
 }

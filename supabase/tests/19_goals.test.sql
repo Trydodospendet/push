@@ -146,34 +146,36 @@ select pg_temp.logout();
 
 -- Window 0 --------------------------------------------------------------------------------------
 -- A (u1, 10.00, reached), B (u2, 30.00, reached), C (u3, 20.00, missed), D (u4, 10.00, missed).
--- Lost pot 30.00, winners' stakes 40.00 → shares 7.50 / 22.50.
+-- Reached goals get the own pledge back, missed ones are donated (house share 0 here).
 select pg_temp.goal('a', 1, 0, 1000);
 select pg_temp.goal('b', 2, 0, 3000);
 select pg_temp.goal('c', 3, 0, 2000);
 select pg_temp.goal('d', 4, 0, 1000, 20000);
+update public.challenges set fee_bps = 0 where id in (select id from ids);
 select pg_temp.run('a', 1, 5000);
 select pg_temp.run('b', 2, 6000);
 select pg_temp.run('d', 4, 6000);
 
-select is(public.settle_challenge(pg_temp.c('c')), true, 'settling one goal settles the whole window');
+select is(public.settle_challenge(pg_temp.c('c')), true, 'a missed goal can be settled');
+select public.settle_challenge(id) from ids where name in ('a', 'b', 'd');
 
 select results_eq(
   $$ select name, status from ids join public.challenges on challenges.id = ids.id order by name $$,
   $$ values ('a','settled'::text), ('b','settled'), ('c','settled'), ('d','settled') $$,
-  'every goal of the period is settled'
+  'every goal is settled on its own'
 );
 
 select results_eq(
   $$ select right(user_id::text, 1)::int, result, payout_cents from public.challenge_participants
       where challenge_id in (select id from ids) order by user_id $$,
-  $$ values (1,'success'::text,1750::bigint), (2,'success',5250), (3,'failed',0), (4,'failed',0) $$,
-  'winners get the stake plus a share in proportion to the stake, losers nothing'
+  $$ values (1,'success'::text,1000::bigint), (2,'success',3000), (3,'failed',0), (4,'failed',0) $$,
+  'winners get exactly their pledge back, losers nothing'
 );
 
 select is(
   (select balance_cents from public.wallets where user_id = pg_temp.u(2)),
-  (10000 - 3000 + 5250)::bigint,
-  'the wallet of a winner is credited'
+  10000::bigint,
+  'the wallet of a winner is whole again'
 );
 
 select results_eq(
@@ -185,7 +187,7 @@ select results_eq(
 select is(
   (select coalesce(sum(amount_cents), 0)::bigint from public.ledger_entries
     where account = 'house' and challenge_id in (select id from ids)),
-  0::bigint, 'with an even division and no fee the house keeps nothing'
+  0::bigint, 'without a house share the house keeps nothing'
 );
 
 select is(public.settle_challenge(pg_temp.c('a')), false, 'a second settlement does nothing');
@@ -202,20 +204,20 @@ select pg_temp.goal('g', 3, 1, 1000);
 select pg_temp.run('e', 1, 5000);
 select pg_temp.run('f', 2, 5000);
 update public.challenges set fee_bps = 1000 where id in (pg_temp.c('e'), pg_temp.c('f'), pg_temp.c('g'));
-select public.settle_challenge(pg_temp.c('g'));
--- lost 10.00, fee 1.00, distributable 9.00 over stakes 30.00 → shares 300 and 600.
+select public.settle_challenge(id) from ids where name in ('e', 'f', 'g');
+-- lost 10.00 → 1.00 house, 9.00 donated; winners only get their pledge back.
 select results_eq(
   $$ select right(user_id::text, 1)::int, payout_cents from public.challenge_participants
       where challenge_id in (pg_temp.c('e'), pg_temp.c('f'), pg_temp.c('g')) order by user_id $$,
-  $$ values (1, 1300::bigint), (2, 2600), (3, 0) $$,
-  'fee 10 %: it comes off the lost pot only'
+  $$ values (1, 1000::bigint), (2, 2000), (3, 0) $$,
+  'fee 10 %: winners are not charged, the lost pledge is split'
 );
 select results_eq(
   $$ select type, amount_cents from public.ledger_entries
       where account = 'house' and challenge_id in (pg_temp.c('e'), pg_temp.c('f'), pg_temp.c('g'))
       order by type, amount_cents $$,
-  $$ values ('fee'::text, 100::bigint), ('forfeit', 900), ('payout', -600), ('payout', -300) $$,
-  'house: the fee stays, the rest passes through to the winners'
+  $$ values ('fee'::text, 100::bigint) $$,
+  'house: only its 10 % of the lost pledge'
 );
 select results_eq(
   $$ select pg_temp.sum_of('e'), pg_temp.sum_of('f'), pg_temp.sum_of('g') $$,
@@ -226,12 +228,12 @@ select results_eq(
 -- Window 2: nobody reaches the goal ---------------------------------------------------------------
 select pg_temp.goal('h', 1, 2, 1000);
 select pg_temp.goal('i', 2, 2, 3000);
-select public.settle_challenge(pg_temp.c('h'));
+select public.settle_challenge(id) from ids where name in ('h', 'i');
 select results_eq(
   $$ select type, sum(amount_cents)::bigint from public.ledger_entries
       where account = 'house' and challenge_id in (pg_temp.c('h'), pg_temp.c('i')) group by type $$,
-  $$ values ('forfeit'::text, 4000::bigint) $$,
-  'nobody reached the goal: all stakes go to the house'
+  $$ values ('fee'::text, 400::bigint) $$,
+  'nobody reached the goal: the house gets 10 % of every pledge'
 );
 
 -- Window 3: alone and reached ---------------------------------------------------------------------

@@ -194,9 +194,7 @@ describe('challenges', () => {
 
     expect(await screen.findByText('Ein Lauf über mindestens 5 km')).toBeOnTheScreen();
     expect(
-      screen.getByText(
-        '• Manuelle Einträge zählen nicht – nur automatisch aufgezeichnete Daten.',
-      ),
+      screen.getByText('• Manuelle Einträge zählen nicht – nur automatisch aufgezeichnete Daten.'),
     ).toBeOnTheScreen();
     expect(
       screen.getByText('Die Teilnehmerliste siehst du, sobald du dabei bist.'),
@@ -205,7 +203,7 @@ describe('challenges', () => {
     await user.press(screen.getByRole('button', { name: 'Beitreten' }));
     expect(
       await screen.findByText(
-        'Du setzt 10,00 Credits. Erreichst du dein Ziel, bekommst du sie zurück plus deinen Anteil an den Einsätzen der anderen.',
+        'Du setzt 10,00 Credits Pfand. Erreichst du dein Ziel, bekommst du sie zurück.',
       ),
     ).toBeOnTheScreen();
     expect(screen.getByText('Dein Guthaben: 100,00 Credits')).toBeOnTheScreen();
@@ -223,7 +221,7 @@ describe('challenges', () => {
     expect(await screen.findByRole('button', { name: 'Challenge verlassen' })).toBeOnTheScreen();
     expect(screen.getByLabelText('Anna Lauf (du): offen')).toBeOnTheScreen();
     expect(screen.getByLabelText('Ben: offen')).toBeOnTheScreen();
-    expect(screen.getByLabelText('TOPF: 20,00 Credits')).toBeOnTheScreen();
+    expect(screen.getByLabelText('PFAND: 20,00 Credits')).toBeOnTheScreen();
   });
 
   it('shows the server error when the balance is too low', async () => {

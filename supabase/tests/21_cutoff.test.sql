@@ -6,8 +6,8 @@ select set_config('request.jwt.claims','{"sub":"00000000-0000-4000-8000-00000000
 create temp table goal as select * from public.create_goal_with_preferences('Sofortiges Ziel','run_total',5000,1000,(now() at time zone 'Europe/Berlin')::date,(now() at time zone 'Europe/Berlin')::date,false,false,null);
 select is((select sync_grace_hours from goal),0,'new goal has no grace period');
 select is((select status from goal),'active','immediate goal is active before the first health sync');
-update public.profiles set donate_default=true,default_ngo_id='00000000-0000-4000-a000-000000000001' where id=auth.uid();
-select is((select effective_donate from public.get_my_challenge_donation((select id from goal))),false,'later default changes do not alter the recorded choice');
+update public.profiles set donate_default=true,default_ngo_id='00000000-0000-4000-a000-000000000002' where id=auth.uid();
+select is((select effective_ngo_id from public.get_my_challenge_donation((select id from goal))),'00000000-0000-4000-a000-000000000001'::uuid,'later default changes do not alter the recorded organisation');
 select throws_ok($$select public.set_challenge_donation((select id from goal),true,'00000000-0000-4000-a000-000000000001')$$,'P0001','donation_locked','choice is locked as soon as the goal starts');
 update public.challenges set starts_at=now()-interval '2 days',ends_at=now()+interval '1 day' where id=(select id from goal);
 insert into public.activity_workouts(user_id,platform,source_record_id,activity_type,start_at,end_at,distance_m,duration_s,was_user_entered,is_valid)

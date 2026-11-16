@@ -2,7 +2,6 @@ import { StyleSheet, View } from 'react-native';
 
 import { Card, ErrorState, LoadingState, Text } from '@/components';
 import { de } from '@/i18n/de';
-import { formatAmount } from '@/lib/money';
 import { spacing } from '@/theme';
 
 import { useMyStats } from './api';
@@ -30,10 +29,6 @@ export function StatsCard({ userId }: { userId: string }) {
       value: de.stats.km(kmFormat.format(stats.data.totalDistanceM / 1000)),
     },
     { label: de.stats.totalWins, value: String(stats.data.wins) },
-    {
-      label: de.stats.totalWon,
-      value: `${formatAmount(stats.data.totalWonCents)} ${de.common.credits}`,
-    },
   ];
   return (
     <Card style={styles.stats}>
@@ -53,9 +48,6 @@ export function StatsCard({ userId }: { userId: string }) {
           </Text>
         </View>
       ))}
-      <Text variant="caption" color="textMuted">
-        {de.stats.totalWonHint}
-      </Text>
     </Card>
   );
 }

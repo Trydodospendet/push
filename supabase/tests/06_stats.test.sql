@@ -150,8 +150,8 @@ update public.challenges set fee_bps = 1000 where id = (select id from ids where
 select pg_temp.login('aaaaaaaa-0000-0000-0000-000000000001');
 select is(
   public.get_potential_win((select id from ids where name = 'pub')),
-  950::bigint,
-  'participant: stake 500 + (500 lost - 10 % fee) when the one other participant fails'
+  500::bigint,
+  'participant: the possible return is the own pledge, nothing from others'
 );
 select is(
   public.get_potential_win((select id from ids where name = 'solo')),
@@ -163,8 +163,8 @@ select pg_temp.logout();
 select pg_temp.login('cccccccc-0000-0000-0000-000000000003');
 select is(
   public.get_potential_win((select id from ids where name = 'pub')),
-  1400::bigint,
-  'non-participant is counted as one more participant: 500 + (1000 - 100)'
+  500::bigint,
+  'non-participant: the pledge that would be set'
 );
 select is(
   public.get_potential_win((select id from ids where name = 'priv')),

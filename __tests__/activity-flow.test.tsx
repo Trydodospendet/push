@@ -54,13 +54,16 @@ describe('activity tab', () => {
     ['/', 'Lauf aufzeichnen'],
     ['/activity', 'Lauf aufzeichnen'],
     ['/settings/connections', 'GPS-Lauf starten'],
-  ])('opens the recorder from %s instead of a nonexistent run detail', async (initialUrl, label) => {
-    const user = userEvent.setup();
-    await renderRouter('./app', { initialUrl });
-    await user.press(await screen.findByRole('button', { name: label }));
-    expect(await screen.findByRole('button', { name: 'Lauf starten' })).toBeOnTheScreen();
-    expect(screen).toHavePathname('/run');
-  });
+  ])(
+    'opens the recorder from %s instead of a nonexistent run detail',
+    async (initialUrl, label) => {
+      const user = userEvent.setup();
+      await renderRouter('./app', { initialUrl });
+      await user.press(await screen.findByRole('button', { name: label }));
+      expect(await screen.findByRole('button', { name: 'Lauf starten' })).toBeOnTheScreen();
+      expect(screen).toHavePathname('/run');
+    },
+  );
 
   it('opens from the tab bar and explains the empty state', async () => {
     const user = userEvent.setup();

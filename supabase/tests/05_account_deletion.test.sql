@@ -191,7 +191,7 @@ select ok(public.settle_challenge(pg_temp.c('running_ranked')), 'running ranked 
 select is(
   (select payout_cents from public.challenge_participants
     where challenge_id = pg_temp.c('running_ranked') and user_id = pg_temp.u(2)),
-  3000::bigint, 'running ranked: the winner gets the forfeited stake of user 1 as well');
+  1000::bigint, 'running ranked: the winner gets only the own pledge back');
 select is(pg_temp.ledger_sum('running_ranked'), 0::bigint,
   'running ranked: all bookings still add up to 0');
 
@@ -210,8 +210,8 @@ select public.settle_challenge(pg_temp.c('running_solo'));
 select results_eq(
   $$ select account, type, amount_cents from public.ledger_entries
       where challenge_id = pg_temp.c('running_solo') order by account $$,
-  $$ values ('house'::text, 'forfeit'::text, 1000::bigint), ('user', 'stake', -1000) $$,
-  'running solo: the stake goes to the house and the bookings add up to 0');
+  $$ values ('donation'::text, 'donation'::text, 1000::bigint), ('user', 'stake', -1000) $$,
+  'running solo: the pledge is donated and the bookings add up to 0');
 
 -- The ledger stays append-only.
 select throws_ok(
