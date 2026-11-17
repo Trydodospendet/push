@@ -1,9 +1,8 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { Animated, Easing, StyleSheet, useAnimatedValue, View } from 'react-native';
-import Svg, { ClipPath, Defs, Image as SvgImage, Path } from 'react-native-svg';
+import Svg, { Circle } from 'react-native-svg';
 
-import { furImages } from '@/features/fur/images';
-import { layout, motion } from '@/theme';
+import { colors, layout, motion } from '@/theme';
 
 import { clampProgress } from './progress-bar';
 
@@ -19,22 +18,25 @@ export type ProgressRingProps = {
   spin?: Animated.Value;
 };
 
-const { size, holeShare } = layout.ring;
+const GLOW_PAD = 10;
+const { size, holeShare, stroke } = layout.ring;
 const middle = size / 2;
+const GLOW_LAYERS = [
+  { extra: 18, opacity: 0.08 },
+  { extra: 9, opacity: 0.16 },
+] as const;
+const radius = (size - stroke) / 2 - GLOW_PAD;
+const circumference = 2 * Math.PI * radius;
 
-/** Pie slice from twelve o'clock clockwise; used as the mask that reveals the filled ring. */
-export function wedgePath(progress: number): string {
-  const angle = clampProgress(progress) * 2 * Math.PI;
-  const reach = size;
-  const endX = middle + reach * Math.sin(angle);
-  const endY = middle - reach * Math.cos(angle);
-  const large = angle > Math.PI ? 1 : 0;
-  return `M ${middle} ${middle} L ${middle} ${middle - reach} A ${reach} ${reach} 0 ${large} 1 ${endX} ${endY} Z`;
+/** Length of the lit arc and of the gap behind it, for a stroke dash array. */
+export function arcDash(progress: number): [number, number] {
+  const length = clampProgress(progress) * circumference;
+  return [length, circumference - length];
 }
 
 /**
- * Fur ring: a dimmed ring underneath and the full-colour ring on top, revealed by a circular
- * mask up to the progress.
+ * Slim lime ring: a dark track and the lit arc on top, with a soft glow made of two wider,
+ * transparent strokes underneath. The arc starts at twelve o'clock and runs clockwise.
  */
 export function ProgressRing({
   progress,
@@ -62,7 +64,7 @@ export function ProgressRing({
     };
   }, [animated, clamped]);
 
-  const full = shown >= 0.999;
+  const [lit, gap] = arcDash(shown);
 
   return (
     <View
@@ -90,19 +92,45 @@ export function ProgressRing({
         ]}
       >
         <Svg width={size} height={size}>
-          <Defs>
-            <ClipPath id="ringFill">
-              <Path d={wedgePath(shown)} />
-            </ClipPath>
-          </Defs>
-          <SvgImage href={furImages.ring} width={size} height={size} opacity={0.22} />
+          <Circle
+            cx={middle}
+            cy={middle}
+            r={radius}
+            stroke={colors.surfaceRaised}
+            strokeWidth={stroke}
+            fill="none"
+          />
           {shown > 0 ? (
-            <SvgImage
-              href={furImages.ring}
-              width={size}
-              height={size}
-              clipPath={full ? undefined : 'url(#ringFill)'}
-            />
+            <>
+              {GLOW_LAYERS.map((layer) => (
+                <Circle
+                  key={layer.extra}
+                  cx={middle}
+                  cy={middle}
+                  r={radius}
+                  stroke={colors.accent}
+                  strokeOpacity={layer.opacity}
+                  strokeWidth={stroke + layer.extra}
+                  strokeLinecap="round"
+                  strokeDasharray={`${lit} ${gap}`}
+                  rotation={-90}
+                  origin={`${middle}, ${middle}`}
+                  fill="none"
+                />
+              ))}
+              <Circle
+                cx={middle}
+                cy={middle}
+                r={radius}
+                stroke={colors.accent}
+                strokeWidth={stroke}
+                strokeLinecap="round"
+                strokeDasharray={`${lit} ${gap}`}
+                rotation={-90}
+                origin={`${middle}, ${middle}`}
+                fill="none"
+              />
+            </>
           ) : null}
         </Svg>
       </Animated.View>

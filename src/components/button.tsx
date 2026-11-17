@@ -1,6 +1,4 @@
-import { ActivityIndicator, Image, Pressable, StyleSheet } from 'react-native';
-
-import { furImages } from '@/features/fur/images';
+import { ActivityIndicator, Pressable, StyleSheet } from 'react-native';
 
 import { hapticTap } from '@/features/preferences/haptics';
 import { de } from '@/i18n/de';
@@ -62,16 +60,6 @@ export function Button({
         disabled && styles.disabled,
       ]}
     >
-      {variant === 'primary' ? (
-        <Image
-          source={furImages.pill}
-          resizeMode="cover"
-          fadeDuration={0}
-          accessibilityElementsHidden
-          importantForAccessibility="no"
-          style={StyleSheet.absoluteFill}
-        />
-      ) : null}
       {loading ? (
         <ActivityIndicator color={colors[contentColor]} />
       ) : (
@@ -102,7 +90,7 @@ const styles = StyleSheet.create({
     borderColor: colors.textMuted,
   },
   glowing: {
-    boxShadow: [{ offsetX: 0, offsetY: 0, blurRadius: 12, spreadDistance: 1, color: glow.soft }],
+    boxShadow: [{ offsetX: 0, offsetY: 0, blurRadius: 18, spreadDistance: 1, color: glow.button }],
   },
   danger: {
     borderWidth: layout.borderWidth,

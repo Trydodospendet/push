@@ -20,7 +20,12 @@ export type ColorToken = keyof typeof colors;
 export const glow = {
   soft: 'rgba(198, 255, 0, 0.10)',
   strong: 'rgba(198, 255, 0, 0.35)',
+  /** Halo around the main button. */
+  button: 'rgba(198, 255, 0, 0.30)',
 } as const;
 
 /** Dimmed backdrop behind sheets (the background color with 70 % opacity). */
 export const scrim = 'rgba(10, 10, 10, 0.7)';
+
+/** Opacity of the lime light at the very top of a screen; it fades to nothing below. */
+export const topLightOpacity = 0.09;

@@ -1,17 +1,19 @@
-import { wedgePath } from './progress-ring';
+import { arcDash } from './progress-ring';
 
-describe('wedgePath', () => {
-  it('stays closed and ends at the top without progress', () => {
-    expect(wedgePath(0)).toContain('0 1 140 -140');
-    expect(wedgePath(Number.NaN)).toBe(wedgePath(0));
+describe('arcDash', () => {
+  it('lights nothing without progress', () => {
+    expect(arcDash(0)[0]).toBe(0);
+    expect(arcDash(Number.NaN)[0]).toBe(0);
   });
 
-  it('uses the large arc beyond half of the goal', () => {
-    expect(wedgePath(0.25)).toContain(' 0 0 1 ');
-    expect(wedgePath(0.75)).toContain(' 0 1 1 ');
+  it('splits the circumference between arc and gap', () => {
+    const [lit, gap] = arcDash(0.25);
+    const [full] = arcDash(1);
+    expect(lit).toBeCloseTo(full / 4);
+    expect(lit + gap).toBeCloseTo(full);
   });
 
   it('clamps values outside of the range', () => {
-    expect(wedgePath(2)).toBe(wedgePath(1));
+    expect(arcDash(2)).toEqual(arcDash(1));
   });
 });

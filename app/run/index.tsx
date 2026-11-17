@@ -123,6 +123,7 @@ function IdleRun({ timezone }: { timezone: string }) {
   const gps = useGps();
   const session = useSession();
   const { height } = useWindowDimensions();
+  const insets = useSafeAreaInsets();
   const [starting, setStarting] = useState(false);
   const [outcome, setOutcome] = useState<StartOutcome | null>(null);
   const message = outcome === null ? null : startMessage(outcome);
@@ -133,7 +134,7 @@ function IdleRun({ timezone }: { timezone: string }) {
       contentContainerStyle={{ paddingTop: Math.min(224, Math.round(height * 0.4)) }}
       showsVerticalScrollIndicator={false}
     >
-      <View style={styles.sheet}>
+      <View style={[styles.sheet, { paddingBottom: spacing.xl + insets.bottom }]}>
         <FadeIn style={styles.sheetSection}>
           <Button
             label={de.run.start}

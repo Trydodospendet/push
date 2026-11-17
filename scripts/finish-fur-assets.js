@@ -108,12 +108,42 @@ function defringe(data, w, h) {
   return out;
 }
 
-/** Floor shadows and white haze are grey and half transparent: drop them. */
-function dropHaze(data) {
-  for (let i = 0; i < data.length; i += 4) {
-    const [, s, v] = toHsv(data[i], data[i + 1], data[i + 2]);
-    if (data[i + 3] < 235 && s < 0.14 && v > 0.45) data[i + 3] = 0;
+/**
+ * Removes the cut-out background: starting at the transparent outside, every grey, white or
+ * half-transparent pixel that touches it becomes transparent (floor shadows, white haze, bars
+ * between letters). Pixels inside the fur, such as the eyes, are not reached and stay.
+ */
+function dropBackground(data, w, h, creature) {
+  const grey = (i) => {
+    const [, sat, val] = toHsv(data[i], data[i + 1], data[i + 2]);
+    return data[i + 3] < 250 || (creature ? sat < 0.18 && val > 0.55 : sat < 0.3 && val > 0.2);
+  };
+  const seen = new Uint8Array(w * h);
+  const stack = [];
+  for (let p = 0; p < w * h; p++) {
+    if (data[p * 4 + 3] < 12) {
+      seen[p] = 1;
+      stack.push(p);
+    }
   }
+  for (let x = 0; x < w; x++) for (const y of [0, h - 1]) if (!seen[y * w + x]) { seen[y * w + x] = 1; stack.push(y * w + x); }
+  for (let y = 0; y < h; y++) for (const x of [0, w - 1]) if (!seen[y * w + x]) { seen[y * w + x] = 1; stack.push(y * w + x); }
+  while (stack.length) {
+    const p = stack.pop();
+    const x = p % w;
+    const y = (p - x) / w;
+    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+      const xx = x + dx;
+      const yy = y + dy;
+      if (xx < 0 || yy < 0 || xx >= w || yy >= h || seen[yy * w + xx]) continue;
+      const i = (yy * w + xx) * 4;
+      if (!grey(i)) continue;
+      seen[yy * w + xx] = 1;
+      data[i + 3] = 0;
+      stack.push(yy * w + xx);
+    }
+  }
+  for (let p = 0; p < w * h; p++) if (seen[p]) data[p * 4 + 3] = 0;
 }
 
 async function load(name, height) {
@@ -140,7 +170,8 @@ async function main() {
     const kind = kindOf(name);
     const height = SMALL[name] ?? HEIGHT[kind];
     const img = await load(name, height);
-    if (kind === 'creature') dropHaze(img.data);
+    dropBackground(img.data, img.w, img.h, kind === 'creature');
+    img.data = defringe(img.data, img.w, img.h);
     img.data = defringe(img.data, img.w, img.h);
     loaded[name] = img;
   }

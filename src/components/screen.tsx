@@ -8,8 +8,26 @@ import {
   type ViewStyle,
 } from 'react-native';
 import { SafeAreaView, type Edge } from 'react-native-safe-area-context';
+import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 
-import { colors, spacing } from '@/theme';
+import { colors, spacing, topLightOpacity } from '@/theme';
+
+/** Faint lime light falling from the top edge; decorative only. */
+function TopLight() {
+  return (
+    <View pointerEvents="none" style={styles.topLight}>
+      <Svg width="100%" height="100%">
+        <Defs>
+          <LinearGradient id="topLight" x1="0" y1="0" x2="0" y2="1">
+            <Stop offset="0" stopColor={colors.accent} stopOpacity={topLightOpacity} />
+            <Stop offset="1" stopColor={colors.accent} stopOpacity={0} />
+          </LinearGradient>
+        </Defs>
+        <Rect width="100%" height="100%" fill="url(#topLight)" />
+      </Svg>
+    </View>
+  );
+}
 
 export const ScreenHeaderContext = createContext(false);
 
@@ -41,6 +59,7 @@ export function Screen({
       edges={edges ?? (hasHeader ? ['bottom', 'left', 'right'] : undefined)}
       testID={testID}
     >
+      <TopLight />
       {scroll ? (
         <ScrollView
           contentContainerStyle={[styles.content, styles.scrollContent, contentStyle]}
@@ -64,6 +83,13 @@ const styles = StyleSheet.create({
   content: {
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
+  },
+  topLight: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 240,
   },
   fill: {
     flex: 1,

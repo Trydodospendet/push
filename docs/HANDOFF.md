@@ -1,5 +1,12 @@
 # Übergabe – Branch `ausbau`
 
+## Korrekturen nach Handytest (17.11.2026)
+
+- Fortschrittsring jetzt ein schlanker Lime-Ring (SVG-Bogen, Glow aus zwei transparenten Strichen, 252 pt, Strich 12, Mitte 70 %); das Fellbild `ring` und `pill` sind entfernt. Hauptknopf wieder normal Lime mit weichem Glow (`glow.button`).
+- `finish-fur-assets.js`: neue Funktion `dropBackground` entfernt grauen/weißen Hintergrund und Schatten per Flutfüllung von außen, Alpha-Rand zweimal eingezogen. Das weiße Balken-Problem bei `kmh` war Restweiß zwischen den Buchstaben; behoben.
+- Tab-Leiste: Höhe und Abstand unten aus `useSafeAreaInsets`; Lauf-Startseite bekommt `insets.bottom`. Aktiver Tab leuchtet dezent, jeder `Screen` hat ein leichtes Lime-Licht oben.
+- Auf dem Lauf-Startbildschirm gibt es keinen eigenen Ring; gemeint war vermutlich der Home-Ring, der jetzt überall derselbe schlanke Ring ist. Offen: auf dem Gerät prüfen (Pushy-Hörnerspitzen sind durch das Freistellen minimal kürzer).
+
 ## Fell-Optik (17.11.2026)
 
 - Bilder aus `assets/fur/*.webp` (ca. 0,7 MB). Quellen und Zuschnitt liegen unter `marketing/fur-quellen/` (nicht im Build); `scripts/cut-fur-assets.py` schneidet frei, `scripts/finish-fur-assets.js` (braucht `npm i --no-save sharp`) gleicht Farbe an, zieht helle Ränder ein und verkleinert.
