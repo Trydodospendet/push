@@ -22,7 +22,7 @@ select jsonb_build_object(
 select is(private.real_money_allowed('00000000-0000-4000-8000-000000000061'), false, 'off by default');
 select throws_ok(
   $$ select public.rm_register_payment('00000000-0000-4000-8000-000000000061', 'pi_off', 500, (select g from goal_json)) $$,
-  'real_money_disabled', null, 'a reservation is refused while the switch is off');
+  'P0001', 'real_money_disabled', 'a reservation is refused while the switch is off');
 
 -- 2. On, but only for listed testers.
 update private.settings set real_money_enabled = true;
@@ -35,13 +35,13 @@ select is(private.real_money_allowed('00000000-0000-4000-8000-000000000061'), tr
 select throws_ok(
   $$ select public.rm_register_payment('00000000-0000-4000-8000-000000000061', 'pi_long', 500,
        (select g || jsonb_build_object('end_date', (now() at time zone 'Europe/Berlin')::date + 6) from goal_json)) $$,
-  'real_money_too_long', null, 'more than 6 days is refused');
+  'P0001', 'real_money_too_long', 'more than 6 days is refused');
 
 -- 4. Reserve: the goal exists after Stripe confirmed, the wallet is untouched.
 select public.rm_register_payment('00000000-0000-4000-8000-000000000061', 'pi_reached', 500, (select g from goal_json));
 select public.rm_register_payment('00000000-0000-4000-8000-000000000062', 'pi_missed', 500, (select g from goal_json));
 select is(public.rm_apply_intent_event('evt_1', 'payment_intent.amount_capturable_updated', 'pi_reached'), 'ok', 'reservation confirmed');
-select public.rm_apply_intent_event('evt_2', 'payment_intent.amount_capturable_updated', 'pi_missed');
+select count(*) as ignored from (select public.rm_apply_intent_event('evt_2', 'payment_intent.amount_capturable_updated', 'pi_missed')) as x;
 select is(
   (select status from public.payments where payment_intent_id = 'pi_reached'), 'reserved', 'payment is reserved');
 select is(
@@ -57,7 +57,7 @@ select is((select count(*) from public.challenges where id in (select challenge_
 
 -- 6. Settlement: user 61 reached the goal, user 62 did not.
 update public.challenges
-   set starts_at = now() - interval '3 days', ends_at = now() - interval '2 days', status = 'settling'
+   set starts_at = now() - interval '3 days', ends_at = now() - interval '2 days', status = 'settling', sync_grace_hours = 24
  where id in (select challenge_id from public.payments);
 insert into public.activity_workouts (user_id, platform, source_record_id, activity_type,
   start_at, end_at, distance_m, duration_s, was_user_entered, is_valid)
@@ -80,8 +80,8 @@ select results_eq(
 
 -- 8. An expired reservation is "not secured": cancelled by Stripe, nothing is charged.
 select public.rm_register_payment('00000000-0000-4000-8000-000000000061', 'pi_expired', 500, (select g from goal_json));
-select public.rm_apply_intent_event('evt_3', 'payment_intent.amount_capturable_updated', 'pi_expired');
-select public.rm_apply_intent_event('evt_4', 'payment_intent.canceled', 'pi_expired');
+select count(*) as ignored from (select public.rm_apply_intent_event('evt_3', 'payment_intent.amount_capturable_updated', 'pi_expired')) as x;
+select count(*) as ignored from (select public.rm_apply_intent_event('evt_4', 'payment_intent.canceled', 'pi_expired')) as x;
 select is(
   (select status || '/' || coalesce(pending_action, '-') from public.payments where payment_intent_id = 'pi_expired'),
   'expired/-', 'expired reservation: no action, nothing charged');

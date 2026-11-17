@@ -1,7 +1,7 @@
 -- Community numbers: honest aggregates and anonymous events.
 begin;
 create extension if not exists pgtap with schema extensions;
-select plan(5);
+select plan(6);
 
 insert into auth.users (id, email, aud, role)
 values ('00000000-0000-4000-8000-000000000051', 'community@pgtap.test', 'authenticated', 'authenticated');
