@@ -49,3 +49,8 @@ google-services.json
 *firebase-adminsdk*.json
 *service-account*.json
 !google-services.json
+
+# Marketing sources, store bundles and local attachments
+marketing/
+*.aab
+.codex-attachments/

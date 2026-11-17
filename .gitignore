@@ -44,3 +44,8 @@ yarn-error.*
 
 # Firebase config for push (see docs/PUSH.md)
 google-services.json
+
+# Marketing sources, store bundles and local attachments
+marketing/
+*.aab
+.codex-attachments/
