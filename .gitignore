@@ -49,3 +49,8 @@ google-services.json
 marketing/
 *.aab
 .codex-attachments/
+
+# Upload-Schluessel, nie hochladen
+credentials.json
+credentials/
+*.jks
