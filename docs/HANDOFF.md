@@ -1,5 +1,11 @@
 # Übergabe – Branch `ausbau`
 
+## Fell-Optik (17.11.2026)
+
+- Bilder aus `assets/fur/*.webp` (ca. 0,7 MB). Quellen und Zuschnitt liegen unter `marketing/fur-quellen/` (nicht im Build); `scripts/cut-fur-assets.py` schneidet frei, `scripts/finish-fur-assets.js` (braucht `npm i --no-save sharp`) gleicht Farbe an, zieht helle Ränder ein und verkleinert.
+- `FurNumber` (Kilometer, Tempo, Zielfortschritt, Ergebnis), `FurIcon` (Flamme, Pokal, Herz, Tab-Symbole), Fell-Ring mit Kreismaske in `ProgressRing` (per react-native-svg, drehbar wie zuvor), Pill als Hintergrund der Hauptknöpfe, `Pushy` als Bild-Posen mit Überblendung (sit, wave, run, dizzy, sad, cheer, sleep), `push.webp` auf dem Welcome-Bildschirm. Alle Bilder werden im Wurzel-Layout vorab geladen (`FurPreload`).
+- Keine neue native Bibliothek; App-Icon und Splash unverändert. Offen: Anzeige auf einem echten Gerät prüfen (Lesbarkeit der Knopftexte, Ring-Größe).
+
 ## Schnelle Bedienung und Fidget-Gefühl (16.11.2026)
 
 - **Zwei Schritte:** Home zeigt ohne Ziel drei große Karten (3 km heute, 8.000 Schritte heute, 10 km diese Woche; Konfiguration `QUICK_GOALS` in `src/config/app.ts`) plus „Eigenes Ziel“ (das bisherige Formular). Antippen öffnet `PledgeSheet` (Pfand 1–50, Standard 5, +/−), `HoldButton` (0,8 s gedrückt halten, Haptik-Ticks, Erfolgsanimation) legt das Ziel über `create_goal_with_preferences` an (Start heute, Ende heute bzw. Sonntag). Mit Screenreader genügt Doppeltippen.
@@ -161,3 +167,10 @@
 4. Server-Push auf einem installierten Android-Build mit Firebase-Konfiguration prüfen. Firebase, EAS-Zugangsdaten, Edge Function und Cron sind eingerichtet. Sentry ist optional.
 5. Einladungsseite `docs/legal/i.html` und aktualisierten Datenschutz auf Netlify veröffentlichen. Datenschutz bei Bedarf um die lokale Health-Connect-Streckenanzeige ergänzen und das Vordergrunddienst-Formular der Play Console ausfüllen ([Release §2.8a](RELEASE.md)).
 6. Bei Bedarf die NGO-Platzhalter in Supabase ersetzen und Einsprüche wie im [Archiv](HANDOFF_ARCHIV.md) beschrieben bearbeiten.
+
+## Fell-Optik (Branch ausbau)
+
+- Bilder: `assets/fur/*.webp` (ca. 0,7 MB), erzeugt mit `scripts/cut-fur-assets.py` (Freistellen) und `scripts/finish-fur-assets.js` (Farbe der Elemente an die Ziffern angleichen, Rand einziehen, verkleinern; braucht `npm i --no-save sharp`). Quellen liegen in `marketing/fur-quellen/` und sind von Git und EAS ausgeschlossen.
+- `FurNumber` (Ziffern-Bilder, Komma, Einheit, Hüpfen, Fallback auf Text), `FurIcon`, `FurPreload` (lädt alle Bilder beim Start), `Pushy` (Posen mit Überblendung: sit, wave, run, dizzy, sad, cheer, sleep).
+- Fell-Ring mit Kreismaske (`ProgressRing`), Flamme im Streak, Pille als Hauptknopf, Pokal/Haus/Schuh in der Tab-Leiste, Herz beim Spendenzähler. App-Icon und nativer Splash unverändert.
+- Kein neuer nativer Code, ein neuer Build ist nur nötig, damit die Bilder mitgepackt werden.

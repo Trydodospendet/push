@@ -150,7 +150,6 @@ describe('pool', () => {
   });
 
   it('lists a missed pool as finished and shows the lost stake', async () => {
-    const user = userEvent.setup();
     const missed = settled({
       id: 'pool-2',
       creator_id: USER_ID,

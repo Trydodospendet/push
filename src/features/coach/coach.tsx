@@ -27,13 +27,17 @@ import { useLiveSpeed } from '@/features/gps/use-live-speed';
 import { DEFAULT_TIMEZONE } from '@/config/app';
 import { addDays, toLocalDate } from '@/lib/dates';
 import { secureStorage } from '@/lib/secure-storage';
+import { FurNumber } from '@/features/fur/fur-number';
 import { de } from '@/i18n/de';
 import { colors, radius, spacing } from '@/theme';
-import { coachStage } from './model';
+import { coachStage, isNight } from './model';
+import type { PushyPose } from '@/features/fur/images';
 import { hapticSelect, hapticTap } from '@/features/preferences/haptics';
 import { useMotionEnabled } from '@/features/preferences/motion';
 import { playSound } from '@/features/preferences/sounds';
-import { Mascot } from './mascot';
+import { Pushy } from './pushy';
+const IDLE_MS = 5 * 60 * 1000;
+const WAVE_MS = 1400;
 const memorySchema = z.object({
   days: z.array(z.string()),
   startedDay: z.string().optional(),
@@ -84,7 +88,11 @@ export function Coach() {
     x: Math.max(8, width - 90),
     y: Math.max(insets.top, height - insets.bottom - 190),
   });
-  const [gaze, setGaze] = useState(0);
+  const [mood, setMood] = useState<'won' | 'missed' | null>(null);
+  const [waving, setWaving] = useState(false);
+  const [idle, setIdle] = useState(false);
+  const [activity, setActivity] = useState(0);
+  const [night, setNight] = useState(() => isNight(new Date().getHours()));
   const [bubbleLeft, setBubbleLeft] = useState(-130);
   const spinOnce = useCallback(() => {
     if (!motionOn) return;
@@ -99,6 +107,9 @@ export function Coach() {
   const poke = useCallback(() => {
     hapticTap();
     playSound('pop');
+    setIdle(false);
+    setActivity((value) => value + 1);
+    setWaving(true);
     pokes.current += 1;
     setMessage(de.coach.pokes[pokes.current % de.coach.pokes.length]);
     if (!motionOn) return;
@@ -107,7 +118,7 @@ export function Coach() {
       Animated.timing(hop, { toValue: 1, duration: 130, useNativeDriver: true }),
       Animated.timing(hop, { toValue: 2, duration: 170, useNativeDriver: true }),
     ]).start();
-  }, [hop, motionOn]);
+  }, [hop, motionOn, setIdle, setActivity, setWaving]);
   /** Shaking Pushy to and fro makes it dizzy: one spin and a complaint. */
   const dizzy = useCallback(() => {
     hapticSelect();
@@ -169,7 +180,6 @@ export function Coach() {
               Math.min(height - insets.bottom - 150, origin.current.y + g.dy),
             ),
           });
-          setGaze(g.dx > 0 ? 2 : -2);
         },
         onPanResponderRelease: (_, g) => {
           const next = {
@@ -202,7 +212,11 @@ export function Coach() {
   }, [width, height, insets.top, insets.bottom, position, bounds]);
   useEffect(() => {
     const sub = AppState.addEventListener('change', (state) => {
-      if (state === 'active') setVisit((v) => v + 1);
+      if (state === 'active') {
+        setVisit((v) => v + 1);
+        setIdle(false);
+        setActivity((value) => value + 1);
+      }
     });
     return () => sub.remove();
   }, []);
@@ -272,6 +286,7 @@ export function Coach() {
       handled.current = visit;
       setStage(coachStage(activeDays.filter((day) => day >= startedDay).length));
       setMessage(text);
+      setMood(text === de.coach.won ? 'won' : text === de.coach.missed ? 'missed' : null);
       await secureStorage.setItem(
         key,
         JSON.stringify({
@@ -301,7 +316,10 @@ export function Coach() {
   ]);
   useEffect(() => {
     if (!message) return;
-    const timer = setTimeout(() => setMessage(null), 10000);
+    const timer = setTimeout(() => {
+      setMessage(null);
+      setMood(null);
+    }, 10000);
     return () => clearTimeout(timer);
   }, [message]);
   useEffect(() => {
@@ -310,6 +328,7 @@ export function Coach() {
       const next = (lastQuote.current + 1) % de.challengeStart.quotes.length;
       lastQuote.current = next;
       setMessage(de.challengeStart.quotes[next]);
+      setMood(null);
     }, 60000);
     return () => clearInterval(timer);
   }, []);
@@ -333,10 +352,8 @@ export function Coach() {
       ]),
     );
     animation.start();
-    const eyes = setInterval(() => setGaze((g) => (g === 2 ? -2 : 2)), 4000);
     return () => {
       animation.stop();
-      clearInterval(eyes);
       bounce.setValue(0);
     };
   }, [motionOn, dragging, bounce]);
@@ -352,6 +369,32 @@ export function Coach() {
     }, 18000);
     return () => clearInterval(timer);
   }, [hidden, motionOn, speedMode, wiggle]);
+  useEffect(() => {
+    if (!waving) return;
+    const timer = setTimeout(() => setWaving(false), WAVE_MS);
+    return () => clearTimeout(timer);
+  }, [waving]);
+  useEffect(() => {
+    const timer = setTimeout(() => setIdle(true), IDLE_MS);
+    return () => clearTimeout(timer);
+  }, [activity]);
+  useEffect(() => {
+    const timer = setInterval(() => setNight(isNight(new Date().getHours())), 60000);
+    return () => clearInterval(timer);
+  }, []);
+  const pose: PushyPose = dragging
+    ? 'dizzy'
+    : night || idle
+      ? 'sleep'
+      : message && mood === 'missed'
+        ? 'sad'
+        : message && mood === 'won'
+          ? 'cheer'
+          : waving
+            ? 'wave'
+            : recording
+              ? 'run'
+              : 'sit';
   const speed =
     showingSpeed && recording ? currentSpeed(recorder.points, now, recorder.segment) : previewSpeed;
   if (hidden)
@@ -383,9 +426,7 @@ export function Coach() {
       >
         {speedMode ? (
           <View style={styles.speed}>
-            <Text variant="heading" color="accent">
-              {formatSpeed(speed)}
-            </Text>
+            <FurNumber value={formatSpeed(speed)} height={26} maxWidth={72} />
             <Text variant="caption">{de.coach.speed}</Text>
           </View>
         ) : (
@@ -395,7 +436,10 @@ export function Coach() {
               transform: [
                 {
                   translateY: Animated.add(
-                    bounce.interpolate({ inputRange: [0, 1], outputRange: [0, -3] }),
+                    bounce.interpolate({
+                      inputRange: [0, 1],
+                      outputRange: [0, recording ? -9 : -3],
+                    }),
                     Animated.add(
                       celebration.interpolate({ inputRange: [0, 1, 2], outputRange: [0, -17, 0] }),
                       hop.interpolate({ inputRange: [0, 1, 2], outputRange: [0, -22, 0] }),
@@ -419,7 +463,7 @@ export function Coach() {
               ],
             }}
           >
-            <Mascot stage={stage} dizzy={dragging} gaze={gaze} />
+            <Pushy pose={pose} scale={0.9 + stage * 0.05} />
           </Animated.View>
         )}
       </View>

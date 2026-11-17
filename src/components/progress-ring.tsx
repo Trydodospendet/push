@@ -1,7 +1,9 @@
 import { useEffect, useState, type ReactNode } from 'react';
 import { Animated, Easing, StyleSheet, useAnimatedValue, View } from 'react-native';
+import Svg, { ClipPath, Defs, Image as SvgImage, Path } from 'react-native-svg';
 
-import { colors, layout, motion, radius } from '@/theme';
+import { furImages } from '@/features/fur/images';
+import { layout, motion } from '@/theme';
 
 import { clampProgress } from './progress-bar';
 
@@ -13,22 +15,26 @@ export type ProgressRingProps = {
   /** Content in the middle of the ring, e.g. the big number. */
   children?: ReactNode;
   testID?: string;
-  /** Rotation of the bars in degrees (native-driven, for the fidget ring). */
+  /** Rotation of the ring in degrees (native-driven, for the fidget ring). */
   spin?: Animated.Value;
 };
 
-const { size, segments, segmentWidth, segmentLength } = layout.ring;
-const radiusToSegmentCenter = size / 2 - segmentLength / 2;
+const { size, holeShare } = layout.ring;
+const middle = size / 2;
 
-/** How many bars are lime for a share of the goal; a tiny non-zero share lights one bar. */
-export function filledSegments(progress: number): number {
-  const clamped = clampProgress(progress);
-  return clamped > 0 ? Math.max(1, Math.round(clamped * segments)) : 0;
+/** Pie slice from twelve o'clock clockwise; used as the mask that reveals the filled ring. */
+export function wedgePath(progress: number): string {
+  const angle = clampProgress(progress) * 2 * Math.PI;
+  const reach = size;
+  const endX = middle + reach * Math.sin(angle);
+  const endY = middle - reach * Math.cos(angle);
+  const large = angle > Math.PI ? 1 : 0;
+  return `M ${middle} ${middle} L ${middle} ${middle - reach} A ${reach} ${reach} 0 ${large} 1 ${endX} ${endY} Z`;
 }
 
 /**
- * Ring made of short bars, lime up to the progress and grey beyond. Built from plain views
- * because no SVG library is installed.
+ * Fur ring: a dimmed ring underneath and the full-colour ring on top, revealed by a circular
+ * mask up to the progress.
  */
 export function ProgressRing({
   progress,
@@ -56,7 +62,7 @@ export function ProgressRing({
     };
   }, [animated, clamped]);
 
-  const filled = filledSegments(shown);
+  const full = shown >= 0.999;
 
   return (
     <View
@@ -83,21 +89,22 @@ export function ProgressRing({
           },
         ]}
       >
-        {Array.from({ length: segments }, (_, index) => (
-          <View
-            key={index}
-            style={[
-              styles.segment,
-              index < filled && styles.segmentFilled,
-              {
-                transform: [
-                  { rotate: `${(index / segments) * 360}deg` },
-                  { translateY: -radiusToSegmentCenter },
-                ],
-              },
-            ]}
-          />
-        ))}
+        <Svg width={size} height={size}>
+          <Defs>
+            <ClipPath id="ringFill">
+              <Path d={wedgePath(shown)} />
+            </ClipPath>
+          </Defs>
+          <SvgImage href={furImages.ring} width={size} height={size} opacity={0.22} />
+          {shown > 0 ? (
+            <SvgImage
+              href={furImages.ring}
+              width={size}
+              height={size}
+              clipPath={full ? undefined : 'url(#ringFill)'}
+            />
+          ) : null}
+        </Svg>
       </Animated.View>
       <View style={styles.center}>{children}</View>
     </View>
@@ -112,20 +119,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  segment: {
-    position: 'absolute',
-    left: (size - segmentWidth) / 2,
-    top: (size - segmentLength) / 2,
-    width: segmentWidth,
-    height: segmentLength,
-    borderRadius: radius.pill,
-    backgroundColor: colors.surfaceRaised,
-  },
-  segmentFilled: {
-    backgroundColor: colors.accent,
-  },
   center: {
-    width: size - 2 * (segmentLength + 12),
+    width: size * holeShare,
     alignItems: 'center',
     justifyContent: 'center',
   },

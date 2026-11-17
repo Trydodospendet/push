@@ -2,12 +2,13 @@ import { useRouter } from 'expo-router';
 import { Pressable, StyleSheet, View } from 'react-native';
 
 import { Button, FidgetRing, Text } from '@/components';
+import { FurNumber } from '@/features/fur/fur-number';
 import { challengeDays, describeGoal, isGoalType } from '@/features/challenges/format';
 import type { Challenge } from '@/features/challenges/types';
 import { progressNumbers, progressRatio, remainingLabel } from '@/features/health/progress';
 import { de } from '@/i18n/de';
 import { formatDayLabel } from '@/lib/dates';
-import { opacity, spacing } from '@/theme';
+import { layout, opacity, spacing } from '@/theme';
 
 /**
  * The one active goal on Home: a ring you can spin, the number inside, one status line and one
@@ -61,9 +62,12 @@ export function HeroGoal({
         progress={ratio}
         accessibilityLabel={`${de.progress.barLabel}: ${numbers.spoken}`}
       >
-        <Text variant="display" numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.4}>
-          {numbers.current}
-        </Text>
+        <FurNumber
+          value={numbers.current}
+          height={64}
+          maxWidth={layout.ring.size * layout.ring.holeShare - spacing.sm}
+          label={numbers.spoken}
+        />
         <Text variant="caption" color="textSecondary" align="center">
           {`${de.progress.of(numbers.goal)} ${numbers.unit}`}
         </Text>

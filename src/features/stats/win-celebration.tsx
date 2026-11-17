@@ -16,6 +16,7 @@ import { useSession } from '@/features/auth/auth-provider';
 import { ShareButton } from '@/features/share/share-button';
 import { maybeAskForReview } from '@/features/review/review';
 import { hapticSuccess } from '@/features/preferences/haptics';
+import { FurNumber } from '@/features/fur/fur-number';
 import { de } from '@/i18n/de';
 import { formatAmount } from '@/lib/money';
 import { colors, motion, radius, spacing } from '@/theme';
@@ -161,9 +162,7 @@ function CelebrationModal({ win, onClose }: { win: Win; onClose: () => void }) {
             <Text variant="label" color="accent" align="center">
               {de.celebration.title}
             </Text>
-            <Text variant="display" align="center" numberOfLines={1} adjustsFontSizeToFit>
-              {`+${amount}`}
-            </Text>
+            <FurNumber value={amount} height={72} maxWidth={260} label={`+${amount}`} />
             <Text variant="heading" color="textSecondary" align="center">
               {de.common.credits}
             </Text>

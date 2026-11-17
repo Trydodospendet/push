@@ -1,12 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 import { Animated, Pressable, StyleSheet, useAnimatedValue, View } from 'react-native';
 
-import { Icon, Text } from '@/components';
+import { Text } from '@/components';
+import { FurIcon } from '@/features/fur/fur-icon';
 import { hapticSelect, hapticTap } from '@/features/preferences/haptics';
 import { useMotionEnabled } from '@/features/preferences/motion';
 import { playSound } from '@/features/preferences/sounds';
 import { de } from '@/i18n/de';
-import { colors, layout, radius, spacing } from '@/theme';
+import { layout, spacing } from '@/theme';
 
 import { useMyStats } from './api';
 
@@ -78,7 +79,6 @@ export function StreakFlame({ userId }: { userId: string }) {
       <Animated.View
         style={[
           styles.flame,
-          streak > 0 && styles.flameLit,
           {
             transform: [
               { scale },
@@ -92,7 +92,7 @@ export function StreakFlame({ userId }: { userId: string }) {
           },
         ]}
       >
-        <Icon name="flame" color={streak > 0 ? 'onAccent' : 'textMuted'} />
+        <FurIcon name="flame" size={56} dim={streak === 0} />
       </Animated.View>
       <View style={styles.text}>
         <Text variant="heading" numberOfLines={1}>
@@ -112,15 +112,10 @@ const styles = StyleSheet.create({
     minHeight: layout.minTouchTarget,
   },
   flame: {
-    width: layout.avatar.md,
-    height: layout.avatar.md,
+    width: layout.avatar.lg,
+    height: layout.avatar.lg,
     alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: radius.pill,
-    backgroundColor: colors.surfaceRaised,
-  },
-  flameLit: {
-    backgroundColor: colors.accent,
   },
   text: {
     flexShrink: 1,

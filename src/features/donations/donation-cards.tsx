@@ -1,6 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 
 import { Card, ChipGroup, ErrorState, LoadingState, Text, type ChipOption } from '@/components';
+import { FurIcon } from '@/features/fur/fur-icon';
 import { de } from '@/i18n/de';
 import { formatDateTime } from '@/lib/dates';
 import { toUserMessage } from '@/lib/errors';
@@ -127,6 +128,7 @@ export function CommunityCounter() {
       accessible
       accessibilityLabel={`${de.donations.communityLabel}: ${de.donations.communityValue(amount)}`}
     >
+      <FurIcon name="heart" size={36} />
       <Text variant="label" color="textSecondary">
         {de.donations.communityLabel}
       </Text>
@@ -220,5 +222,6 @@ const styles = StyleSheet.create({
   },
   community: {
     gap: spacing.xxs,
+    alignItems: 'center',
   },
 });

@@ -55,6 +55,8 @@ import { useMyProgress } from '@/features/health/api';
 import { useHealth } from '@/features/health/health-provider';
 import { ProgressSummary } from '@/features/health/progress-summary';
 import { HealthBanner, useLastSyncText } from '@/features/health/sync-status';
+import { FurNumber } from '@/features/fur/fur-number';
+import { FurIcon } from '@/features/fur/fur-icon';
 import { de } from '@/i18n/de';
 import { formatDayLabel } from '@/lib/dates';
 import { toUserMessage } from '@/lib/errors';
@@ -490,6 +492,8 @@ function ResultCard({
       text += ` ${de.challenge.resultDonated(formatAmount(result.donatedCents))}`;
     }
   }
+  const lost = challenge.status === 'settled' && me.result === 'failed' && !isRanked(challenge);
+  const donated = result?.donatedCents ?? 0;
   const won =
     challenge.status === 'settled' &&
     (me.result === 'success' || (isRanked(challenge) && (result?.rank ?? 99) <= 3));
@@ -499,9 +503,16 @@ function ResultCard({
       <Text variant="label" color="textSecondary" accessibilityRole="header">
         {de.challenge.result}
       </Text>
-      <Text variant="heading" color={won ? 'accent' : 'text'}>
-        {title}
-      </Text>
+      <View style={styles.resultTitle}>
+        {won ? <FurIcon name="trophy" size={32} /> : null}
+        {lost && donated > 0 ? <FurIcon name="heart" size={28} /> : null}
+        <Text variant="heading" color={won ? 'accent' : 'text'} style={styles.resultText}>
+          {title}
+        </Text>
+      </View>
+      {won && !isRanked(challenge) && (me.payoutCents ?? 0) > 0 ? (
+        <FurNumber value={formatAmount(me.payoutCents ?? 0)} height={48} maxWidth={240} />
+      ) : null}
       {text ? <Text color="textSecondary">{text}</Text> : null}
     </Card>
   );
@@ -522,6 +533,8 @@ function ParticipantRow({ participant, isMe }: { participant: Participant; isMe:
 }
 
 const styles = StyleSheet.create({
+  resultTitle: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm },
+  resultText: { flexShrink: 1 },
   content: {
     paddingBottom: spacing.xl,
     gap: spacing.lg,

@@ -9,7 +9,7 @@ export const layout = {
   /** Initials-in-a-circle avatars. */
   avatar: { sm: 32, md: 44, lg: 80 },
   /** Progress ring on the home screen. */
-  ring: { size: 224, segments: 60, segmentWidth: 6, segmentLength: 18 },
+  ring: { size: 280, holeShare: 0.5 },
   /** Bars of the weekly chart. */
   chart: { height: 96, barWidth: 20, minBarHeight: 4 },
   /** Large icon inside the onboarding pages and empty states. */

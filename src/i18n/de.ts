@@ -135,6 +135,15 @@ const imprintSections: readonly LegalSection[] = [
 
 /** All user-facing texts of the app. Screens and components never hard-code strings. */
 export const de = {
+  fur: {
+    unitKm: 'Kilometer',
+    unitKmh: 'Kilometer pro Stunde',
+    unitSteps: 'Schritte',
+    pushy: 'Pushy',
+    streak: 'Streak',
+    trophy: 'Erfolge',
+    donation: 'Spende',
+  },
   coach: {
     trainingTitles: ['Dein Laufziel', 'Dein Rhythmus', 'Dein Fortschritt'],
     testNotification: 'Testnachricht senden',

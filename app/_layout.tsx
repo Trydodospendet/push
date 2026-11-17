@@ -13,6 +13,7 @@ import { AuthProvider, useAuth } from '@/features/auth/auth-provider';
 import { DEFAULT_TIMEZONE } from '@/config/app';
 import { HealthProvider, useHealth } from '@/features/health/health-provider';
 import { IntroProvider, useIntro } from '@/features/intro/intro-provider';
+import { FurPreload } from '@/features/fur/preload';
 import { GpsProvider } from '@/features/gps/gps-provider';
 import { ReminderProvider } from '@/features/reminders/reminder-provider';
 import { de } from '@/i18n/de';
@@ -54,6 +55,7 @@ export default function RootLayout() {
       <QueryClientProvider client={queryClient}>
         <AuthProvider>
           <StatusBar style="light" />
+          <FurPreload />
           <RootNavigator />
         </AuthProvider>
       </QueryClientProvider>

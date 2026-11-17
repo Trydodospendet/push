@@ -22,6 +22,7 @@ import { currentSpeed } from '@/features/gps/speed';
 import { useClock } from '@/features/gps/use-clock';
 import { useKilometerAnnouncements } from '@/features/gps/voice';
 import { usePreferences } from '@/features/preferences/store';
+import { FurNumber } from '@/features/fur/fur-number';
 import { de } from '@/i18n/de';
 import { colors, layout, radius, spacing } from '@/theme';
 
@@ -247,12 +248,18 @@ function ActiveRun({ onInset }: { onInset: (height: number) => void }) {
             >
               {formatClock(elapsed)}
             </Text>
-            <Stat label={de.run.liveSpeed} value={formatSpeed(speed)} />
+            <FurNumber value={formatKm(stats.distanceM)} unit="km" height={52} maxWidth={300} />
+            <FurNumber
+              value={formatSpeed(speed)}
+              unit="kmh"
+              height={36}
+              maxWidth={220}
+              label={`${de.run.liveSpeed}: ${formatSpeed(speed)}`}
+            />
           </View>
         }
       >
         <View style={styles.statRow}>
-          <Stat label={de.run.distance} value={formatKm(stats.distanceM)} />
           <Stat label={de.run.averagePace} value={formatPace(pace)} />
         </View>
         {!paused && speed === null ? (

@@ -83,7 +83,7 @@ describe('app flow', () => {
 
     await renderRouter('./app', { initialUrl: '/' });
 
-    expect(await screen.findByRole('header', { name: 'PUSH' })).toHaveTextContent('PUSH.');
+    expect(await screen.findByRole('header', { name: 'PUSH' })).toBeOnTheScreen();
     expect(screen.getByText('YOUR GOALS. YOUR STAKES.')).toBeOnTheScreen();
     await user.press(screen.getByRole('button', { name: 'Registrieren' }));
 

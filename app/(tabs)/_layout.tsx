@@ -3,9 +3,16 @@ import { GoalHeader } from '@/features/challenges/goal-header';
 import { Tabs } from 'expo-router';
 
 import { Icon, type IconName } from '@/components';
+import { FurIcon } from '@/features/fur/fur-icon';
 import { WinCelebration } from '@/features/stats/win-celebration';
 import { de } from '@/i18n/de';
 import { colors, layout, typography } from '@/theme';
+
+function furTab(name: 'home' | 'shoe' | 'trophy') {
+  return function FurTabIcon({ focused }: { focused: boolean }) {
+    return <FurIcon name={name} size={28} dim={!focused} />;
+  };
+}
 
 function tabIcon(name: IconName, focusedName: IconName) {
   return function TabIcon({ focused }: { focused: boolean }) {
@@ -37,7 +44,7 @@ export default function TabsLayout() {
           options={{
             title: de.tabs.home,
             tabBarAccessibilityLabel: de.tabs.home,
-            tabBarIcon: tabIcon('home-outline', 'home'),
+            tabBarIcon: furTab('home'),
           }}
         />
         <Tabs.Screen
@@ -45,7 +52,7 @@ export default function TabsLayout() {
           options={{
             title: de.improvements.running,
             tabBarAccessibilityLabel: de.tabs.activity,
-            tabBarIcon: tabIcon('walk-outline', 'walk'),
+            tabBarIcon: furTab('shoe'),
           }}
         />
         <Tabs.Screen
@@ -53,7 +60,7 @@ export default function TabsLayout() {
           options={{
             title: de.tabs.ranked,
             tabBarAccessibilityLabel: de.tabs.ranked,
-            tabBarIcon: tabIcon('trophy-outline', 'trophy'),
+            tabBarIcon: furTab('trophy'),
           }}
         />
         <Tabs.Screen
