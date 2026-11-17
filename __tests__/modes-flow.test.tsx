@@ -167,7 +167,7 @@ describe('pool', () => {
     await renderRouter('./app', { initialUrl: '/challenge/pool-2' });
 
     expect(await screen.findByText('Ziel nicht geschafft.')).toBeOnTheScreen();
-    expect(screen.getByText('Dein Pfand wurde gespendet.')).toBeOnTheScreen();
+    expect(screen.getByText('Dein Pfand ging an uns; wir spenden 90 % weiter.')).toBeOnTheScreen();
   });
 });
 

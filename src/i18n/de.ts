@@ -36,7 +36,7 @@ const privacySections: readonly LegalSection[] = [
       'GPS-Läufe (nur wenn du einen Lauf in der App aufzeichnest): Während der Aufzeichnung speichert die App deine Position (Breiten- und Längengrad), den Zeitpunkt, die Genauigkeit und ob das Handy die Position als gefälscht meldet. Sie läuft bei gesperrtem Bildschirm weiter, bis du den Lauf beendest; Android zeigt dafür eine dauerhafte Benachrichtigung. Außerhalb eines Laufs wird dein Standort nicht erfasst. Nach dem Lauf wird die Strecke auf den Server übertragen; dort werden Distanz und Zeit neu berechnet und auf Fälschungen geprüft.',
       'Die Strecke eines GPS-Laufs siehst ausschließlich du. Andere Teilnehmer sehen höchstens die Distanz. Auf der Karte in der App werden die ersten und letzten 200 Meter deiner Strecke ausgeblendet; diese Teile verlassen den Server nicht.',
       'Profil und Sichtbarkeit: optional ein Profilbild (auf 256 × 256 Pixel verkleinert, in einem privaten Speicher; nur du kannst es sehen) und die Einstellung, in Ranglisten anonym zu bleiben – dann sehen andere „Anonym“ statt deines Namens.',
-      'Spenden: Verfehlst du ein Ziel, wird dein Pfand als Buchung (Betrag, Ziel, gewählte Organisation) gespeichert. Die Organisation erhält Summen ohne die Namen der Spender. Aktuell sind Credits virtuell.',
+      'Spenden: Verfehlst du ein Ziel, geht das Pfand an uns und wir spenden 90 % davon an die gewählte Organisation. Wir speichern dafür Betrag, Ziel und Organisation; die Organisation erhält nur Summen ohne Namen. Eine Spendenquittung für dich gibt es nicht.',
       'Auskunft: In der App unter Profil → Daten & Datenschutz kannst du alle über dich gespeicherten Daten als Datei herunterladen.',
       'Freunde, Gruppen und Kommentare: Wenn du Freunde hinzufügst oder einer Gruppe beitrittst, sehen diese deinen Anzeigenamen sowie – solange du es nicht in den Privatsphäre-Einstellungen ausschaltest – Distanz und Zeit deiner Läufe (keine Strecke). Kommentare und Anfeuern sind für die jeweiligen Freunde sichtbar.',
       'Teilen-Bilder: Das Teilen-Bild eines Laufs oder Siegs wird auf deinem Handy erzeugt und nur über das Teilen-Menü weitergegeben, das du auswählst. Es zeigt nur die Form der Strecke, keine Karte und keinen Standort.',
@@ -435,7 +435,7 @@ export const de = {
       'Ziel antippen, Pfand setzen.',
       'Aktivität wird automatisch aus der Gesundheits-App übernommen.',
       'Den Fortschritt siehst du hier auf Home und im Tab Aktivität.',
-      'Ziel erreicht: Pfand zurück. Verfehlt: Pfand wird gespendet.',
+      'Ziel erreicht: Pfand zurück. Verfehlt: Das Pfand geht an uns, wir spenden 90 % weiter.',
     ],
   },
   intro: {
@@ -458,7 +458,7 @@ export const de = {
         {
           art: 'pool' as const,
           title: 'Pfand',
-          text: 'Ab dem Start ist dein Pfand gebunden. Schaffst du dein Ziel, bekommst du es zurück. Verfehlst du es, wird es gespendet. Aktuell sind Credits virtuell und können nicht ausgezahlt werden.',
+          text: 'Ab dem Start ist dein Pfand gebunden. Schaffst du dein Ziel, bekommst du es zurück. Verfehlst du es: Das Pfand geht an uns, wir spenden 90 % weiter. Credits sind virtuell und können nicht ausgezahlt werden.',
         },
         {
           art: 'podium' as const,
@@ -571,7 +571,7 @@ export const de = {
     potCaption: (count: number) => `${count === 1 ? '1 Person' : `${count} Personen`} im Spiel`,
     windowLabel: 'DEIN PFAND',
     windowCaption: () => 'gebunden bis zum Ende des Ziels',
-    windowHint: 'Erreicht: zurück. Verfehlt: gespendet.',
+    windowHint: 'Erreicht: zurück. Verfehlt: Das Pfand geht an uns, wir spenden 90 % weiter.',
     possibleWinLabel: 'DEIN PFAND',
     possibleWinHint: 'Kommt zurück, wenn du dein Ziel erreichst.',
     possibleWinHintSolo: 'Kommt zurück, wenn du dein Ziel erreichst.',
@@ -682,8 +682,9 @@ export const de = {
     rulePayout:
       'Jeder setzt sein eigenes Pfand. Wer das Ziel schafft, bekommt es zurück – ohne Anteil an den Pfändern der anderen.',
     ruleAllWin: 'Schaffen es alle, bekommen alle ihr Pfand zurück.',
-    ruleNobody: 'Schafft es niemand, werden alle Pfänder gespendet.',
-    ruleAlone: 'Bist du allein: Ziel geschafft = Pfand zurück, sonst wird es gespendet.',
+    ruleNobody: 'Schafft es niemand, gehen alle Pfänder an uns; wir spenden 90 % weiter.',
+    ruleAlone:
+      'Bist du allein: Ziel geschafft = Pfand zurück, sonst: Das Pfand geht an uns, wir spenden 90 % weiter.',
     ruleFee: (percent: string) => `Von einem verfallenen Pfand behält PUSH ${percent}.`,
     ruleRounding: 'Cent-Reste gehen an die Organisation.',
     ruleDonation: 'Verfallenes Pfand geht an die gewählte Organisation.',
@@ -692,7 +693,7 @@ export const de = {
     ruleRankedPoints:
       'Für die Plätze gibt es Punkte (Platz 1: 30, 2: 20, 3: 10, danach 5) und Abzeichen.',
     ruleGoalPayout: 'Schaffst du dein Ziel, bekommst du dein Pfand vollständig zurück.',
-    ruleGoalMissed: 'Verfehlst du dein Ziel, wird dein Pfand gespendet.',
+    ruleGoalMissed: 'Verfehlst du dein Ziel: Das Pfand geht an uns, wir spenden 90 % weiter.',
     ruleGoalNobody: 'Dein Ergebnis hängt nur von dir ab, nicht von anderen.',
     ruleGoalBound:
       'Bis zum Start kannst du das Ziel zurückziehen und bekommst alles zurück. Ab dem Start ist das Pfand gebunden.',
@@ -705,8 +706,8 @@ export const de = {
     resultWon: 'Ziel geschafft!',
     resultWonPayout: (amount: string) => `Pfand zurück: ${amount} Credits.`,
     resultLost: 'Ziel nicht geschafft.',
-    resultLostText: 'Dein Pfand wurde gespendet.',
-    resultLostDonated: (ngo: string) => `Dein Pfand wurde gespendet an ${ngo}.`,
+    resultLostText: 'Dein Pfand ging an uns; wir spenden 90 % weiter.',
+    resultLostDonated: (ngo: string) => `Dein Pfand ging an uns; wir spenden 90 % davon an ${ngo}.`,
     resultRanked: (rank: number) => `Platz ${rank}`,
     resultRankedPoints: (points: number) =>
       points === 1 ? '1 Punkt für dein Level.' : `${points} Punkte für dein Level.`,
@@ -751,14 +752,14 @@ export const de = {
     more: 'Mehr Pfand',
     unit: 'Pfand',
     amount: (amount: string) => `${amount} Pfand`,
-    oneLine: 'Erreicht: Pfand zurück. Verfehlt: gespendet.',
+    oneLine: 'Erreicht: Pfand zurück. Verfehlt: Das Pfand geht an uns, wir spenden 90 % weiter.',
     balance: (amount: string) => `Guthaben: ${amount}`,
     detailsShow: 'Mehr',
     detailsHide: 'Weniger',
     details: [
       'Das Pfand wird sofort von deinem Guthaben abgebucht.',
       'Schaffst du dein Ziel, bekommst du es vollständig zurück.',
-      'Verfehlst du es, gehen 90 % an deine Organisation und 10 % an PUSH.',
+      'Verfehlst du es: Das Pfand geht an uns, wir spenden 90 % weiter.',
       'Manuelle Einträge zählen nie. Nach Zielende zählt nur der gespeicherte Stand.',
     ],
     noNetwork: 'Das Pfand konnte nicht gesetzt werden. Versuch es noch einmal.',
@@ -829,13 +830,12 @@ export const de = {
     todayHint: 'Das Tagesziel läuft ab der Bestätigung bis Mitternacht.',
     todayStepsHint: 'Bereits heute erfasste Schritte zählen mit.',
     stake: 'PFAND',
-    stakeHint: 'Erreicht: Pfand zurück. Verfehlt: Pfand wird gespendet.',
+    stakeHint: 'Erreicht: Pfand zurück. Verfehlt: Das Pfand geht an uns, wir spenden 90 % weiter.',
     confirmTitle: 'Pfand bestätigen',
     confirmStake: (amount: string) =>
       `Du setzt ${amount} Credits Pfand. Der Betrag wird jetzt von deinem Guthaben abgebucht.`,
     confirmReturn: (day: string) => `Schaffst du dein Ziel, kommt dein Pfand am ${day} zurück.`,
-    confirmMissed:
-      'Verfehlst du dein Ziel, wird dein Pfand gespendet (90 %) bzw. geht an PUSH (10 %).',
+    confirmMissed: 'Verfehlst du dein Ziel: Das Pfand geht an uns, wir spenden 90 % weiter.',
     confirmBound: (start: string, startsToday: boolean) =>
       startsToday
         ? 'Dein Einsatz ist ab der Bestätigung sofort gebunden. Das Ziel kann danach nicht zurückgezogen oder mit Erstattung abgebrochen werden.'
@@ -1176,7 +1176,7 @@ export const de = {
       },
       {
         q: 'Wann ist mein Einsatz gebunden, zurückgebucht oder verfallen?',
-        a: 'Beim Bestätigen wird das Pfand von deinem Guthaben abgebucht. Bis zum Start kannst du das Ziel zurückziehen und bekommst alles zurück. Ab dem Start ist es gebunden: kein Zurückziehen, kein Abbrechen mit Erstattung. Schaffst du dein Ziel, kommt es nach der Abrechnung vollständig zurück. Verfehlst du es, wird es gespendet.',
+        a: 'Beim Bestätigen wird das Pfand von deinem Guthaben abgebucht. Bis zum Start kannst du das Ziel zurückziehen und bekommst alles zurück. Ab dem Start ist es gebunden: kein Zurückziehen, kein Abbrechen mit Erstattung. Schaffst du dein Ziel, kommt es nach der Abrechnung vollständig zurück. Verfehlst du es: Das Pfand geht an uns, wir spenden 90 % weiter.',
       },
       {
         q: 'Was kann ich auf „Heute“ anfassen?',
@@ -1184,7 +1184,7 @@ export const de = {
       },
       {
         q: 'Was passiert mit einem verfallenen Pfand?',
-        a: 'Es gibt keinen Gewinn aus den Pfändern anderer. Ein verfehltes Ziel verfällt: 90 % gehen als Spende an die gewählte Organisation, 10 % behält PUSH (beide Werte sind einstellbar). Alles wird einzeln gebucht und jedes Ziel ergibt in Summe null. Die Spenden aller siehst du als Zähler „Gemeinsam gespendet diesen Monat“.',
+        a: 'Es gibt keinen Gewinn aus den Pfändern anderer. Ein verfehltes Ziel verfällt: Das Pfand geht an uns, wir spenden 90 % davon an die gewählte Organisation und behalten 10 % (beide Werte sind einstellbar). Die App sammelt keine Spenden; eine Spendenquittung für dich gibt es nicht. Alles wird einzeln gebucht und jedes Ziel ergibt in Summe null. Die Spenden aller siehst du als Zähler „Gemeinsam gespendet diesen Monat“.',
       },
       {
         q: 'Wie wird geprüft, ob ich mein Ziel geschafft habe?',
@@ -1341,12 +1341,12 @@ export const de = {
     useDefault: 'Standard',
     donate: 'Spenden',
     keep: 'Behalten',
-    nowDonating: 'Aktuell: Dein Pfand würde gespendet.',
+    nowDonating: 'Bei einem verfehlten Ziel spenden wir 90 % weiter an deine Organisation.',
     nowKeeping: 'Aktuell: Du behältst deinen Anteil.',
     overviewLabel: 'MEINE SPENDEN',
     overviewEmpty:
-      'Noch keine Spende. Sie erscheint hier, sobald ein Pfand von dir gespendet wird.',
-    total: 'Insgesamt gespendet',
+      'Noch keine Spende. Sie erscheint hier, sobald wir ein Pfand von dir weitergespendet haben.',
+    total: 'Insgesamt von uns weitergespendet',
     communityLabel: 'GEMEINSAM GESPENDET DIESEN MONAT',
     communityValue: (amount: string) => `${amount} Credits`,
   },
@@ -1377,7 +1377,7 @@ export const de = {
     account: { label: 'Konto & Sicherheit', detail: 'Bild, Name, E-Mail, Passwort' },
     privacy: { label: 'Privatsphäre', detail: 'Sichtbarkeit in Ranglisten' },
     notifications: { label: 'Benachrichtigungen', detail: 'Erinnerungen und Uhrzeit' },
-    donations: { label: 'Spenden', detail: 'Standard und Meine Spenden' },
+    donations: { label: 'Spenden-Organisation', detail: 'Wohin wir 90 % weiterspenden' },
     connections: { label: 'Health & GPS', detail: 'Verbindungen und Standort' },
     appearance: { label: 'Darstellung', detail: 'Animationen und Haptik' },
     data: { label: 'Daten & Datenschutz', detail: 'Download, Datenschutz, Konto löschen' },
@@ -1443,6 +1443,34 @@ export const de = {
     hoursAgo: (hours: number) => `vor ${hours} Std.`,
     invite: 'Freunde einladen',
   },
+  payments: {
+    title: 'Zahlung & Pfand',
+    detail: 'Reservierungen und Pfand',
+    unit: '€',
+    reserveNotice: (amount: string, ngo: string) =>
+      `${amount} € werden reserviert, nicht abgebucht. Schaffst du dein Ziel, wird nichts abgebucht. Verfehlst du es, wird dein Pfand fällig; 90 % davon spenden wir an ${ngo}.`,
+    ngoFallback: 'deine Organisation',
+    tooLong: 'Mit Echtgeld dauert ein Ziel höchstens 6 Tage. Wähle ein kürzeres Ziel.',
+    failed: 'Die Reservierung hat nicht geklappt. Es wurde nichts abgebucht.',
+    offTitle: 'Echtgeld ist aus',
+    offText: 'Aktuell nutzt du virtuelle Credits. Es wird kein Geld reserviert oder abgebucht.',
+    onTitle: 'Echtgeld ist aktiv',
+    onText:
+      'Dein Pfand wird nur auf deiner Karte reserviert. Schaffst du dein Ziel, wird nichts abgebucht. Verfehlst du es, wird es fällig. Das Pfand geht an uns, wir spenden 90 % weiter.',
+    noReceipt: 'Eine Spendenquittung für dich gibt es nicht.',
+    listLabel: 'DEINE PFÄNDER',
+    empty: 'Noch kein Pfand. Setze dein erstes Ziel.',
+    emptyAction: 'Ziel setzen',
+    status: {
+      pending: 'Wird bestätigt',
+      reserved: 'Reserviert',
+      released: 'Nicht abgebucht',
+      captured: 'Abgebucht',
+      failed: 'Fehlgeschlagen',
+      expired: 'Nicht gesichert, nichts abgebucht',
+    },
+    error: 'Die Übersicht konnte nicht geladen werden.',
+  },
   persistent: {
     title: 'PUSH',
     channelName: 'Dauerhafter Fortschritt',
@@ -1506,7 +1534,7 @@ export const de = {
     points: [
       'Gelöscht werden deine E-Mail-Adresse, dein Anzeigename, dein Guthaben und alle synchronisierten Gesundheitsdaten.',
       'Challenges, die noch nicht begonnen haben, verlässt du automatisch. Dein Pfand bekommst du vorher zurück.',
-      'In Challenges, die schon laufen, verfällt dein Pfand: Es wird wie ein verfehltes Ziel gespendet.',
+      'In Challenges, die schon laufen, verfällt dein Pfand: Es wird wie ein verfehltes Ziel behandelt: Das Pfand geht an uns, wir spenden 90 % weiter.',
       'Deine Buchungen bleiben ohne Bezug zu dir erhalten, damit die Abrechnungen der anderen stimmen.',
     ],
     healthHint: (source: string) =>

@@ -1,4 +1,5 @@
 import { PersistentProgress } from '@/features/persistent/persistent-progress';
+import { StripeProvider } from '@stripe/stripe-react-native';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { useFonts } from 'expo-font';
 import { router, Stack } from 'expo-router';
@@ -56,7 +57,12 @@ export default function RootLayout() {
         <AuthProvider>
           <StatusBar style="light" />
           <FurPreload />
-          <RootNavigator />
+          <StripeProvider
+            publishableKey={process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY ?? ''}
+            merchantIdentifier="merchant.com.pushchallenge.app"
+          >
+            <RootNavigator />
+          </StripeProvider>
         </AuthProvider>
       </QueryClientProvider>
     </ErrorBoundary>

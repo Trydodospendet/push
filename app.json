@@ -38,6 +38,13 @@
       "expo-font",
       "expo-secure-store",
       [
+        "@stripe/stripe-react-native",
+        {
+          "merchantIdentifier": "merchant.com.pushchallenge.app",
+          "enableGooglePay": true
+        }
+      ],
+      [
         "expo-location",
         {
           "locationWhenInUsePermission": "PUSH nutzt deinen Standort, um deine Laufstrecke aufzuzeichnen, solange du einen Lauf aufnimmst – auch bei gesperrtem Bildschirm. Der Standort wird nur während eines Laufs genutzt.",

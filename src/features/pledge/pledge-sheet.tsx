@@ -7,19 +7,22 @@ import {
   DEFAULT_PLEDGE_CENTS,
   DEFAULT_TIMEZONE,
   PLEDGE_STEP_CENTS,
+  REAL_MONEY_MAX_DAYS,
   STAKE_MAX_CENTS,
   STAKE_MIN_CENTS,
 } from '@/config/app';
 import { useMyProfile } from '@/features/auth/api';
 import { useSession } from '@/features/auth/auth-provider';
 import { useCreateGoal } from '@/features/challenges/api';
+import { useNgos } from '@/features/donations/api';
+import { PaymentCancelledError, useRealMoneyStatus, useReserveGoal } from '@/features/payments/api';
 import { createGoalSchema } from '@/features/challenges/schemas';
 import { hapticError, hapticSelect } from '@/features/preferences/haptics';
 import { useMotionEnabled } from '@/features/preferences/motion';
 import { playSound } from '@/features/preferences/sounds';
 import { useWalletBalance } from '@/features/wallet/api';
 import { de } from '@/i18n/de';
-import { toLocalDate } from '@/lib/dates';
+import { addDays, toLocalDate } from '@/lib/dates';
 import { toUserMessage } from '@/lib/errors';
 import { formatAmount } from '@/lib/money';
 import { colors, layout, radius, spacing } from '@/theme';
@@ -97,6 +100,10 @@ export function PledgeSheet({ goal, onClose }: { goal: QuickGoal | null; onClose
   const profile = useMyProfile(session.user.id);
   const balance = useWalletBalance(session.user.id);
   const create = useCreateGoal();
+  const reserve = useReserveGoal(session.user.id);
+  const realMoney = useRealMoneyStatus(session.user.id).data === true;
+  const ngos = useNgos();
+  const busy = create.isPending || reserve.isPending;
   const motionEnabled = useMotionEnabled();
   const [pledge, setPledge] = useState<number>(DEFAULT_PLEDGE_CENTS);
   const [details, setDetails] = useState(false);
@@ -107,7 +114,7 @@ export function PledgeSheet({ goal, onClose }: { goal: QuickGoal | null; onClose
   const open = goal !== null;
 
   const max =
-    balance.data === undefined
+    realMoney || balance.data === undefined
       ? STAKE_MAX_CENTS
       : Math.max(STAKE_MIN_CENTS, Math.min(STAKE_MAX_CENTS, balance.data));
 
@@ -129,7 +136,7 @@ export function PledgeSheet({ goal, onClose }: { goal: QuickGoal | null; onClose
     if (!goal || submitting.current) {
       return;
     }
-    if (balance.data !== undefined && pledge > balance.data) {
+    if (!realMoney && balance.data !== undefined && pledge > balance.data) {
       hapticError();
       setError(de.serverErrors.insufficient_funds);
       return;
@@ -152,8 +159,35 @@ export function PledgeSheet({ goal, onClose }: { goal: QuickGoal | null; onClose
       setError(de.pledge.noNetwork);
       return;
     }
+    if (realMoney && dates.last > addDays(dates.first, REAL_MONEY_MAX_DAYS - 1)) {
+      hapticError();
+      setError(de.payments.tooLong);
+      return;
+    }
     submitting.current = true;
     setError(null);
+    if (realMoney) {
+      reserve.mutate(parsed.data, {
+        onSuccess: (challengeId) => {
+          onClose();
+          router.replace({
+            pathname: '/challenge/[id]',
+            params: { id: challengeId, started: '1' },
+          });
+        },
+        onError: (mutationError) => {
+          if (mutationError instanceof PaymentCancelledError) {
+            return;
+          }
+          hapticError();
+          setError(de.payments.failed);
+        },
+        onSettled: () => {
+          submitting.current = false;
+        },
+      });
+      return;
+    }
     create.mutate(parsed.data, {
       onSuccess: (challenge) => {
         onClose();
@@ -170,11 +204,15 @@ export function PledgeSheet({ goal, onClose }: { goal: QuickGoal | null; onClose
   };
 
   const amount = formatPledge(pledge);
+  const ngoName =
+    ngos.data?.find((ngo) => ngo.id === profile.data?.default_ngo_id)?.name ??
+    ngos.data?.[0]?.name ??
+    de.payments.ngoFallback;
   return (
     <Sheet
       visible={open}
       title={de.pledge.sheetTitle}
-      onClose={create.isPending ? () => undefined : onClose}
+      onClose={busy ? () => undefined : onClose}
       closeLabel={de.joinSheet.cancel}
     >
       {goal ? (
@@ -186,7 +224,7 @@ export function PledgeSheet({ goal, onClose }: { goal: QuickGoal | null; onClose
             <RoundButton
               label={de.pledge.less}
               glyph="−"
-              disabled={pledge <= STAKE_MIN_CENTS || create.isPending}
+              disabled={pledge <= STAKE_MIN_CENTS || busy}
               onPress={() => change(-PLEDGE_STEP_CENTS)}
             />
             <Animated.View
@@ -208,24 +246,24 @@ export function PledgeSheet({ goal, onClose }: { goal: QuickGoal | null; onClose
                 {amount}
               </Text>
               <Text variant="caption" color="textSecondary" align="center">
-                {de.pledge.unit}
+                {realMoney ? de.payments.unit : de.pledge.unit}
               </Text>
             </Animated.View>
             <RoundButton
               label={de.pledge.more}
               glyph="+"
-              disabled={pledge >= max || create.isPending}
+              disabled={pledge >= max || busy}
               onPress={() => change(PLEDGE_STEP_CENTS)}
             />
           </View>
           <Text color="textSecondary" align="center">
-            {de.pledge.oneLine}
+            {realMoney ? de.payments.reserveNotice(amount, ngoName) : de.pledge.oneLine}
           </Text>
           <HoldButton
             label={de.pledge.set(amount)}
             holdingLabel={de.pledge.holding}
             accessibilityHint={de.pledge.holdHint}
-            loading={create.isPending}
+            loading={busy}
             onComplete={confirm}
           />
           {error ? (
@@ -233,7 +271,7 @@ export function PledgeSheet({ goal, onClose }: { goal: QuickGoal | null; onClose
               {error}
             </Text>
           ) : null}
-          {balance.data !== undefined ? (
+          {!realMoney && balance.data !== undefined ? (
             <Text variant="caption" color="textMuted" align="center">
               {de.pledge.balance(formatAmount(balance.data))}
             </Text>
@@ -257,9 +295,11 @@ export function PledgeSheet({ goal, onClose }: { goal: QuickGoal | null; onClose
               ))}
             </View>
           ) : null}
-          <Text variant="caption" color="textMuted" align="center">
-            {de.common.virtualCreditsNotice}
-          </Text>
+          {realMoney ? null : (
+            <Text variant="caption" color="textMuted" align="center">
+              {de.common.virtualCreditsNotice}
+            </Text>
+          )}
         </>
       ) : null}
     </Sheet>

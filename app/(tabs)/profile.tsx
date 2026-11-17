@@ -24,6 +24,7 @@ import { spacing } from '@/theme';
 type Target =
   | '/wallet'
   | '/pool'
+  | '/settings/payments'
   | '/settings/account'
   | '/settings/privacy'
   | '/settings/notifications'
@@ -47,6 +48,11 @@ const GROUPS: readonly {
     target: '/pool',
     icon: 'flag-outline',
     text: { label: de.improvements.pool, detail: de.tabs.pool },
+  },
+  {
+    target: '/settings/payments',
+    icon: 'card-outline',
+    text: { label: de.payments.title, detail: de.payments.detail },
   },
   { target: '/settings/account', icon: 'person-circle-outline', text: de.settings.account },
   { target: '/settings/privacy', icon: 'eye-off-outline', text: de.settings.privacy },

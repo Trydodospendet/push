@@ -14,7 +14,7 @@ PUSH ist eine App für iOS und Android. Nutzer setzen virtuelle Credits auf pers
 
 ## Nicht verhandelbare Regeln
 
-- Ausschließlich virtuelle Credits und kostenlose Tarife. Keine Integration für echtes Geld, Aufladungen oder Auszahlungen.
+- Echtgeld nur hinter dem Server-Schalter `private.settings.real_money_enabled` (Standard aus), nur mit Stripe-Testschlüsseln, niemals Live-Schlüssel ins Repo. Das Pfand wird nur reserviert (Stripe PaymentIntent, manuelle Abbuchung); Aufladungen und Auszahlungen an Nutzer gibt es nicht. Sonst gelten virtuelle Credits und kostenlose Tarife. Details: [Echtgeld](docs/ECHTGELD.md).
 - Guthaben, Buchungen, Gewinner und Abrechnung berechnet Postgres in Transaktionen. Beträge als ganze Cent (`bigint`), Abrechnungen idempotent, Ledger nur ergänzen.
 - RLS auf jeder Tabelle. Geschützte Daten nur über RPCs ändern. Bei `SECURITY DEFINER` den `search_path` festlegen und bei Nutzer-RPCs `auth.uid()` prüfen.
 - Manuell eingetragene Gesundheitsdaten zählen nie.

@@ -138,9 +138,7 @@ describe('goals', () => {
       screen.getByText(/Schaffst du dein Ziel, bekommst du nach dem Ende dein Pfand zurück/),
     ).toBeOnTheScreen();
     expect(
-      screen.getByText(
-        'Verfehlst du dein Ziel, wird dein Pfand gespendet (90 %) bzw. geht an PUSH (10 %).',
-      ),
+      screen.getByText('Verfehlst du dein Ziel: Das Pfand geht an uns, wir spenden 90 % weiter.'),
     ).toBeOnTheScreen();
     expect(screen.getAllByText(/Bereits heute erfasste Schritte zählen mit/)).toHaveLength(2);
     expect(screen.getByText(/ab der Bestätigung sofort gebunden/)).toBeOnTheScreen();

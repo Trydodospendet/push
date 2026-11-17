@@ -31,6 +31,11 @@ Schriftgrößen und Aufbau möglichst genau so nachbauen. Feste Regeln für ALLE
 8. Vor dem Commit Screenshots (Web oder Emulator) von Home, Laufen, Lauf, Ranked, Profil gegen die Vorlage
    prüfen. Safe Areas beachten, nichts abgeschnitten.
 
+9. **Gewohnte Bedienmuster (Jakob's Law):** Nutzer kennen Instagram/TikTok/Strava, also nichts neu erfinden.
+   Tab-Leiste: Home ganz links, Profil ganz rechts, maximal 4 Tabs, nur das Wichtigste. Auf jeder Liste und
+   auf Home „Runterziehen = neu laden“. Android-Zurück-Geste und Wischen schließen Sheets. Tippflächen
+   mindestens 44 px. Kurze Haptik bei wichtigen Aktionen. Ladezustände als Skeleton statt leerer Fläche.
+
 ---
 
 ## Teil B: Echtgeld-Pfand mit Stripe (standardmäßig AUS)

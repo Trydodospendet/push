@@ -121,5 +121,6 @@ export const supabase = {
     }),
   },
   rpc: jest.fn(),
+  functions: { invoke: jest.fn() },
   from: jest.fn((table: string) => createQuery(table)),
 };

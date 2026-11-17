@@ -115,3 +115,6 @@ export const INVITE_CODE_LENGTH = 6;
  * requested from tiles.openfreemap.org – mentioned in the privacy policy.
  */
 export const MAP_STYLE_URL = 'https://tiles.openfreemap.org/styles/fiord';
+
+/** Real-money goals last at most this many days (same limit as in the database). */
+export const REAL_MONEY_MAX_DAYS = 6;

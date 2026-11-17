@@ -18,6 +18,7 @@ export default function SettingsLayout() {
       <Stack.Screen name="account" options={{ title: de.account.title }} />
       <Stack.Screen name="privacy" options={{ title: de.privacySettings.title }} />
       <Stack.Screen name="notifications" options={{ title: de.notificationSettings.title }} />
+      <Stack.Screen name="payments" options={{ title: de.payments.title }} />
       <Stack.Screen name="donations" options={{ title: de.donationSettings.title }} />
       <Stack.Screen name="connections" options={{ title: de.connections.title }} />
       <Stack.Screen name="appearance" options={{ title: de.appearance.title }} />

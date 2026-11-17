@@ -17,7 +17,7 @@ export const challengeKeys = {
 };
 
 /** After joining or leaving: challenges, wallet and ledger changed on the server. */
-function invalidateAfterBooking(queryClient: QueryClient) {
+export function invalidateAfterBooking(queryClient: QueryClient) {
   return Promise.all([
     queryClient.invalidateQueries({ queryKey: challengeKeys.all }),
     queryClient.invalidateQueries({ queryKey: ['wallet'] }),
