@@ -14,6 +14,7 @@ import {
   Screen,
   Sheet,
   Text,
+  Icon,
 } from '@/components';
 import { useSession } from '@/features/auth/auth-provider';
 import {
@@ -55,8 +56,6 @@ import { useMyProgress } from '@/features/health/api';
 import { useHealth } from '@/features/health/health-provider';
 import { ProgressSummary } from '@/features/health/progress-summary';
 import { HealthBanner, useLastSyncText } from '@/features/health/sync-status';
-import { FurNumber } from '@/features/fur/fur-number';
-import { FurIcon } from '@/features/fur/fur-icon';
 import { de } from '@/i18n/de';
 import { formatDayLabel } from '@/lib/dates';
 import { toUserMessage } from '@/lib/errors';
@@ -504,14 +503,16 @@ function ResultCard({
         {de.challenge.result}
       </Text>
       <View style={styles.resultTitle}>
-        {won ? <FurIcon name="trophy" size={32} /> : null}
-        {lost && donated > 0 ? <FurIcon name="heart" size={28} /> : null}
+        {won ? <Icon name="trophy-outline" color="accent" size={28} /> : null}
+        {lost && donated > 0 ? <Icon name="heart-outline" color="accent" size={28} /> : null}
         <Text variant="heading" color={won ? 'accent' : 'text'} style={styles.resultText}>
           {title}
         </Text>
       </View>
       {won && !isRanked(challenge) && (me.payoutCents ?? 0) > 0 ? (
-        <FurNumber value={formatAmount(me.payoutCents ?? 0)} height={48} maxWidth={240} />
+        <Text variant="title" color="accent">
+          {formatAmount(me.payoutCents ?? 0)}
+        </Text>
       ) : null}
       {text ? <Text color="textSecondary">{text}</Text> : null}
     </Card>

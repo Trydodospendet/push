@@ -51,7 +51,6 @@ describe('preferences', () => {
         haptics: false,
         voice: false,
         sounds: false,
-        pushy: true,
         persistentProgress: false,
       }),
     );

@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { StyleSheet } from 'react-native';
 
-import { Card, ChipGroup, ErrorState, LoadingState, Text } from '@/components';
+import { Card, ChipGroup, ErrorState, LoadingState } from '@/components';
 import { de } from '@/i18n/de';
 import { spacing } from '@/theme';
 
@@ -15,9 +15,6 @@ export function PeriodCard({ userId }: { userId: string }) {
 
   return (
     <Card style={styles.card}>
-      <Text variant="label" color="textSecondary" accessibilityRole="header">
-        {de.runStats.stats}
-      </Text>
       <ChipGroup
         label={de.runStats.stats}
         options={[

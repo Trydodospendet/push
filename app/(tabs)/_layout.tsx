@@ -1,48 +1,19 @@
 import { ScreenHeaderContext } from '@/components/screen';
 import { GoalHeader } from '@/features/challenges/goal-header';
 import { Tabs } from 'expo-router';
-import type { ReactNode } from 'react';
-import { StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { GlowPulse, Icon, type IconName } from '@/components';
-import { FurIcon } from '@/features/fur/fur-icon';
+import { Icon, type IconName } from '@/components';
 import { WinCelebration } from '@/features/stats/win-celebration';
 import { de } from '@/i18n/de';
 import { colors, layout, typography } from '@/theme';
 
-/** Soft lime halo behind the icon of the selected tab. */
-function TabGlow({ focused, children }: { focused: boolean; children: ReactNode }) {
-  return (
-    <GlowPulse radius={999} blur={14} intensity={0.5} active={focused} style={styles.tabIcon}>
-      {children}
-    </GlowPulse>
-  );
-}
-
-function furTab(name: 'home' | 'shoe' | 'trophy') {
-  return function FurTabIcon({ focused }: { focused: boolean }) {
-    return (
-      <TabGlow focused={focused}>
-        <FurIcon name={name} size={28} dim={!focused} />
-      </TabGlow>
-    );
-  };
-}
-
+/** Clean line icon: lime when selected, grey otherwise. */
 function tabIcon(name: IconName, focusedName: IconName) {
   return function TabIcon({ focused }: { focused: boolean }) {
-    return (
-      <TabGlow focused={focused}>
-        <Icon name={focused ? focusedName : name} color={focused ? 'text' : 'textMuted'} />
-      </TabGlow>
-    );
+    return <Icon name={focused ? focusedName : name} color={focused ? 'accent' : 'tabInactive'} />;
   };
 }
-
-const styles = StyleSheet.create({
-  tabIcon: { alignItems: 'center', justifyContent: 'center', borderRadius: 999 },
-});
 
 export default function TabsLayout() {
   const insets = useSafeAreaInsets();
@@ -53,13 +24,14 @@ export default function TabsLayout() {
           headerShown: true,
           header: () => <GoalHeader />,
           sceneStyle: { backgroundColor: colors.bg },
-          tabBarActiveTintColor: colors.text,
-          tabBarInactiveTintColor: colors.textMuted,
+          tabBarActiveTintColor: colors.accent,
+          tabBarInactiveTintColor: colors.tabInactive,
           tabBarLabelStyle: { ...typography.caption, fontFamily: typography.button.fontFamily },
           tabBarItemStyle: { minHeight: layout.minTouchTarget },
           tabBarStyle: {
             height: layout.tabBarHeight + insets.bottom,
             paddingBottom: insets.bottom,
+            paddingTop: 8,
             backgroundColor: colors.bg,
             borderTopColor: colors.border,
             borderTopWidth: layout.borderWidth,
@@ -71,7 +43,7 @@ export default function TabsLayout() {
           options={{
             title: de.tabs.home,
             tabBarAccessibilityLabel: de.tabs.home,
-            tabBarIcon: furTab('home'),
+            tabBarIcon: tabIcon('home-outline', 'home'),
           }}
         />
         <Tabs.Screen
@@ -79,7 +51,7 @@ export default function TabsLayout() {
           options={{
             title: de.improvements.running,
             tabBarAccessibilityLabel: de.tabs.activity,
-            tabBarIcon: furTab('shoe'),
+            tabBarIcon: tabIcon('pulse-outline', 'pulse'),
           }}
         />
         <Tabs.Screen
@@ -87,7 +59,7 @@ export default function TabsLayout() {
           options={{
             title: de.tabs.ranked,
             tabBarAccessibilityLabel: de.tabs.ranked,
-            tabBarIcon: furTab('trophy'),
+            tabBarIcon: tabIcon('trophy-outline', 'trophy'),
           }}
         />
         <Tabs.Screen

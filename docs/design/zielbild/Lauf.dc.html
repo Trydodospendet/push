@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>PUSH Lauf</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet">
+<style>
+body{margin:0}
+a{color:#C6FF00}a:hover{color:#E2FF73}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; box-sizing: border-box; background: #0A0A0A; font-family: Inter, sans-serif; color: #FFFFFF; position: relative; overflow: hidden">
+  <svg aria-hidden="true" width="390" height="430" viewBox="0 0 390 430" style="position: absolute; top: 0; left: 0">
+    <rect width="390" height="430" fill="#111312"/>
+    <g stroke="#1F2321" stroke-width="10" fill="none" stroke-linecap="round">
+      <path d="M-20 120 L410 60"/><path d="M60 -10 L150 440"/><path d="M-20 300 L410 250"/><path d="M280 -10 L240 440"/>
+    </g>
+    <g stroke="#191C1A" stroke-width="5" fill="none">
+      <path d="M-10 200 L400 170"/><path d="M200 -10 L190 440"/><path d="M330 120 L390 360"/>
+    </g>
+    <path d="M70 360 C110 330 120 280 150 250 S210 210 240 180 S260 120 300 100" stroke="#C6FF00" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="300" cy="100" r="22" fill="#C6FF00" fill-opacity="0.18"/>
+    <circle cx="300" cy="100" r="9" fill="#C6FF00" stroke="#0A0A0A" stroke-width="3"/>
+  </svg>
+
+  <header style="position: absolute; top: 52px; left: 20px; right: 20px; display: flex; align-items: center; gap: 16px">
+    <button type="button" aria-label="Zurück" style="width: 44px; height: 44px; border-radius: 22px; border: 1px solid #2A2A2A; background: rgba(10,10,10,0.8); color: #FFFFFF; display: flex; align-items: center; justify-content: center">
+      <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    </button>
+    <span style="font-size: 17px; font-weight: 700">GPS-Lauf</span>
+  </header>
+
+  <section style="position: absolute; left: 0; right: 0; top: 390px; bottom: 0; background: #0A0A0A; border-top-left-radius: 28px; border-top-right-radius: 28px; border-top: 1px solid #222222; padding: 12px 20px 0 20px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center">
+    <div style="width: 40px; height: 4px; border-radius: 2px; background: #2A2A2A"></div>
+    <span style="margin-top: 20px; font-size: 12px; font-weight: 600; letter-spacing: 2px; color: #C6FF00">● AUFZEICHNUNG LÄUFT</span>
+    <div style="display: flex; align-items: flex-end; height: 96px; margin-top: 16px" role="img" aria-label="3,02 Kilometer">
+      <img src="/_blob/f78cdc48d79c9ebd113d52ac437058ce" alt="" style="height: 96px">
+      <img src="/_blob/a6288cca02770a0fd06c5f5e07916077" alt="" style="height: 40px; margin: 0 -2px -6px -2px">
+      <img src="/_blob/8bcffd087d8b7db79cf00087463ef062" alt="" style="height: 96px">
+      <img src="/_blob/0ddd5a54a672f0ed05700a0ba57a5f84" alt="" style="height: 96px">
+      <span style="font-size: 20px; font-weight: 700; color: #9A9A9A; margin: 0 0 8px 8px">km</span>
+    </div>
+    <div style="width: 100%; display: grid; grid-template-columns: 1fr 1fr 1fr; margin-top: 24px; background: #151515; border: 1px solid #222222; border-radius: 16px; padding: 16px 0">
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 4px"><span style="font-size: 22px; font-weight: 800">24:18</span><span style="font-size: 11px; font-weight: 600; letter-spacing: 1px; color: #9A9A9A">ZEIT</span></div>
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 4px; border-left: 1px solid #222222; border-right: 1px solid #222222"><span style="font-size: 22px; font-weight: 800">8:03</span><span style="font-size: 11px; font-weight: 600; letter-spacing: 1px; color: #9A9A9A">MIN/KM</span></div>
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 4px"><span style="font-size: 22px; font-weight: 800">7,5</span><span style="font-size: 11px; font-weight: 600; letter-spacing: 1px; color: #9A9A9A">KM/H</span></div>
+    </div>
+    <div style="width: 100%; margin-top: 16px; font-size: 13px; color: #9A9A9A; display: flex; justify-content: space-between"><span>Ziel 3,00 km</span><span style="color: #C6FF00; font-weight: 700">Geschafft ✓</span></div>
+    <div style="width: 100%; height: 6px; border-radius: 3px; background: #C6FF00; margin-top: 8px"></div>
+    <div style="width: 100%; display: flex; gap: 8px; margin-top: 24px">
+      <button type="button" style="flex: 1; height: 56px; border-radius: 28px; border: 1px solid #333333; background: transparent; color: #FFFFFF; font-family: Inter, sans-serif; font-size: 16px; font-weight: 700">Pause</button>
+      <button type="button" style="flex: 1; height: 56px; border-radius: 28px; border: none; background: #C6FF00; color: #0A0A0A; font-family: Inter, sans-serif; font-size: 16px; font-weight: 800; box-shadow: 0 0 32px rgba(198,255,0,0.35)">Beenden</button>
+    </div>
+  </section>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+renderVals() {
+return {};
+}
+}
+</script>
+</body>
+</html>

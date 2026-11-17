@@ -137,7 +137,6 @@ const imprintSections: readonly LegalSection[] = [
 export const de = {
   fur: {
     unitKm: 'Kilometer',
-    unitKmh: 'Kilometer pro Stunde',
     unitSteps: 'Schritte',
     pushy: 'Pushy',
     streak: 'Streak',
@@ -148,18 +147,12 @@ export const de = {
     trainingTitles: ['Dein Laufziel', 'Dein Rhythmus', 'Dein Fortschritt'],
     testNotification: 'Testnachricht senden',
     testSent: 'Lokale Testnachricht gesendet. Server-Push braucht zusätzlich Firebase.',
-    nextGoal: 'Bereit für deinen nächsten Schritt?',
     today: 'HEUTE',
     stepsNote: 'Schritte und erfasste Laufkilometer sind unterschiedliche Werte.',
     hello: 'Willkommen zurück!',
-    more: 'Weiter so – seit deinem letzten Besuch:',
     won: 'Ziel geschafft! Du kannst stolz auf dich sein.',
     missed: 'Diesmal hat es nicht gereicht. Dein nächster Schritt zählt trotzdem.',
     ongoing: 'Jeder Schritt bringt dich weiter. Dein Tempo zählt.',
-    name: 'Pushy',
-    stages: ['Dein neuer Laufcoach', 'Baby-Hase', 'Junger Hase', 'Laufpartner', 'Erfahrener Coach'],
-    pokes: ['Hihi!', 'Das kitzelt!', 'Hopp!', 'Na, Lust auf eine Runde?'],
-    progress: 'Dein Ziel im Blick',
     winReturn:
       'Schaffst du dein Ziel, bekommst du nach dem Ende dein Pfand zurück. Die Buchung erfolgt automatisch.',
     cutoff:
@@ -168,7 +161,6 @@ export const de = {
       'Zielzeit beendet. Der gespeicherte Stand ist endgültig; die Buchung folgt automatisch.',
     locked: 'Die Organisation ist ab dem Start festgelegt.',
     weekSteps: 'Schritte in den letzten sieben Tagen',
-    asleep: 'Pushy schläft. Tippe, um ihn zu wecken.',
     sleep: 'Pushy schlafen legen',
     wake: 'Pushy wecken',
     zzz: 'Zzz',
@@ -422,7 +414,7 @@ export const de = {
   home: {
     label: 'HEUTE',
     ready: 'BEREIT',
-    stepsWord: 'Schritte',
+    pledge: 'PFAND',
     run: 'Lauf starten',
     refreshSteps: 'Schritte aktualisieren',
     more: 'Mehr',
@@ -565,6 +557,9 @@ export const de = {
   },
   celebration: {
     word: 'GESCHAFFT',
+    label: 'ZIEL ERREICHT',
+    pledge: 'DEIN PFAND',
+    streak: 'Serie',
     title: 'GESCHAFFT!',
     stakeBack: 'Pfand zurück.',
     close: 'Weiter',
@@ -924,8 +919,9 @@ export const de = {
       'Dein Lauf zählt für deine Challenges wie ein Lauf aus Health Connect bzw. Apple Health. Derselbe Lauf wird nie doppelt gezählt.',
     ],
     start: 'Lauf starten',
-    word: 'LOS',
-    heroLabel: 'LAUF · GPS',
+    statTime: 'ZEIT',
+    statPace: 'MIN/KM',
+    statSpeed: 'KM/H',
     pause: 'Pause',
     resume: 'Weiter',
     stop: 'Stopp',
@@ -1184,7 +1180,7 @@ export const de = {
       },
       {
         q: 'Was kann ich auf „Heute“ anfassen?',
-        a: 'Den Ring kannst du mit dem Finger drehen – er federt zurück. Die Flamme und Pushy reagieren auf Tippen, Pushy auch auf Ziehen und kräftiges Hin- und Herschütteln. Vibration, Bewegung und Töne lassen sich unter Profil → Darstellung einzeln abschalten; „Bewegung reduzieren“ in den Systemeinstellungen wird beachtet.',
+        a: 'Tippe auf Pushy: Dann schläft er ein, ein weiteres Tippen weckt ihn. Auch die Flamme reagiert auf Tippen. Vibration und Töne lassen sich unter Profil → Darstellung ausschalten.',
       },
       {
         q: 'Was passiert mit einem verfallenen Pfand?',
@@ -1488,8 +1484,6 @@ export const de = {
     hapticsHint: 'Kurze Vibration bei Erfolgen, Fehlern und Auswahl.',
     sounds: 'Töne',
     soundsHint: 'Kurze Klänge bei Tippen, Drehen und Erfolgen. Standardmäßig aus.',
-    pushy: 'Pushy anzeigen',
-    pushyHint: 'Das Maskottchen oben rechts. Antippen lässt ihn ein- oder aufwachen.',
     voice: 'Sprachansagen beim Laufen',
     voiceHint:
       'Nach jedem Kilometer sagt dein Handy Zeit und Tempo an. Du hörst es über Lautsprecher oder Kopfhörer.',

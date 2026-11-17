@@ -24,8 +24,8 @@ export const typography = {
   },
   body: {
     fontFamily: fontFamily.regular,
-    fontSize: 16,
-    lineHeight: 24,
+    fontSize: 15,
+    lineHeight: 22,
   },
   caption: {
     fontFamily: fontFamily.regular,

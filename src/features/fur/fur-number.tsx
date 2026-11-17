@@ -13,7 +13,6 @@ const COMMA_SCALE = 0.3;
 const UNIT_SCALE = 0.45;
 const unitWord: Record<FurUnit, string> = {
   km: de.fur.unitKm,
-  kmh: de.fur.unitKmh,
   schritte: de.fur.unitSteps,
 };
 const SUPPORTED = /^[0-9.,]+$/;

@@ -1,10 +1,10 @@
 export const colors = {
   bg: '#0A0A0A',
-  surface: '#161616',
+  surface: '#151515',
   surfaceRaised: '#1F1F1F',
-  border: '#2A2A2A',
+  border: '#222222',
   text: '#FFFFFF',
-  textSecondary: '#A1A1A1',
+  textSecondary: '#9A9A9A',
   /** Lighter than the first design (#6B6B6B) so small texts reach a contrast of about 6:1. */
   textMuted: '#8A8A8A',
   /** Lime – use sparingly: progress, primary button, success. */
@@ -12,9 +12,8 @@ export const colors = {
   /** Text on lime surfaces. */
   onAccent: '#0A0A0A',
   danger: '#FF4D4D',
-  /** Dark lime/olive at the top of editorial headers; fades into bg. */
-  heroTop: '#33460A',
-  heroMid: '#16200A',
+  /** Inactive tab icons. */
+  tabInactive: '#6E6E6E',
 } as const;
 
 export type ColorToken = keyof typeof colors;
@@ -24,7 +23,7 @@ export const glow = {
   soft: 'rgba(198, 255, 0, 0.10)',
   strong: 'rgba(198, 255, 0, 0.35)',
   /** Halo around the main button. */
-  button: 'rgba(198, 255, 0, 0.30)',
+  button: 'rgba(198, 255, 0, 0.35)',
 } as const;
 
 /** Dimmed backdrop behind sheets (the background color with 70 % opacity). */

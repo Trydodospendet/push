@@ -2,7 +2,7 @@ import { StyleSheet, View } from 'react-native';
 
 import { ErrorState, LoadingState, Text } from '@/components';
 import { de } from '@/i18n/de';
-import { spacing, typography } from '@/theme';
+import { colors, layout, radius, spacing, typography } from '@/theme';
 
 import { useMyStats } from './api';
 
@@ -24,9 +24,13 @@ export function StatsCard({ userId }: { userId: string }) {
     );
   }
   const items = [
-    { label: de.stats.kpiStreak, value: String(stats.data.streakDays) },
-    { label: de.stats.kpiKm, value: kmFormat.format(stats.data.totalDistanceM / 1000) },
-    { label: de.stats.kpiGoals, value: String(stats.data.wins) },
+    { label: de.stats.kpiStreak, value: String(stats.data.streakDays), accent: true },
+    {
+      label: de.stats.kpiKm,
+      value: kmFormat.format(stats.data.totalDistanceM / 1000),
+      accent: false,
+    },
+    { label: de.stats.kpiGoals, value: String(stats.data.wins), accent: false },
   ];
   return (
     <View style={styles.row}>
@@ -39,14 +43,14 @@ export function StatsCard({ userId }: { userId: string }) {
         >
           <Text
             style={styles.value}
-            color="accent"
+            color={item.accent ? 'accent' : 'text'}
             numberOfLines={1}
             adjustsFontSizeToFit
-            align="center"
+            align="left"
           >
             {item.value}
           </Text>
-          <Text variant="label" color="textSecondary" align="center" numberOfLines={2}>
+          <Text variant="label" color="textSecondary" numberOfLines={2} style={styles.kpiLabel}>
             {item.label}
           </Text>
         </View>
@@ -57,12 +61,22 @@ export function StatsCard({ userId }: { userId: string }) {
 
 const styles = StyleSheet.create({
   row: { flexDirection: 'row', gap: spacing.sm },
-  item: { flex: 1, gap: spacing.xxs, alignItems: 'stretch' },
+  item: {
+    flex: 1,
+    gap: spacing.xxs,
+    padding: spacing.sm,
+    paddingVertical: spacing.md,
+    borderRadius: radius.card,
+    borderWidth: layout.borderWidth,
+    borderColor: colors.border,
+    backgroundColor: colors.surface,
+  },
+  kpiLabel: { fontSize: 11, letterSpacing: 1 },
   value: {
     fontFamily: typography.display.fontFamily,
-    fontSize: 44,
-    lineHeight: 50,
-    letterSpacing: -1.5,
+    fontSize: 28,
+    lineHeight: 34,
+    letterSpacing: -0.5,
     fontVariant: ['tabular-nums'],
   },
 });

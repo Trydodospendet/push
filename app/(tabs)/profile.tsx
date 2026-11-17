@@ -5,7 +5,6 @@ import {
   Avatar,
   Button,
   Card,
-  EditorialHero,
   ErrorState,
   LoadingState,
   Screen,
@@ -82,22 +81,22 @@ export default function ProfileScreen() {
         />
       ) : (
         <View style={styles.details}>
-          <EditorialHero
-            word={profile.data.display_name}
-            label={de.profile.label}
-            pose="sit"
-            front={
-              <Avatar
-                name={profile.data.display_name}
-                size="xl"
-                highlight
-                uri={avatar.data ?? null}
-              />
-            }
-          />
-          <Text variant="caption" color="textMuted" align="center" numberOfLines={1}>
-            {session.user.email}
-          </Text>
+          <View style={styles.identity}>
+            <Avatar
+              name={profile.data.display_name}
+              size="lg"
+              highlight
+              uri={avatar.data ?? null}
+            />
+            <View style={styles.name}>
+              <Text variant="title" accessibilityRole="header" numberOfLines={2}>
+                {profile.data.display_name}
+              </Text>
+              <Text variant="caption" color="textSecondary" numberOfLines={1}>
+                {session.user.email}
+              </Text>
+            </View>
+          </View>
           <StatsCard userId={session.user.id} />
           <BadgesCard userId={session.user.id} />
         </View>
@@ -145,12 +144,21 @@ export default function ProfileScreen() {
 
 const styles = StyleSheet.create({
   content: {
-    paddingTop: 0,
+    paddingTop: spacing.md,
     paddingBottom: spacing.xl,
     gap: spacing.lg,
   },
   details: {
     gap: spacing.md,
+  },
+  identity: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.md,
+  },
+  name: {
+    flex: 1,
+    gap: spacing.xxs,
   },
   group: {
     gap: spacing.sm,

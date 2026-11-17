@@ -1,13 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { Animated, Pressable, StyleSheet, useAnimatedValue, View } from 'react-native';
 
-import { Text } from '@/components';
-import { FurIcon } from '@/features/fur/fur-icon';
+import { Icon, Text } from '@/components';
 import { hapticSelect, hapticTap } from '@/features/preferences/haptics';
 import { useMotionEnabled } from '@/features/preferences/motion';
 import { playSound } from '@/features/preferences/sounds';
 import { de } from '@/i18n/de';
-import { layout, spacing } from '@/theme';
+import { colors, layout, radius, spacing } from '@/theme';
 
 import { useMyStats } from './api';
 
@@ -92,10 +91,10 @@ export function StreakFlame({ userId }: { userId: string }) {
           },
         ]}
       >
-        <FurIcon name="flame" size={56} dim={streak === 0} />
+        <Icon name="flame-outline" size={40} color={streak === 0 ? 'tabInactive' : 'accent'} />
       </Animated.View>
       <View style={styles.text}>
-        <Text variant="heading" numberOfLines={1}>
+        <Text variant="heading" numberOfLines={2}>
           {reaction ?? base}
         </Text>
       </View>
@@ -105,17 +104,17 @@ export function StreakFlame({ userId }: { userId: string }) {
 
 const styles = StyleSheet.create({
   row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.sm,
+    flex: 1,
+    gap: spacing.xs,
+    padding: spacing.md,
+    borderRadius: radius.card,
+    borderWidth: layout.borderWidth,
+    borderColor: colors.border,
+    backgroundColor: colors.surface,
     minHeight: layout.minTouchTarget,
   },
   flame: {
-    width: layout.avatar.lg,
-    height: layout.avatar.lg,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: 'flex-start',
   },
   text: {
     flexShrink: 1,

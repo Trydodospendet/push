@@ -1,6 +1,8 @@
 export const layout = {
   /** Minimum size of anything tappable. */
   minTouchTarget: 44,
+  /** Distance of all content from the screen edge. */
+  screenPadding: 20,
   buttonHeight: 56,
   /** Height of the tab bar without the space for the system navigation. */
   tabBarHeight: 60,

@@ -1,27 +1,19 @@
 import { useCallback, useEffect, useState } from 'react';
-import {
-  AccessibilityInfo,
-  Animated,
-  Easing,
-  Modal,
-  StyleSheet,
-  useAnimatedValue,
-  View,
-} from 'react-native';
+import { Modal, Pressable, StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Button, Confetti, EditorialHero, Text } from '@/components';
+import { Card, Confetti, Text } from '@/components';
+import { Pushy } from '@/features/coach/pushy';
 import { BadgeCelebration } from '@/features/badges/badge-celebration';
 import { useSession } from '@/features/auth/auth-provider';
 import { ShareButton } from '@/features/share/share-button';
 import { maybeAskForReview } from '@/features/review/review';
 import { hapticSuccess } from '@/features/preferences/haptics';
-import { FurNumber } from '@/features/fur/fur-number';
 import { de } from '@/i18n/de';
 import { formatAmount } from '@/lib/money';
-import { colors, motion, spacing } from '@/theme';
+import { colors, fontFamily, layout, spacing } from '@/theme';
 
-import { useMyWins, type Win } from './api';
+import { useMyStats, useMyWins, type Win } from './api';
 import {
   loadCelebrationState,
   nextUnseenWin,
@@ -70,72 +62,64 @@ export function WinCelebration() {
   return <CelebrationModal key={win.challengeId} win={win} onClose={dismiss} />;
 }
 
+const PUSHY_SCALE = 2.4;
+
 function CelebrationModal({ win, onClose }: { win: Win; onClose: () => void }) {
   const insets = useSafeAreaInsets();
+  const stats = useMyStats(useSession().user.id);
 
   useEffect(() => {
     hapticSuccess();
   }, []);
-  const progress = useAnimatedValue(0);
-
-  useEffect(() => {
-    let cancelled = false;
-    void AccessibilityInfo.isReduceMotionEnabled().then((enabled) => {
-      if (cancelled) {
-        return;
-      }
-      if (enabled) {
-        progress.setValue(1);
-        return;
-      }
-      Animated.timing(progress, {
-        toValue: 1,
-        duration: motion.celebrationMs,
-        easing: Easing.out(Easing.cubic),
-        useNativeDriver: true,
-      }).start();
-    });
-    return () => {
-      cancelled = true;
-      progress.stopAnimation();
-    };
-  }, [progress]);
 
   const amount = formatAmount(win.payoutCents);
-  const textOpacity = progress.interpolate({ inputRange: [0.4, 1], outputRange: [0, 1] });
-  const textShift = progress.interpolate({ inputRange: [0.4, 1], outputRange: [spacing.md, 0] });
+  const streak = stats.data?.streakDays ?? 0;
 
   return (
     <Modal transparent animationType="fade" statusBarTranslucent onRequestClose={onClose}>
       <View
-        style={[styles.root, { paddingTop: insets.top, paddingBottom: insets.bottom + spacing.lg }]}
+        style={[styles.root, { paddingTop: insets.top, paddingBottom: insets.bottom + spacing.md }]}
         accessibilityViewIsModal
       >
         <Confetti />
-        <EditorialHero
-          word={de.celebration.word}
-          label={win.title.toUpperCase()}
-          pose="cheer"
-          inset={spacing.md}
-        />
-        <View style={styles.center}>
-          <Animated.View
-            style={[styles.texts, { opacity: textOpacity, transform: [{ translateY: textShift }] }]}
-            accessible
-            accessibilityLabel={de.celebration.accessibility(win.title, amount)}
-          >
-            <FurNumber value={amount} height={72} maxWidth={260} label={`+${amount}`} />
-            <Text variant="heading" color="textSecondary" align="center">
-              {de.common.credits}
-            </Text>
-            <Text align="center">{win.title}</Text>
-            <Text color="textSecondary" align="center">
-              {de.celebration.stakeBack}
-            </Text>
-          </Animated.View>
+        <Text style={styles.word} accessibilityElementsHidden importantForAccessibility="no">
+          {de.celebration.word}
+        </Text>
+        <View
+          style={styles.center}
+          accessible
+          accessibilityLabel={de.celebration.accessibility(win.title, amount)}
+        >
+          <Text variant="label" color="accent" align="center">
+            {de.celebration.label}
+          </Text>
+          <Pushy pose="cheer" scale={PUSHY_SCALE} />
+          <Text variant="title" align="center">
+            {win.title}
+          </Text>
         </View>
-        <View style={styles.shareRow}>
+        <View style={styles.cards}>
+          <Card style={styles.cardRow}>
+            <View style={styles.cardText}>
+              <Text variant="label" color="textSecondary">
+                {de.celebration.pledge}
+              </Text>
+              <Text>{de.celebration.stakeBack}</Text>
+            </View>
+            <Text variant="title" color="accent">
+              {amount}
+            </Text>
+          </Card>
+          {streak > 0 ? (
+            <Card style={styles.cardRow}>
+              <Text>{de.celebration.streak}</Text>
+              <Text variant="heading">{de.stats.streak(streak)}</Text>
+            </Card>
+          ) : null}
+        </View>
+        <View style={styles.actions}>
           <ShareButton
+            variant="primary"
             data={{
               label: de.share.winLabel,
               headline: `+${amount}`,
@@ -143,31 +127,54 @@ function CelebrationModal({ win, onClose }: { win: Win; onClose: () => void }) {
               facts: [],
             }}
           />
+          <Pressable
+            accessibilityRole="button"
+            accessibilityLabel={de.celebration.close}
+            onPress={onClose}
+            style={styles.close}
+          >
+            <Text color="textSecondary" align="center">
+              {de.celebration.close}
+            </Text>
+          </Pressable>
         </View>
-        <Button label={de.celebration.close} onPress={onClose} />
       </View>
     </Modal>
   );
 }
 
 const styles = StyleSheet.create({
-  shareRow: {
-    marginBottom: spacing.sm,
-  },
   root: {
     flex: 1,
     backgroundColor: colors.bg,
-    paddingHorizontal: spacing.md,
+    paddingHorizontal: layout.screenPadding,
+  },
+  word: {
+    position: 'absolute',
+    top: 150,
+    left: 0,
+    right: 0,
+    textAlign: 'center',
+    fontFamily: fontFamily.extraBold,
+    fontSize: 74,
+    letterSpacing: -3,
+    color: colors.text,
+    opacity: 0.08,
   },
   center: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-    gap: spacing.xl,
+    gap: spacing.md,
   },
-  texts: {
-    alignItems: 'stretch',
-    gap: spacing.xs,
-    alignSelf: 'stretch',
+  cards: { gap: spacing.xs, marginBottom: spacing.lg },
+  cardRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: spacing.sm,
   },
+  cardText: { gap: spacing.xxs, flexShrink: 1 },
+  actions: { gap: spacing.xs },
+  close: { minHeight: 48, justifyContent: 'center' },
 });

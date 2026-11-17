@@ -1,5 +1,12 @@
 # Übergabe – Branch `ausbau`
 
+## Design-Reset nach `docs/design/zielbild` (17.11.2026)
+
+- Fell nur noch für Pushy und die eine große Zahl (Home, Lauf). Entfernt: Fell-Knopf (`pill-*`), Fell-Icons, `kmh`/`push`-Bilder, `EditorialHero`, Header-Pushy samt Sprüchen (`coach.tsx`), Gradient-Hero, `ProgressRing`, `GlowPulse`, Einstellung „Pushy anzeigen“. Tab-Leiste: Ionicons-Linien, aktiv Lime, inaktiv `#6E6E6E`. Flamme, Pokal, Herz ebenfalls Linien-Icons.
+- Farben/Maße: Karten `#151515` mit 1 px `#222222`, Nebentext `#9A9A9A`, Kartenradius 16, Bildschirmrand 20 (`layout.screenPadding`), Fließtext 15. Hauptknopf flach Lime, Höhe 56, Glow nur dort.
+- Home: Label, Pushy (168, antippen = schläft/wacht auf), Fell-Zahl, „von X km“, Balken, Restzeit + Pfand, Hauptknopf, Kacheln Serie und gemeinsam gespendet. Lauf-Start: Pushy (laufend) über dem Sheet, kein Riesenwort. Lauf aktiv: Fell-km, Karte mit Zeit / min/km / km/h (Durchschnitt), Pause (Rand) und Beenden (Lime); kein Pushy. Ziel geschafft: Riesenwort „GESCHAFFT“ in Weiß 8 %, Pushy jubelt, Karten Pfand und Serie, Teilen + Weiter. Profil: Avatar mit Lime-Rand, Name, drei Kennzahl-Karten. Header: „PUSH“ und Datum.
+- Aufgeräumt: doppelte „STATISTIK“-Überschrift, die Akku-Frage im Lauf-Start ist ein Textlink. **Offen:** Screenshots konnte ich nicht machen (kein Emulator/adb, Web-Build mit nativen Modulen nicht möglich); bitte auf dem Gerät gegen die Vorlage prüfen. Neuer Build nötig.
+
 ## Editorial-Design (17.11.2026)
 
 - Neue Komponente `EditorialHero` (`src/components/editorial-hero.tsx`): dunkler Lime/Olive-Verlauf (neue Tokens `heroTop`, `heroMid`), riesiges Wort über die volle Breite (Lime, 17 % Deckkraft, eng gesetzt), Label in Großbuchstaben mit Abstand, Pushy groß davor (antippen = schlafen/aufwachen) oder ein anderes Element (`front`).

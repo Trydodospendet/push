@@ -14,8 +14,6 @@ const preferencesSchema = z.object({
   voice: z.boolean().default(false),
   /** Short tones for taps and successes (off until the user switches them on). */
   sounds: z.boolean().default(false),
-  /** Pushy in the header (hidden only here in the settings). */
-  pushy: z.boolean().default(true),
   /** Permanent progress notification (Android; off until switched on). */
   persistentProgress: z.boolean().default(false),
 });
@@ -27,7 +25,6 @@ export const defaultPreferences: Preferences = {
   haptics: true,
   voice: false,
   sounds: false,
-  pushy: true,
   persistentProgress: false,
 };
 

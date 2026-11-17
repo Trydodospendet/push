@@ -32,7 +32,7 @@ export function Avatar({ name, size = 'md', highlight = false, uri = null }: Ava
       {uri ? (
         <Image source={{ uri }} style={{ width: dimension, height: dimension }} />
       ) : (
-        <Text variant={textVariant[size]} color={highlight ? 'onAccent' : 'text'}>
+        <Text variant={textVariant[size]} color="text">
           {initials(name)}
         </Text>
       )}
@@ -51,7 +51,7 @@ const styles = StyleSheet.create({
     borderWidth: layout.borderWidth,
   },
   highlight: {
-    backgroundColor: colors.accent,
     borderColor: colors.accent,
+    borderWidth: 2,
   },
 });

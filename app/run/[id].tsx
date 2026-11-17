@@ -31,7 +31,6 @@ import { ElevationProfile, PaceChart, SplitsTable } from '@/features/gps/charts'
 import { formatClock, formatKm, formatPace } from '@/features/gps/format';
 import { paceSecondsPerKm } from '@/features/gps/geo';
 import { RouteMap } from '@/features/gps/route-map';
-import { FurNumber } from '@/features/fur/fur-number';
 import { de } from '@/i18n/de';
 import { formatDateTime } from '@/lib/dates';
 import { spacing } from '@/theme';
@@ -112,7 +111,7 @@ export default function RunDetailScreen() {
                 />
               </View>
             </View>
-            <FurNumber value={formatKm(run.distanceM)} unit="km" height={64} maxWidth={300} />
+            <Text variant="display">{`${formatKm(run.distanceM)} km`}</Text>
           </View>
         }
       >

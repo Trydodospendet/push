@@ -34,6 +34,8 @@ const CREATURES = [
   'pushy-sleep',
   'pushy-wave',
 ];
+/** Fur is only used for Pushy and the big number (digits, comma, km, Schritte). */
+const USED = [...GLYPHS.filter((n) => !['kmh', 'push'].includes(n)), ...CREATURES];
 const HEIGHT = { glyph: 256, creature: 384, shape: 256, pill: 160 };
 const SMALL = { flame: 192, heart: 128, trophy: 128, home: 96, shoe: 96, arrow: 128 };
 
@@ -254,7 +256,7 @@ async function main() {
   const names = fs
     .readdirSync(SRC)
     .map((f) => f.replace('.png', ''))
-    .filter((n) => n !== 'ring');
+    .filter((n) => USED.includes(n));
   const loaded = {};
   for (const name of names) {
     const kind = kindOf(name);
@@ -283,27 +285,8 @@ async function main() {
         img.data[i + 2] = b;
       }
     }
-    if (name === 'pill') {
-      await splitPill(img.data, img.w, img.h);
-    } else {
-      await save(name, img.data, img.w, img.h);
-    }
+    await save(name, img.data, img.w, img.h);
   }
-}
-
-/** Cuts the pill into left cap, a thin middle strip and right cap, so a button can be any width without distortion. */
-async function splitPill(data, w, h) {
-  const cap = Math.round(h / 2);
-  const mid = 16;
-  const part = (left, width) => {
-    const out = Buffer.alloc(width * h * 4);
-    for (let y = 0; y < h; y++)
-      data.copy(out, y * width * 4, (y * w + left) * 4, (y * w + left + width) * 4);
-    return out;
-  };
-  await save('pill-left', part(0, cap), cap, h);
-  await save('pill-mid', part(Math.floor((w - mid) / 2), mid), mid, h);
-  await save('pill-right', part(w - cap, cap), cap, h);
 }
 
 main();

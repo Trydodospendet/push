@@ -40,15 +40,6 @@ export default function AppearanceScreen() {
           }}
         />
         <SwitchRow
-          label={de.appearance.pushy}
-          hint={de.appearance.pushyHint}
-          value={preferences.pushy}
-          onChange={(value) => {
-            hapticSelect();
-            void setPreference('pushy', value);
-          }}
-        />
-        <SwitchRow
           label={de.appearance.voice}
           hint={de.appearance.voiceHint}
           value={preferences.voice}

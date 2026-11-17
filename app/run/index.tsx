@@ -1,9 +1,16 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
-import { Linking, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
+import {
+  Linking,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  useWindowDimensions,
+  View,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Button, Card, DraggablePanel, EditorialHero, FadeIn, Sheet, Text } from '@/components';
+import { Button, Card, DraggablePanel, FadeIn, Sheet, Text } from '@/components';
 import { DEFAULT_TIMEZONE } from '@/config/app';
 import { useMyProfile } from '@/features/auth/api';
 import { useSession } from '@/features/auth/auth-provider';
@@ -21,9 +28,12 @@ import { RunList } from '@/features/gps/run-list';
 import { useClock } from '@/features/gps/use-clock';
 import { useKilometerAnnouncements } from '@/features/gps/voice';
 import { usePreferences } from '@/features/preferences/store';
+import { Pushy } from '@/features/coach/pushy';
 import { FurNumber } from '@/features/fur/fur-number';
 import { de } from '@/i18n/de';
 import { colors, layout, radius, spacing } from '@/theme';
+
+const speedFormat = new Intl.NumberFormat('de-DE', { maximumFractionDigits: 1 });
 
 /**
  * Record a run with GPS. The map is the background of the whole screen: before the run it shows
@@ -128,18 +138,13 @@ function IdleRun({ timezone }: { timezone: string }) {
 
   return (
     <ScrollView style={StyleSheet.absoluteFill} showsVerticalScrollIndicator={false}>
-      <EditorialHero
-        word={de.run.word}
-        label={de.run.heroLabel}
-        pose="run"
-        inset={0}
-        topInset={insets.top + 56}
-      />
+      <View style={[styles.pushyStage, { paddingTop: insets.top + 56 }]}>
+        <Pushy pose="run" scale={1.6} />
+      </View>
       <View style={[styles.sheet, { paddingBottom: spacing.xl + insets.bottom }]}>
         <FadeIn style={styles.sheetSection}>
           <Button
             label={de.run.start}
-            fur
             loading={starting}
             disabled={gps.recovered !== null}
             onPress={() => {
@@ -164,11 +169,16 @@ function IdleRun({ timezone }: { timezone: string }) {
           ) : null}
         </FadeIn>
         <FadeIn delayMs={60}>
-          <Button
-            label={de.battery.link}
-            variant="secondary"
+          <Pressable
+            accessibilityRole="link"
+            accessibilityLabel={de.battery.link}
             onPress={() => router.push('/battery')}
-          />
+            style={styles.textLink}
+          >
+            <Text variant="caption" color="accent" align="center">
+              {de.battery.link}
+            </Text>
+          </Pressable>
         </FadeIn>
         <FadeIn delayMs={100}>
           <PeriodCard userId={session.user.id} />
@@ -215,6 +225,8 @@ function ActiveRun({ onInset }: { onInset: (height: number) => void }) {
   const sinceLast = !paused && hasCurrentFix ? Math.min(10, Math.max(0, (now - last.t) / 1000)) : 0;
   const elapsed = stats.elapsedS + sinceLast;
   const pace = paceSecondsPerKm(stats.distanceM, stats.elapsedS);
+  const averageSpeed =
+    stats.elapsedS > 0 ? speedFormat.format((stats.distanceM / stats.elapsedS) * 3.6) : '–';
   const { voice } = usePreferences();
   useKilometerAnnouncements(recorder.points, stats.elapsedS, voice && !paused);
 
@@ -242,27 +254,19 @@ function ActiveRun({ onInset }: { onInset: (height: number) => void }) {
             >
               {paused ? de.run.paused : !hasCurrentFix ? de.run.accuracyWaiting : de.run.recording}
             </Text>
-            <Text
-              variant="display"
-              align="center"
-              style={styles.number}
-              adjustsFontSizeToFit
-              numberOfLines={1}
-            >
-              {formatClock(elapsed)}
-            </Text>
-            <FurNumber value={formatKm(stats.distanceM)} unit="km" height={52} maxWidth={300} />
+            <FurNumber value={formatKm(stats.distanceM)} unit="km" height={80} maxWidth={300} />
+            <View style={styles.statCard}>
+              <Stat label={de.run.statTime} value={formatClock(elapsed)} />
+              <Stat label={de.run.statPace} value={formatPace(pace)} divided />
+              <Stat label={de.run.statSpeed} value={averageSpeed} divided />
+            </View>
           </View>
         }
       >
-        <View style={styles.statRow}>
-          <Stat label={de.run.averagePace} value={formatPace(pace)} />
-        </View>
         {lastSplit ? (
-          <Stat
-            label={`${de.runStats.lastKm} (${lastSplit.km})`}
-            value={formatPace(lastSplit.seconds)}
-          />
+          <Text variant="caption" color="textSecondary" align="center">
+            {`${de.runStats.lastKm} (${lastSplit.km}): ${formatPace(lastSplit.seconds)}`}
+          </Text>
         ) : null}
         {recorder.full ? (
           <Text color="danger" accessibilityRole="alert">
@@ -274,17 +278,19 @@ function ActiveRun({ onInset }: { onInset: (height: number) => void }) {
             {controlError}
           </Text>
         ) : null}
-        <Button
-          label={paused ? de.run.resume : de.run.pause}
-          loading={busy}
-          onPress={() => act(paused ? gps.resume : gps.pause)}
-        />
-        <Button
-          label={de.run.stop}
-          variant="danger"
-          disabled={busy}
-          onPress={() => setStopOpen(true)}
-        />
+        <View style={styles.controls}>
+          <View style={styles.control}>
+            <Button
+              label={paused ? de.run.resume : de.run.pause}
+              variant="secondary"
+              loading={busy}
+              onPress={() => act(paused ? gps.resume : gps.pause)}
+            />
+          </View>
+          <View style={styles.control}>
+            <Button label={de.run.stop} disabled={busy} onPress={() => setStopOpen(true)} />
+          </View>
+        </View>
       </DraggablePanel>
       <Sheet
         visible={stopOpen}
@@ -326,13 +332,25 @@ function ActiveRun({ onInset }: { onInset: (height: number) => void }) {
   );
 }
 
-function Stat({ label, value }: { label: string; value: string }) {
+function Stat({
+  label,
+  value,
+  divided = false,
+}: {
+  label: string;
+  value: string;
+  divided?: boolean;
+}) {
   return (
-    <View style={styles.stat} accessible accessibilityLabel={`${label}: ${value}`}>
-      <Text variant="label" color="textSecondary" align="center">
+    <View
+      style={[styles.stat, divided && styles.statDivided]}
+      accessible
+      accessibilityLabel={`${label}: ${value}`}
+    >
+      <Text variant="label" color="textSecondary" align="center" style={styles.statLabel}>
         {label}
       </Text>
-      <Text variant="title" align="center" style={styles.number}>
+      <Text variant="heading" align="center" style={styles.number}>
         {value}
       </Text>
     </View>
@@ -424,13 +442,36 @@ const styles = StyleSheet.create({
   headerNumbers: {
     gap: spacing.xxs,
   },
-  statRow: {
+  pushyStage: {
+    alignItems: 'center',
+    height: 300,
+    justifyContent: 'flex-end',
+  },
+  statCard: {
     flexDirection: 'row',
-    gap: spacing.md,
+    alignSelf: 'stretch',
+    paddingVertical: spacing.md,
+    borderRadius: radius.card,
+    borderWidth: layout.borderWidth,
+    borderColor: colors.border,
+    backgroundColor: colors.surface,
   },
   stat: {
     flex: 1,
     gap: spacing.xxs,
+  },
+  statDivided: {
+    borderLeftWidth: layout.borderWidth,
+    borderLeftColor: colors.border,
+  },
+  statLabel: { fontSize: 11, letterSpacing: 1 },
+  textLink: { minHeight: 44, justifyContent: 'center' },
+  controls: {
+    flexDirection: 'row',
+    gap: spacing.xs,
+  },
+  control: {
+    flex: 1,
   },
   number: {
     fontVariant: ['tabular-nums'],

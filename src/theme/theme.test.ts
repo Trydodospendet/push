@@ -5,23 +5,22 @@ describe('theme tokens', () => {
   it('matches the specified color palette', () => {
     expect(colors).toEqual({
       bg: '#0A0A0A',
-      surface: '#161616',
+      surface: '#151515',
       surfaceRaised: '#1F1F1F',
-      border: '#2A2A2A',
+      border: '#222222',
       text: '#FFFFFF',
-      textSecondary: '#A1A1A1',
+      textSecondary: '#9A9A9A',
       textMuted: '#8A8A8A',
       accent: '#C6FF00',
       onAccent: '#0A0A0A',
       danger: '#FF4D4D',
-      heroTop: '#33460A',
-      heroMid: '#16200A',
+      tabInactive: '#6E6E6E',
     });
   });
 
   it('matches the specified spacing scale and radii', () => {
     expect(Object.values(spacing)).toEqual([4, 8, 12, 16, 24, 32, 48]);
-    expect(radius).toEqual({ card: 12, pill: 999 });
+    expect(radius).toEqual({ card: 16, pill: 999 });
   });
 
   it('keeps touch targets at 44 pt or more', () => {

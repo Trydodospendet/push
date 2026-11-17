@@ -3,17 +3,10 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, RefreshControl, StyleSheet, View } from 'react-native';
 
-import {
-  Button,
-  Card,
-  EditorialHero,
-  ErrorState,
-  Icon,
-  LoadingState,
-  Screen,
-  Text,
-} from '@/components';
-import { APP_NAME, DEFAULT_TIMEZONE } from '@/config/app';
+import { Button, Card, ErrorState, Icon, LoadingState, Screen, Text } from '@/components';
+import { DEFAULT_TIMEZONE } from '@/config/app';
+import { SleepyPushy } from '@/features/coach/sleepy-pushy';
+import { CommunityCounter } from '@/features/donations/donation-cards';
 import { useSession } from '@/features/auth/auth-provider';
 import { useMyChallenges } from '@/features/challenges/api';
 import { CompactGoal } from '@/features/challenges/compact-goal';
@@ -112,11 +105,12 @@ export default function HomeScreen() {
       }
     >
       {primary ? null : (
-        <EditorialHero
-          word={APP_NAME.toUpperCase()}
-          label={`${de.home.label} · ${de.home.ready}`}
-          pose="sit"
-        />
+        <View style={styles.idle}>
+          <Text variant="label" color="textSecondary">
+            {`${de.home.label} · ${de.home.ready}`}
+          </Text>
+          <SleepyPushy pose="sit" height={168} />
+        </View>
       )}
       <HealthBanner />
       {primary ? (
@@ -145,8 +139,10 @@ export default function HomeScreen() {
           {lastSync}
         </Text>
       ) : null}
-      <StreakFlame userId={session.user.id} />
-      <CommunityCard />
+      <View style={styles.tiles}>
+        <StreakFlame userId={session.user.id} />
+        <CommunityCounter />
+      </View>
 
       <Pressable
         accessibilityRole="button"
@@ -213,6 +209,7 @@ export default function HomeScreen() {
             <Button label={de.home.run} variant="secondary" onPress={() => router.push('/run')} />
           )}
           <LastGoalResult />
+          <CommunityCard />
           <WeekSummary userId={session.user.id} />
           <RecentWins userId={session.user.id} timezone={timezone} />
           <Text variant="label" color="textSecondary" accessibilityRole="header">
@@ -231,10 +228,12 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   content: {
-    paddingTop: 0,
+    paddingTop: spacing.md,
     paddingBottom: spacing.xl,
     gap: spacing.md,
   },
+  idle: { alignItems: 'center', gap: spacing.md },
+  tiles: { flexDirection: 'row', gap: spacing.xs },
   pick: {
     gap: spacing.md,
   },
