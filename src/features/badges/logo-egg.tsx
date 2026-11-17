@@ -61,6 +61,8 @@ export function LogoEgg() {
 const styles = StyleSheet.create({
   root: {
     alignSelf: 'center',
+    minHeight: 44,
+    justifyContent: 'center',
     paddingVertical: spacing.sm,
     paddingHorizontal: spacing.lg,
   },

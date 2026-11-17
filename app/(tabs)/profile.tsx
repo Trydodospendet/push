@@ -1,3 +1,4 @@
+import { useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 
@@ -73,10 +74,15 @@ export default function ProfileScreen() {
   const session = useSession();
   const profile = useMyProfile(session.user.id);
   const signOut = useSignOut();
+  const queryClient = useQueryClient();
   const avatar = useAvatarUrl(profile.data?.avatar_path);
 
   return (
-    <Screen scroll contentStyle={styles.content}>
+    <Screen
+      scroll
+      contentStyle={styles.content}
+      onRefresh={() => Promise.all([profile.refetch(), queryClient.invalidateQueries()])}
+    >
       {profile.isPending ? (
         <LoadingState />
       ) : profile.isError ? (

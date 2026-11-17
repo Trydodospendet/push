@@ -1,3 +1,4 @@
+import { useQueryClient } from '@tanstack/react-query';
 import { Stack, useLocalSearchParams } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, Share, StyleSheet, View } from 'react-native';
@@ -49,8 +50,14 @@ const SCREEN_EDGES = ['bottom', 'left', 'right'] as const;
 /** Friends (invite, requests, runs with kudos and comments), groups with a board, the league. */
 export default function SocialScreen() {
   const { code } = useLocalSearchParams<{ code?: string }>();
+  const queryClient = useQueryClient();
   return (
-    <Screen scroll edges={SCREEN_EDGES} contentStyle={styles.content}>
+    <Screen
+      scroll
+      edges={SCREEN_EDGES}
+      contentStyle={styles.content}
+      onRefresh={() => queryClient.invalidateQueries()}
+    >
       <Stack.Screen options={{ title: de.social.title }} />
       <FadeIn style={styles.section}>
         <InviteCard />

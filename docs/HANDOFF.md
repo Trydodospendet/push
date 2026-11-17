@@ -1,5 +1,10 @@
 # Übergabe – Branch `ausbau`
 
+## Gewohnte Bedienmuster (AUFTRAG Teil A Punkt 9)
+
+- Geprüft und schon erfüllt: vier Tabs (Home links, Profil rechts), Android-Zurück schließt Sheets (`onRequestClose`), Ladezustände als Skeleton (`LoadingState`), Haptik bei Knöpfen und Halten.
+- Neu: `Screen` hat `onRefresh` (Runterziehen = neu laden) und nutzt es auf Profil, Freunde, Trainingsplan; der Lauf-Start lädt ebenfalls per Runterziehen neu (Home, Laufen, Ranked, Wallet, Pool hatten es schon). Sheets lassen sich am Kopf nach unten wischen. Tippfläche des Logos mindestens 44 pt, Haptik beim Speichern eines Laufs.
+
 ## Echtgeld-Pfand mit Stripe, standardmäßig AUS (17.11.2026)
 
 - Neue Migration `20261202100000_real_money.sql`: Schalter `private.settings.real_money_enabled` (+ `real_money_open_to_all`, Testnutzerliste `private.real_money_testers`), Tabellen `payments` (RLS: nur eigene), `stripe_customers`, `stripe_events`, `donation_obligations` (90 % je abgebuchtem Pfand, Organisation, Monat; Bericht `private.donation_report`). Echtgeld bucht nichts im Credits-Ledger: `post_user_entry` überspringt die Stake-Buchung dieser Ziele (GUC `push.real_money_goal`), `settle_single` markiert stattdessen `pending_action` (`cancel` bei erreicht, `capture` bei verfehlt). Ziele höchstens 6 Tage, Kulanzzeit 12 h (Stripe gibt Reservierungen nach 7 Tagen frei). Abgelaufen/fehlgeschlagen = „nicht gesichert“, nichts abgebucht.

@@ -1,8 +1,10 @@
+import { useQueryClient } from '@tanstack/react-query';
 import { router } from 'expo-router';
 import { useState } from 'react';
 import {
   Linking,
   Pressable,
+  RefreshControl,
   ScrollView,
   StyleSheet,
   useWindowDimensions,
@@ -27,6 +29,7 @@ import { RouteMap } from '@/features/gps/route-map';
 import { RunList } from '@/features/gps/run-list';
 import { useClock } from '@/features/gps/use-clock';
 import { useKilometerAnnouncements } from '@/features/gps/voice';
+import { hapticSelect, hapticSuccess } from '@/features/preferences/haptics';
 import { usePreferences } from '@/features/preferences/store';
 import { Pushy } from '@/features/coach/pushy';
 import { FurNumber } from '@/features/fur/fur-number';
@@ -132,12 +135,30 @@ function IdleRun({ timezone }: { timezone: string }) {
   const gps = useGps();
   const session = useSession();
   const insets = useSafeAreaInsets();
+  const queryClient = useQueryClient();
+  const [refreshing, setRefreshing] = useState(false);
   const [starting, setStarting] = useState(false);
   const [outcome, setOutcome] = useState<StartOutcome | null>(null);
   const message = outcome === null ? null : startMessage(outcome);
 
   return (
-    <ScrollView style={StyleSheet.absoluteFill} showsVerticalScrollIndicator={false}>
+    <ScrollView
+      style={StyleSheet.absoluteFill}
+      showsVerticalScrollIndicator={false}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={() => {
+            hapticSelect();
+            setRefreshing(true);
+            void queryClient.invalidateQueries().finally(() => setRefreshing(false));
+          }}
+          tintColor={colors.accent}
+          colors={[colors.onAccent]}
+          progressBackgroundColor={colors.accent}
+        />
+      }
+    >
       <View style={[styles.pushyStage, { paddingTop: insets.top + 56 }]}>
         <Pushy pose="run" scale={1.6} />
       </View>
@@ -304,6 +325,7 @@ function ActiveRun({ onInset }: { onInset: (height: number) => void }) {
           onPress={() => {
             setBusy(true);
             void gps.stop().finally(() => {
+              hapticSuccess();
               setBusy(false);
               setStopOpen(false);
             });

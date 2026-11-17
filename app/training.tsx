@@ -1,4 +1,5 @@
 import { IntroPager } from '@/features/intro/intro-pager';
+import { useQueryClient } from '@tanstack/react-query';
 import { Stack } from 'expo-router';
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
@@ -28,6 +29,7 @@ const SCREEN_EDGES = ['bottom', 'left', 'right'] as const;
 
 /** Pick a plan (e.g. "In 8 Wochen zu 5 km") or follow the active one week by week. */
 export default function TrainingScreen() {
+  const queryClient = useQueryClient();
   const session = useSession();
   const userId = session.user.id;
   const active = useActivePlan(userId);
@@ -45,7 +47,12 @@ export default function TrainingScreen() {
   if (!active.isPending && !active.isError && !active.data && slide < de.improvements.slides.length)
     return <IntroPager training onFinish={() => setSlide(de.improvements.slides.length)} />;
   return (
-    <Screen scroll edges={SCREEN_EDGES} contentStyle={styles.content}>
+    <Screen
+      scroll
+      edges={SCREEN_EDGES}
+      contentStyle={styles.content}
+      onRefresh={() => queryClient.invalidateQueries()}
+    >
       <Stack.Screen options={{ title: de.training.title }} />
       {active.isPending ? (
         <LoadingState />

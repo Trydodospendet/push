@@ -1,5 +1,6 @@
-import { createContext, useContext, type ReactElement, type ReactNode } from 'react';
+import { createContext, useContext, useState, type ReactElement, type ReactNode } from 'react';
 import {
+  RefreshControl,
   ScrollView,
   StyleSheet,
   View,
@@ -10,6 +11,7 @@ import {
 import { SafeAreaView, useSafeAreaInsets, type Edge } from 'react-native-safe-area-context';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 
+import { hapticSelect } from '@/features/preferences/haptics';
 import { colors, layout, spacing, topLightOpacity } from '@/theme';
 
 /** Faint lime light falling from the top edge; decorative only. */
@@ -37,6 +39,8 @@ export type ScreenProps = {
   scroll?: boolean;
   /** Pull-to-refresh; only used together with `scroll`. */
   refreshControl?: ReactElement<RefreshControlProps>;
+  /** Pull down to reload: a standard refresh control is added; only used together with `scroll`. */
+  onRefresh?: () => Promise<unknown> | void;
   /** Extra styles for the padded content area. */
   contentStyle?: StyleProp<ViewStyle>;
   /** Safe-area edges to pad; screens below a navigation header leave out 'top'. */
@@ -48,12 +52,29 @@ export function Screen({
   children,
   scroll = false,
   refreshControl,
+  onRefresh,
   contentStyle,
   edges,
   testID,
 }: ScreenProps) {
   const hasHeader = useContext(ScreenHeaderContext);
   const insets = useSafeAreaInsets();
+  const [refreshing, setRefreshing] = useState(false);
+  const control =
+    refreshControl ??
+    (onRefresh ? (
+      <RefreshControl
+        refreshing={refreshing}
+        onRefresh={() => {
+          hapticSelect();
+          setRefreshing(true);
+          void Promise.resolve(onRefresh()).finally(() => setRefreshing(false));
+        }}
+        tintColor={colors.accent}
+        colors={[colors.onAccent]}
+        progressBackgroundColor={colors.accent}
+      />
+    ) : undefined);
   // Inside the tabs the content ends with room for the tab bar and the system navigation.
   const bottomSpace = hasHeader ? layout.tabBarHeight + insets.bottom : 0;
   return (
@@ -67,7 +88,7 @@ export function Screen({
         <ScrollView
           contentContainerStyle={[styles.content, styles.scrollContent, contentStyle]}
           keyboardShouldPersistTaps="handled"
-          refreshControl={refreshControl}
+          refreshControl={control}
         >
           {children}
           {bottomSpace > 0 ? <View style={{ height: bottomSpace }} /> : null}

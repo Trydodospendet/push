@@ -1,11 +1,23 @@
-import type { ReactNode } from 'react';
-import { Modal, Pressable, ScrollView, StyleSheet, View, useWindowDimensions } from 'react-native';
+import { useMemo, type ReactNode } from 'react';
+import {
+  Animated,
+  Modal,
+  PanResponder,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  View,
+  useAnimatedValue,
+  useWindowDimensions,
+} from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { useMotionEnabled } from '@/features/preferences/motion';
 import { colors, layout, radius, scrim, spacing } from '@/theme';
 
 import { Text } from './text';
+
+const SWIPE_CLOSE_DISTANCE = 100;
 
 export type SheetProps = {
   visible: boolean;
@@ -21,6 +33,26 @@ export function Sheet({ visible, title, onClose, children, closeLabel }: SheetPr
   const insets = useSafeAreaInsets();
   const { height } = useWindowDimensions();
   const motionEnabled = useMotionEnabled();
+  const drag = useAnimatedValue(0);
+  // Swiping the top of the sheet down closes it, like in every other app.
+  const swipe = useMemo(
+    () =>
+      PanResponder.create({
+        onStartShouldSetPanResponder: () => true,
+        onMoveShouldSetPanResponder: (_event, g) => g.dy > 6,
+        onPanResponderMove: (_event, g) => drag.setValue(Math.max(0, g.dy)),
+        onPanResponderRelease: (_event, g) => {
+          if (g.dy > SWIPE_CLOSE_DISTANCE || g.vy > 0.8) {
+            drag.setValue(0);
+            onClose();
+          } else {
+            Animated.spring(drag, { toValue: 0, useNativeDriver: true }).start();
+          }
+        },
+        onPanResponderTerminate: () => drag.setValue(0),
+      }),
+    [drag, onClose],
+  );
 
   return (
     <Modal
@@ -38,9 +70,10 @@ export function Sheet({ visible, title, onClose, children, closeLabel }: SheetPr
           accessibilityRole="button"
           accessibilityLabel={closeLabel}
         />
-        <View
+        <Animated.View
           style={[
             styles.sheet,
+            { transform: [{ translateY: drag }] },
             {
               maxHeight: height - insets.top - spacing.md,
               paddingBottom: insets.bottom + spacing.lg,
@@ -48,17 +81,19 @@ export function Sheet({ visible, title, onClose, children, closeLabel }: SheetPr
           ]}
           accessibilityViewIsModal
         >
-          <View style={styles.handle} />
-          <Text variant="heading" accessibilityRole="header">
-            {title}
-          </Text>
+          <View {...swipe.panHandlers} style={styles.swipeArea}>
+            <View style={styles.handle} />
+            <Text variant="heading" accessibilityRole="header">
+              {title}
+            </Text>
+          </View>
           <ScrollView
             keyboardShouldPersistTaps="handled"
             contentContainerStyle={{ gap: spacing.md }}
           >
             {children}
           </ScrollView>
-        </View>
+        </Animated.View>
       </View>
     </Modal>
   );
@@ -81,6 +116,9 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.sm,
+    gap: spacing.md,
+  },
+  swipeArea: {
     gap: spacing.md,
   },
   handle: {
