@@ -12,6 +12,9 @@ export const colors = {
   /** Text on lime surfaces. */
   onAccent: '#0A0A0A',
   danger: '#FF4D4D',
+  /** Dark lime/olive at the top of editorial headers; fades into bg. */
+  heroTop: '#33460A',
+  heroMid: '#16200A',
 } as const;
 
 export type ColorToken = keyof typeof colors;

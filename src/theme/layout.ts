@@ -9,7 +9,7 @@ export const layout = {
   chipHeight: 44,
   iconSize: 24,
   /** Initials-in-a-circle avatars. */
-  avatar: { sm: 32, md: 44, lg: 80 },
+  avatar: { sm: 32, md: 44, lg: 80, xl: 136 },
   /** Progress ring on the home screen. */
   ring: { size: 252, holeShare: 0.7, stroke: 12 },
   /** Bars of the weekly chart. */

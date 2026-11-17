@@ -1,14 +1,14 @@
 import { StyleSheet, View } from 'react-native';
 
-import { Card, ErrorState, LoadingState, Text } from '@/components';
+import { ErrorState, LoadingState, Text } from '@/components';
 import { de } from '@/i18n/de';
-import { spacing } from '@/theme';
+import { spacing, typography } from '@/theme';
 
 import { useMyStats } from './api';
 
 const kmFormat = new Intl.NumberFormat('de-DE', { maximumFractionDigits: 1 });
 
-/** Total kilometres, won challenges and winnings – all numbers come from the server. */
+/** Three big key figures (streak, kilometres, reached goals); all numbers come from the server. */
 export function StatsCard({ userId }: { userId: string }) {
   const stats = useMyStats(userId);
   if (stats.isPending) {
@@ -24,45 +24,45 @@ export function StatsCard({ userId }: { userId: string }) {
     );
   }
   const items = [
-    {
-      label: de.stats.totalDistance,
-      value: de.stats.km(kmFormat.format(stats.data.totalDistanceM / 1000)),
-    },
-    { label: de.stats.totalWins, value: String(stats.data.wins) },
+    { label: de.stats.kpiStreak, value: String(stats.data.streakDays) },
+    { label: de.stats.kpiKm, value: kmFormat.format(stats.data.totalDistanceM / 1000) },
+    { label: de.stats.kpiGoals, value: String(stats.data.wins) },
   ];
   return (
-    <Card style={styles.stats}>
-      <Text variant="label" color="textSecondary">
-        {de.stats.profileLabel}
-      </Text>
+    <View style={styles.row}>
       {items.map((item) => (
         <View
           key={item.label}
-          style={styles.statRow}
+          style={styles.item}
           accessible
           accessibilityLabel={`${item.label}: ${item.value}`}
         >
-          <Text color="textSecondary">{item.label}</Text>
-          <Text variant="heading" style={styles.statValue}>
+          <Text
+            style={styles.value}
+            color="accent"
+            numberOfLines={1}
+            adjustsFontSizeToFit
+            align="center"
+          >
             {item.value}
+          </Text>
+          <Text variant="label" color="textSecondary" align="center" numberOfLines={2}>
+            {item.label}
           </Text>
         </View>
       ))}
-    </Card>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  stats: {
-    gap: spacing.sm,
-  },
-  statRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    gap: spacing.sm,
-  },
-  statValue: {
+  row: { flexDirection: 'row', gap: spacing.sm },
+  item: { flex: 1, gap: spacing.xxs, alignItems: 'stretch' },
+  value: {
+    fontFamily: typography.display.fontFamily,
+    fontSize: 44,
+    lineHeight: 50,
+    letterSpacing: -1.5,
     fontVariant: ['tabular-nums'],
   },
 });

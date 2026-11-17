@@ -14,6 +14,8 @@ describe('theme tokens', () => {
       accent: '#C6FF00',
       onAccent: '#0A0A0A',
       danger: '#FF4D4D',
+      heroTop: '#33460A',
+      heroMid: '#16200A',
     });
   });
 

@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Button, Confetti, Icon, Text } from '@/components';
+import { Button, Confetti, EditorialHero, Text } from '@/components';
 import { BadgeCelebration } from '@/features/badges/badge-celebration';
 import { useSession } from '@/features/auth/auth-provider';
 import { ShareButton } from '@/features/share/share-button';
@@ -19,7 +19,7 @@ import { hapticSuccess } from '@/features/preferences/haptics';
 import { FurNumber } from '@/features/fur/fur-number';
 import { de } from '@/i18n/de';
 import { formatAmount } from '@/lib/money';
-import { colors, motion, radius, spacing } from '@/theme';
+import { colors, motion, spacing } from '@/theme';
 
 import { useMyWins, type Win } from './api';
 import {
@@ -28,10 +28,6 @@ import {
   saveCelebrationState,
   type CelebrationState,
 } from './celebration-storage';
-
-const CONFETTI_COUNT = 14;
-const CONFETTI_DISTANCE = 150;
-const BADGE_SIZE = 112;
 
 /**
  * Shows a full-screen celebration the next time the app is open after a challenge was
@@ -106,16 +102,8 @@ function CelebrationModal({ win, onClose }: { win: Win; onClose: () => void }) {
   }, [progress]);
 
   const amount = formatAmount(win.payoutCents);
-  const badgeScale = progress.interpolate({
-    inputRange: [0, 0.5, 0.75, 1],
-    outputRange: [0, 1.2, 0.95, 1],
-  });
   const textOpacity = progress.interpolate({ inputRange: [0.4, 1], outputRange: [0, 1] });
   const textShift = progress.interpolate({ inputRange: [0.4, 1], outputRange: [spacing.md, 0] });
-  const confettiOpacity = progress.interpolate({
-    inputRange: [0, 0.2, 1],
-    outputRange: [0, 1, 0],
-  });
 
   return (
     <Modal transparent animationType="fade" statusBarTranslucent onRequestClose={onClose}>
@@ -124,44 +112,18 @@ function CelebrationModal({ win, onClose }: { win: Win; onClose: () => void }) {
         accessibilityViewIsModal
       >
         <Confetti />
+        <EditorialHero
+          word={de.celebration.word}
+          label={win.title.toUpperCase()}
+          pose="cheer"
+          inset={spacing.md}
+        />
         <View style={styles.center}>
-          <View style={styles.stage}>
-            {Array.from({ length: CONFETTI_COUNT }, (_, index) => {
-              const angle = (index / CONFETTI_COUNT) * 2 * Math.PI;
-              const distance = progress.interpolate({
-                inputRange: [0, 1],
-                outputRange: [0, CONFETTI_DISTANCE * (index % 2 === 0 ? 1 : 0.7)],
-              });
-              return (
-                <Animated.View
-                  key={index}
-                  style={[
-                    styles.confetti,
-                    index % 3 === 0 && styles.confettiLarge,
-                    {
-                      opacity: confettiOpacity,
-                      transform: [
-                        { translateX: Animated.multiply(distance, Math.cos(angle)) },
-                        { translateY: Animated.multiply(distance, Math.sin(angle)) },
-                      ],
-                    },
-                  ]}
-                />
-              );
-            })}
-            <Animated.View style={[styles.badge, { transform: [{ scale: badgeScale }] }]}>
-              <Icon name="trophy" color="onAccent" size={BADGE_SIZE / 2} />
-            </Animated.View>
-          </View>
-
           <Animated.View
             style={[styles.texts, { opacity: textOpacity, transform: [{ translateY: textShift }] }]}
             accessible
             accessibilityLabel={de.celebration.accessibility(win.title, amount)}
           >
-            <Text variant="label" color="accent" align="center">
-              {de.celebration.title}
-            </Text>
             <FurNumber value={amount} height={72} maxWidth={260} label={`+${amount}`} />
             <Text variant="heading" color="textSecondary" align="center">
               {de.common.credits}
@@ -202,32 +164,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     gap: spacing.xl,
-  },
-  stage: {
-    width: BADGE_SIZE,
-    height: BADGE_SIZE,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  badge: {
-    width: BADGE_SIZE,
-    height: BADGE_SIZE,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: radius.pill,
-    backgroundColor: colors.accent,
-  },
-  confetti: {
-    position: 'absolute',
-    width: spacing.xs,
-    height: spacing.xs,
-    borderRadius: radius.pill,
-    backgroundColor: colors.accent,
-  },
-  confettiLarge: {
-    width: spacing.sm,
-    height: spacing.sm,
-    backgroundColor: colors.text,
   },
   texts: {
     alignItems: 'stretch',

@@ -1,5 +1,12 @@
 # Übergabe – Branch `ausbau`
 
+## Editorial-Design (17.11.2026)
+
+- Neue Komponente `EditorialHero` (`src/components/editorial-hero.tsx`): dunkler Lime/Olive-Verlauf (neue Tokens `heroTop`, `heroMid`), riesiges Wort über die volle Breite (Lime, 17 % Deckkraft, eng gesetzt), Label in Großbuchstaben mit Abstand, Pushy groß davor (antippen = schlafen/aufwachen) oder ein anderes Element (`front`).
+- **Home:** Hero mit Zielwort („3 KM“) und Label „HEUTE · LAUF · …“; darunter die Fell-Zahl groß, „VON 3,00 KM“, Restzeit als Label, Balken, Hauptknopf. Der drehbare Ring (`FidgetRing`) ist entfallen. Ohne Ziel zeigt der Hero „PUSH“ und „BEREIT“. Der Header-Pushy erscheint nur noch auf den anderen Tabs (auf Home ist der große Pushy). „So funktioniert’s“ liegt weiter hinter „Mehr“.
+- **Lauf-Start:** Hero „LOS“ mit laufendem Pushy über dem Verlauf. **Ziel erreicht:** Hero „GESCHAFFT“ mit jubelndem Pushy (Titel des Ziels als Label). **Profil:** Name riesig, Profilbild (neue Größe `xl`) davor, drei große Kennzahlen (Tage in Folge, km gesamt, Ziele geschafft).
+- Wörter sind Text mit `adjustsFontSizeToFit`, Hero-Höhe fest 300 pt plus Safe-Area-Abstand, damit auf kleinen Handys nichts abgeschnitten wird. Das große Wort ist Deko (17 %); alle lesbaren Texte behalten den vollen Kontrast. Auf dem Gerät prüfen: Wortgröße bei langen Namen, Pushy-Höhe auf sehr kleinen Displays. Neuer Build nötig.
+
 ## Korrekturen nach zweitem Handytest (17.11.2026)
 
 - **Freistellung:** `finish-fur-assets.js` löscht den Hintergrund bei Formen nicht mehr per Farbe (Haus, Pokal, Flamme bleiben ganz), bei Pushy nur fast weiße Flächen (Hörner bleiben), zieht die Kante nur 1 px ein und füllt Löcher bei Pushy. Alle Bilder neu erzeugt und auf Schwarz geprüft.

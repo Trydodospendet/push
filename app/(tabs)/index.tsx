@@ -3,8 +3,17 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { Pressable, RefreshControl, StyleSheet, View } from 'react-native';
 
-import { Button, Card, ErrorState, Icon, LoadingState, Screen, Text } from '@/components';
-import { DEFAULT_TIMEZONE } from '@/config/app';
+import {
+  Button,
+  Card,
+  EditorialHero,
+  ErrorState,
+  Icon,
+  LoadingState,
+  Screen,
+  Text,
+} from '@/components';
+import { APP_NAME, DEFAULT_TIMEZONE } from '@/config/app';
 import { useSession } from '@/features/auth/auth-provider';
 import { useMyChallenges } from '@/features/challenges/api';
 import { CompactGoal } from '@/features/challenges/compact-goal';
@@ -102,9 +111,13 @@ export default function HomeScreen() {
         />
       }
     >
-      <Text variant="label" color="textSecondary" accessibilityRole="header">
-        {de.home.label}
-      </Text>
+      {primary ? null : (
+        <EditorialHero
+          word={APP_NAME.toUpperCase()}
+          label={`${de.home.label} · ${de.home.ready}`}
+          pose="sit"
+        />
+      )}
       <HealthBanner />
       {primary ? (
         progress.data ? (
@@ -218,7 +231,7 @@ export default function HomeScreen() {
 
 const styles = StyleSheet.create({
   content: {
-    paddingTop: spacing.xl,
+    paddingTop: 0,
     paddingBottom: spacing.xl,
     gap: spacing.md,
   },

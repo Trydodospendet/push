@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Linking, ScrollView, StyleSheet, useWindowDimensions, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Button, Card, DraggablePanel, FadeIn, Sheet, Text } from '@/components';
+import { Button, Card, DraggablePanel, EditorialHero, FadeIn, Sheet, Text } from '@/components';
 import { DEFAULT_TIMEZONE } from '@/config/app';
 import { useMyProfile } from '@/features/auth/api';
 import { useSession } from '@/features/auth/auth-provider';
@@ -121,18 +121,20 @@ function startMessage(outcome: StartOutcome): string | null {
 function IdleRun({ timezone }: { timezone: string }) {
   const gps = useGps();
   const session = useSession();
-  const { height } = useWindowDimensions();
   const insets = useSafeAreaInsets();
   const [starting, setStarting] = useState(false);
   const [outcome, setOutcome] = useState<StartOutcome | null>(null);
   const message = outcome === null ? null : startMessage(outcome);
 
   return (
-    <ScrollView
-      style={StyleSheet.absoluteFill}
-      contentContainerStyle={{ paddingTop: Math.min(224, Math.round(height * 0.4)) }}
-      showsVerticalScrollIndicator={false}
-    >
+    <ScrollView style={StyleSheet.absoluteFill} showsVerticalScrollIndicator={false}>
+      <EditorialHero
+        word={de.run.word}
+        label={de.run.heroLabel}
+        pose="run"
+        inset={0}
+        topInset={insets.top + 56}
+      />
       <View style={[styles.sheet, { paddingBottom: spacing.xl + insets.bottom }]}>
         <FadeIn style={styles.sheetSection}>
           <Button

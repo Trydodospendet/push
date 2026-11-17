@@ -14,7 +14,7 @@ export type AvatarProps = {
   uri?: string | null;
 };
 
-const textVariant = { sm: 'caption', md: 'body', lg: 'title' } as const;
+const textVariant = { sm: 'caption', md: 'body', lg: 'title', xl: 'display' } as const;
 
 /** Initials in a circle. Decorative: the name is always shown next to it. */
 export function Avatar({ name, size = 'md', highlight = false, uri = null }: AvatarProps) {
