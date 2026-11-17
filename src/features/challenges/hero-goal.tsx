@@ -75,7 +75,7 @@ export function HeroGoal({
       <Text variant="body" color={ratio >= 1 ? 'accent' : 'textSecondary'} align="center">
         {status}
       </Text>
-      <Button label={mainLabel} onPress={onMainAction} loading={mainLoading} />
+      <Button label={mainLabel} fur onPress={onMainAction} loading={mainLoading} />
     </View>
   );
 }

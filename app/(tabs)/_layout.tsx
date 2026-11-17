@@ -2,18 +2,22 @@ import { ScreenHeaderContext } from '@/components/screen';
 import { GoalHeader } from '@/features/challenges/goal-header';
 import { Tabs } from 'expo-router';
 import type { ReactNode } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Icon, type IconName } from '@/components';
+import { GlowPulse, Icon, type IconName } from '@/components';
 import { FurIcon } from '@/features/fur/fur-icon';
 import { WinCelebration } from '@/features/stats/win-celebration';
 import { de } from '@/i18n/de';
-import { colors, glow, layout, typography } from '@/theme';
+import { colors, layout, typography } from '@/theme';
 
 /** Soft lime halo behind the icon of the selected tab. */
 function TabGlow({ focused, children }: { focused: boolean; children: ReactNode }) {
-  return <View style={[styles.tabIcon, focused && styles.tabIconActive]}>{children}</View>;
+  return (
+    <GlowPulse radius={999} blur={14} intensity={0.5} active={focused} style={styles.tabIcon}>
+      {children}
+    </GlowPulse>
+  );
 }
 
 function furTab(name: 'home' | 'shoe' | 'trophy') {
@@ -38,9 +42,6 @@ function tabIcon(name: IconName, focusedName: IconName) {
 
 const styles = StyleSheet.create({
   tabIcon: { alignItems: 'center', justifyContent: 'center', borderRadius: 999 },
-  tabIconActive: {
-    boxShadow: [{ offsetX: 0, offsetY: 0, blurRadius: 14, spreadDistance: 2, color: glow.soft }],
-  },
 });
 
 export default function TabsLayout() {

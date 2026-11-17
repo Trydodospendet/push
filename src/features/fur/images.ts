@@ -30,6 +30,12 @@ export const furImages = {
     sleep: require('../../../assets/fur/pushy-sleep.webp') as ImageSourcePropType,
     wave: require('../../../assets/fur/pushy-wave.webp') as ImageSourcePropType,
   },
+  /** Button background: left cap, stretchable middle, right cap (all 160 px high). */
+  pill: {
+    left: require('../../../assets/fur/pill-left.webp') as ImageSourcePropType,
+    mid: require('../../../assets/fur/pill-mid.webp') as ImageSourcePropType,
+    right: require('../../../assets/fur/pill-right.webp') as ImageSourcePropType,
+  },
   flame: require('../../../assets/fur/flame.webp') as ImageSourcePropType,
   trophy: require('../../../assets/fur/trophy.webp') as ImageSourcePropType,
   heart: require('../../../assets/fur/heart.webp') as ImageSourcePropType,
@@ -55,6 +61,7 @@ export const allFurSources: ImageSourcePropType[] = [
   ...Object.values(furImages.units),
   furImages.push,
   ...Object.values(furImages.pushy),
+  ...Object.values(furImages.pill),
   furImages.flame,
   furImages.trophy,
   furImages.heart,

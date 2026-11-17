@@ -26,6 +26,36 @@ const FOLLOW_ZOOM = 16;
 // Germany, shown until the first GPS fix.
 const FALLBACK_CENTER: [number, number] = [10.45, 51.16];
 const REVEAL_MS = 1800;
+const PULSE_STEPS = 8;
+const PULSE_STEP_MS = 190;
+
+/** 0 to 1, repeating: the pulsing ring around the current position (still when motion is off). */
+function usePulse(enabled: boolean): number {
+  const motionOn = useMotionEnabled();
+  const [step, setStep] = useState(0);
+  const animated = enabled && motionOn;
+  useEffect(() => {
+    if (!animated) return;
+    const timer = setInterval(() => setStep((value) => (value + 1) % PULSE_STEPS), PULSE_STEP_MS);
+    return () => clearInterval(timer);
+  }, [animated]);
+  return animated ? step / PULSE_STEPS : 0;
+}
+
+function toPosition(point: MapPoint | undefined): GeoJSON.FeatureCollection {
+  return {
+    type: 'FeatureCollection',
+    features: point
+      ? [
+          {
+            type: 'Feature',
+            properties: {},
+            geometry: { type: 'Point', coordinates: [point.lng, point.lat] },
+          },
+        ]
+      : [],
+  };
+}
 
 /** One line per segment, so a pause is not drawn as a straight connection. */
 function toGeoJson(points: readonly MapPoint[]): GeoJSON.FeatureCollection {
@@ -101,6 +131,8 @@ export function RouteMap({
   const visible = points.slice(0, shown);
   const last = points[points.length - 1];
   const hasRoute = points.length >= 2;
+  const showPosition = mode === 'follow' && last !== undefined;
+  const pulse = usePulse(showPosition);
   const padding = { top: 96, right: 32, bottom: Math.max(32, bottomInset + 24), left: 32 };
 
   const body = (
@@ -133,6 +165,39 @@ export function RouteMap({
           paint={{ 'line-color': colors.accent, 'line-width': 5 }}
         />
       </GeoJSONSource>
+      {showPosition ? (
+        <GeoJSONSource id="position" data={toPosition(last)}>
+          <Layer
+            id="position-pulse"
+            type="circle"
+            paint={{
+              'circle-color': colors.accent,
+              'circle-radius': 10 + pulse * 16,
+              'circle-opacity': 0.45 * (1 - pulse),
+            }}
+          />
+          <Layer
+            id="position-glow"
+            type="circle"
+            paint={{
+              'circle-color': colors.accent,
+              'circle-radius': 14,
+              'circle-opacity': 0.3,
+              'circle-blur': 0.8,
+            }}
+          />
+          <Layer
+            id="position-dot"
+            type="circle"
+            paint={{
+              'circle-color': colors.accent,
+              'circle-radius': 7,
+              'circle-stroke-width': 2,
+              'circle-stroke-color': colors.bg,
+            }}
+          />
+        </GeoJSONSource>
+      ) : null}
     </Map>
   );
 

@@ -1,5 +1,5 @@
 /* Finishes the cut fur PNGs (marketing/fur-quellen/cut) into small WebP files in assets/fur:
- * matches the colour of the shapes to the digits, pulls the light rim of the cut-out inwards and
+ * matches the colour of the shapes to the digits, pulls the light rim of the cut-out one pixel inwards, fills holes and
  * scales every image to its app size. Needs sharp, which is not an app dependency:
  *   npm i --no-save sharp && node scripts/finish-fur-assets.js */
 const fs = require('fs');
@@ -8,8 +8,32 @@ const sharp = require('sharp');
 
 const SRC = 'marketing/fur-quellen/cut';
 const OUT = 'assets/fur';
-const GLYPHS = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'comma', 'km', 'kmh', 'schritte', 'push'];
-const CREATURES = ['pushy-sit', 'pushy-run', 'pushy-cheer', 'pushy-dizzy', 'pushy-sad', 'pushy-sleep', 'pushy-wave'];
+const GLYPHS = [
+  '0',
+  '1',
+  '2',
+  '3',
+  '4',
+  '5',
+  '6',
+  '7',
+  '8',
+  '9',
+  'comma',
+  'km',
+  'kmh',
+  'schritte',
+  'push',
+];
+const CREATURES = [
+  'pushy-sit',
+  'pushy-run',
+  'pushy-cheer',
+  'pushy-dizzy',
+  'pushy-sad',
+  'pushy-sleep',
+  'pushy-wave',
+];
 const HEIGHT = { glyph: 256, creature: 384, shape: 256, pill: 160 };
 const SMALL = { flame: 192, heart: 128, trophy: 128, home: 96, shoe: 96, arrow: 128 };
 
@@ -36,7 +60,14 @@ function fromHsv(h, s, v) {
   const c = v * s;
   const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
   const m = v - c;
-  const [r, g, b] = [[c, x, 0], [x, c, 0], [0, c, x], [0, x, c], [x, 0, c], [c, 0, x]][Math.floor(((h % 360) + 360) % 360 / 60) % 6];
+  const [r, g, b] = [
+    [c, x, 0],
+    [x, c, 0],
+    [0, c, x],
+    [0, x, c],
+    [x, 0, c],
+    [c, 0, x],
+  ][Math.floor((((h % 360) + 360) % 360) / 60) % 6];
   return [(r + m) * 255, (g + m) * 255, (b + m) * 255];
 }
 
@@ -113,10 +144,13 @@ function defringe(data, w, h) {
  * half-transparent pixel that touches it becomes transparent (floor shadows, white haze, bars
  * between letters). Pixels inside the fur, such as the eyes, are not reached and stay.
  */
-function dropBackground(data, w, h, creature) {
+function dropBackground(data, w, h, kind) {
   const grey = (i) => {
+    if (data[i + 3] < 250) return true;
     const [, sat, val] = toHsv(data[i], data[i + 1], data[i + 2]);
-    return data[i + 3] < 250 || (creature ? sat < 0.18 && val > 0.55 : sat < 0.3 && val > 0.2);
+    if (kind === 'creature') return sat < 0.12 && val > 0.72;
+    if (kind === 'glyph') return sat < 0.3 && val > 0.2;
+    return false;
   };
   const seen = new Uint8Array(w * h);
   const stack = [];
@@ -126,13 +160,28 @@ function dropBackground(data, w, h, creature) {
       stack.push(p);
     }
   }
-  for (let x = 0; x < w; x++) for (const y of [0, h - 1]) if (!seen[y * w + x]) { seen[y * w + x] = 1; stack.push(y * w + x); }
-  for (let y = 0; y < h; y++) for (const x of [0, w - 1]) if (!seen[y * w + x]) { seen[y * w + x] = 1; stack.push(y * w + x); }
+  for (let x = 0; x < w; x++)
+    for (const y of [0, h - 1])
+      if (!seen[y * w + x]) {
+        seen[y * w + x] = 1;
+        stack.push(y * w + x);
+      }
+  for (let y = 0; y < h; y++)
+    for (const x of [0, w - 1])
+      if (!seen[y * w + x]) {
+        seen[y * w + x] = 1;
+        stack.push(y * w + x);
+      }
   while (stack.length) {
     const p = stack.pop();
     const x = p % w;
     const y = (p - x) / w;
-    for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+    for (const [dx, dy] of [
+      [1, 0],
+      [-1, 0],
+      [0, 1],
+      [0, -1],
+    ]) {
       const xx = x + dx;
       const yy = y + dy;
       if (xx < 0 || yy < 0 || xx >= w || yy >= h || seen[yy * w + xx]) continue;
@@ -144,6 +193,37 @@ function dropBackground(data, w, h, creature) {
     }
   }
   for (let p = 0; p < w * h; p++) if (seen[p]) data[p * 4 + 3] = 0;
+  if (kind === 'creature') fillHoles(data, w, h);
+}
+
+/** Makes every translucent pixel solid that the transparent outside cannot reach (no holes in the fur). */
+function fillHoles(data, w, h) {
+  const reach = new Uint8Array(w * h);
+  const stack = [];
+  const push = (p) => {
+    if (!reach[p] && data[p * 4 + 3] < 250) {
+      reach[p] = 1;
+      stack.push(p);
+    }
+  };
+  for (let x = 0; x < w; x++) {
+    push(x);
+    push((h - 1) * w + x);
+  }
+  for (let y = 0; y < h; y++) {
+    push(y * w);
+    push(y * w + w - 1);
+  }
+  while (stack.length) {
+    const p = stack.pop();
+    const x = p % w;
+    const y = (p - x) / w;
+    if (x > 0) push(p - 1);
+    if (x < w - 1) push(p + 1);
+    if (y > 0) push(p - w);
+    if (y < h - 1) push(p + w);
+  }
+  for (let p = 0; p < w * h; p++) if (!reach[p] && data[p * 4 + 3] < 250) data[p * 4 + 3] = 255;
 }
 
 async function load(name, height) {
@@ -151,7 +231,10 @@ async function load(name, height) {
   const meta = await input.metadata();
   const h = height;
   const w = Math.round((meta.width * h) / meta.height);
-  const { data } = await input.resize(w, h, { kernel: 'lanczos3' }).raw().toBuffer({ resolveWithObject: true });
+  const { data } = await input
+    .resize(w, h, { kernel: 'lanczos3' })
+    .raw()
+    .toBuffer({ resolveWithObject: true });
   return { data, w, h };
 }
 
@@ -159,23 +242,31 @@ async function save(name, data, w, h) {
   await sharp(data, { raw: { width: w, height: h, channels: 4 } })
     .webp({ quality: 82, alphaQuality: 90, effort: 6 })
     .toFile(path.join(OUT, `${name}.webp`));
-  console.log(name, `${w}x${h}`, `${Math.round(fs.statSync(path.join(OUT, `${name}.webp`)).size / 1024)} KB`);
+  console.log(
+    name,
+    `${w}x${h}`,
+    `${Math.round(fs.statSync(path.join(OUT, `${name}.webp`)).size / 1024)} KB`,
+  );
 }
 
 async function main() {
   fs.mkdirSync(OUT, { recursive: true });
-  const names = fs.readdirSync(SRC).map((f) => f.replace('.png', ''));
+  const names = fs
+    .readdirSync(SRC)
+    .map((f) => f.replace('.png', ''))
+    .filter((n) => n !== 'ring');
   const loaded = {};
   for (const name of names) {
     const kind = kindOf(name);
     const height = SMALL[name] ?? HEIGHT[kind];
     const img = await load(name, height);
-    dropBackground(img.data, img.w, img.h, kind === 'creature');
-    img.data = defringe(img.data, img.w, img.h);
+    dropBackground(img.data, img.w, img.h, kind);
     img.data = defringe(img.data, img.w, img.h);
     loaded[name] = img;
   }
-  const target = meanHsv(Buffer.concat(['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'].map((n) => loaded[n].data)));
+  const target = meanHsv(
+    Buffer.concat(['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'].map((n) => loaded[n].data)),
+  );
   for (const name of names) {
     const kind = kindOf(name);
     const img = loaded[name];
@@ -192,8 +283,27 @@ async function main() {
         img.data[i + 2] = b;
       }
     }
-    await save(name, img.data, img.w, img.h);
+    if (name === 'pill') {
+      await splitPill(img.data, img.w, img.h);
+    } else {
+      await save(name, img.data, img.w, img.h);
+    }
   }
+}
+
+/** Cuts the pill into left cap, a thin middle strip and right cap, so a button can be any width without distortion. */
+async function splitPill(data, w, h) {
+  const cap = Math.round(h / 2);
+  const mid = 16;
+  const part = (left, width) => {
+    const out = Buffer.alloc(width * h * 4);
+    for (let y = 0; y < h; y++)
+      data.copy(out, y * width * 4, (y * w + left) * 4, (y * w + left + width) * 4);
+    return out;
+  };
+  await save('pill-left', part(0, cap), cap, h);
+  await save('pill-mid', part(Math.floor((w - mid) / 2), mid), mid, h);
+  await save('pill-right', part(w - cap, cap), cap, h);
 }
 
 main();

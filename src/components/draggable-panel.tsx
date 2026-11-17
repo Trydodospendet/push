@@ -100,11 +100,7 @@ export function DraggablePanel({
 
   return (
     <Animated.View
-      style={[
-        styles.panel,
-        { height: maxHeight, paddingBottom: insets.bottom + spacing.sm },
-        { transform: [{ translateY: offset }] },
-      ]}
+      style={[styles.panel, { height: maxHeight }, { transform: [{ translateY: offset }] }]}
     >
       <View {...responder.panHandlers} style={styles.handleArea}>
         <Pressable
@@ -129,7 +125,7 @@ export function DraggablePanel({
         {header}
       </View>
       <ScrollView
-        contentContainerStyle={styles.body}
+        contentContainerStyle={[styles.body, { paddingBottom: spacing.xl + insets.bottom }]}
         showsVerticalScrollIndicator={false}
         nestedScrollEnabled
       >

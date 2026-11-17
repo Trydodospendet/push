@@ -28,9 +28,3 @@ export function formatPace(secondsPerKm: number | null): string {
 export function formatKm(distanceM: number): string {
   return kmFormat.format(distanceM / 1000);
 }
-
-const speedFormat = new Intl.NumberFormat('de-DE', { maximumFractionDigits: 1 });
-
-export function formatSpeed(kmh: number | null): string {
-  return kmh === null ? '—' : speedFormat.format(kmh);
-}

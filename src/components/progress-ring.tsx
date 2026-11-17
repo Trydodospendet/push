@@ -4,6 +4,7 @@ import Svg, { Circle } from 'react-native-svg';
 
 import { colors, layout, motion } from '@/theme';
 
+import { GlowPulse } from './glow-pulse';
 import { clampProgress } from './progress-bar';
 
 export type ProgressRingProps = {
@@ -75,6 +76,9 @@ export function ProgressRing({
       testID={testID}
       style={styles.root}
     >
+      <GlowPulse radius={size / 2} blur={34} intensity={0.3} style={StyleSheet.absoluteFill}>
+        {null}
+      </GlowPulse>
       <Animated.View
         pointerEvents="none"
         style={[

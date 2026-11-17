@@ -11,7 +11,7 @@ import { CompactGoal } from '@/features/challenges/compact-goal';
 import { formatDistance } from '@/features/challenges/format';
 import { HeroGoal } from '@/features/challenges/hero-goal';
 import { LastGoalResult } from '@/features/challenges/last-goal-result';
-import { CommunityCounter } from '@/features/donations/donation-cards';
+import { CommunityCard } from '@/features/community/community-card';
 import { useClock } from '@/features/gps/use-clock';
 import { useMyProgress } from '@/features/health/api';
 import { useHealth } from '@/features/health/health-provider';
@@ -133,6 +133,7 @@ export default function HomeScreen() {
         </Text>
       ) : null}
       <StreakFlame userId={session.user.id} />
+      <CommunityCard />
 
       <Pressable
         accessibilityRole="button"
@@ -201,7 +202,6 @@ export default function HomeScreen() {
           <LastGoalResult />
           <WeekSummary userId={session.user.id} />
           <RecentWins userId={session.user.id} timezone={timezone} />
-          <CommunityCounter />
           <Text variant="label" color="textSecondary" accessibilityRole="header">
             {de.home.howLabel}
           </Text>

@@ -2,6 +2,7 @@ import { StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ProgressBar, Text } from '@/components';
 import { APP_NAME } from '@/config/app';
+import { Coach } from '@/features/coach/coach';
 import { useSession } from '@/features/auth/auth-provider';
 import { useMyProgress } from '@/features/health/api';
 import { pickPrimaryChallenge, progressRatio } from '@/features/health/progress';
@@ -33,9 +34,9 @@ export function GoalHeader() {
     <SafeAreaView edges={['top', 'left', 'right']} style={styles.root}>
       <View style={styles.row}>
         <Text variant="heading">{APP_NAME}</Text>
-        <Text variant="caption" numberOfLines={1} style={styles.title}>
-          {goal ? goal.title : de.coach.hello}
-        </Text>
+        <View style={styles.coach}>
+          <Coach fallback={goal ? goal.title : de.coach.hello} />
+        </View>
       </View>
       {goal ? (
         <ProgressBar
@@ -59,5 +60,5 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     gap: spacing.sm,
   },
-  title: { flexShrink: 1, textAlign: 'right' },
+  coach: { flex: 1 },
 });

@@ -9,6 +9,7 @@ export { ChipGroup, type ChipGroupProps, type ChipOption } from './chip-group';
 export { FadeIn, type FadeInProps } from './fade-in';
 export { FidgetRing } from './fidget-ring';
 export { HoldButton, type HoldButtonProps } from './hold-button';
+export { GlowPulse, type GlowPulseProps } from './glow-pulse';
 export { GlowBackdrop, type GlowBackdropProps } from './glow-backdrop';
 export { DraggablePanel, type DraggablePanelProps } from './draggable-panel';
 export { EmptyState, Illustration, type EmptyStateProps } from './empty-state';

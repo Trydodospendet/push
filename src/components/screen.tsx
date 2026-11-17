@@ -7,10 +7,10 @@ import {
   type StyleProp,
   type ViewStyle,
 } from 'react-native';
-import { SafeAreaView, type Edge } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets, type Edge } from 'react-native-safe-area-context';
 import Svg, { Defs, LinearGradient, Rect, Stop } from 'react-native-svg';
 
-import { colors, spacing, topLightOpacity } from '@/theme';
+import { colors, layout, spacing, topLightOpacity } from '@/theme';
 
 /** Faint lime light falling from the top edge; decorative only. */
 function TopLight() {
@@ -53,6 +53,9 @@ export function Screen({
   testID,
 }: ScreenProps) {
   const hasHeader = useContext(ScreenHeaderContext);
+  const insets = useSafeAreaInsets();
+  // Inside the tabs the content ends with room for the tab bar and the system navigation.
+  const bottomSpace = hasHeader ? layout.tabBarHeight + insets.bottom : 0;
   return (
     <SafeAreaView
       style={styles.root}
@@ -67,6 +70,7 @@ export function Screen({
           refreshControl={refreshControl}
         >
           {children}
+          {bottomSpace > 0 ? <View style={{ height: bottomSpace }} /> : null}
         </ScrollView>
       ) : (
         <View style={[styles.content, styles.fill, contentStyle]}>{children}</View>

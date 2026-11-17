@@ -46,7 +46,14 @@ describe('preferences', () => {
     expect(getPreferences().haptics).toBe(false);
     expect(store.setItem).toHaveBeenCalledWith(
       'push.preferences',
-      JSON.stringify({ animations: true, haptics: false, voice: false, sounds: false }),
+      JSON.stringify({
+        animations: true,
+        haptics: false,
+        voice: false,
+        sounds: false,
+        pushy: true,
+        persistentProgress: false,
+      }),
     );
   });
 

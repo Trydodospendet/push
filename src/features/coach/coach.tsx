@@ -1,15 +1,5 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import {
-  Animated,
-  AppState,
-  PanResponder,
-  Pressable,
-  StyleSheet,
-  useWindowDimensions,
-  useAnimatedValue,
-  View,
-} from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useEffect, useRef, useState } from 'react';
+import { Animated, AppState, Pressable, StyleSheet, useAnimatedValue, View } from 'react-native';
 import { z } from 'zod';
 import { Text } from '@/components';
 import { useSession } from '@/features/auth/auth-provider';
@@ -20,20 +10,16 @@ import { useMyDailySteps, useMyProgress, useRecentWorkouts } from '@/features/he
 import { useHealth } from '@/features/health/health-provider';
 import { progressRatio } from '@/features/health/progress';
 import { useGps } from '@/features/gps/gps-provider';
-import { formatSpeed } from '@/features/gps/format';
-import { currentSpeed } from '@/features/gps/speed';
-import { useClock } from '@/features/gps/use-clock';
-import { useLiveSpeed } from '@/features/gps/use-live-speed';
 import { DEFAULT_TIMEZONE } from '@/config/app';
 import { addDays, toLocalDate } from '@/lib/dates';
 import { secureStorage } from '@/lib/secure-storage';
-import { FurNumber } from '@/features/fur/fur-number';
 import { de } from '@/i18n/de';
-import { colors, radius, spacing } from '@/theme';
+import { layout, spacing } from '@/theme';
 import { coachStage, isNight } from './model';
 import type { PushyPose } from '@/features/fur/images';
-import { hapticSelect, hapticTap } from '@/features/preferences/haptics';
+import { hapticTap } from '@/features/preferences/haptics';
 import { useMotionEnabled } from '@/features/preferences/motion';
+import { usePreferences } from '@/features/preferences/store';
 import { playSound } from '@/features/preferences/sounds';
 import { Pushy } from './pushy';
 const IDLE_MS = 5 * 60 * 1000;
@@ -45,7 +31,13 @@ const memorySchema = z.object({
   ended: z.array(z.string()),
   steps: z.record(z.string(), z.number()).default({}),
 });
-export function Coach() {
+/**
+ * Pushy sits in its own spot at the right edge of the header, so it never covers content. Its
+ * short messages appear next to it (`fallback` when there is none). Tapping puts it to sleep
+ * and wakes it up again.
+ */
+export function Coach({ fallback }: { fallback: string }) {
+  const { pushy: visible } = usePreferences();
   const session = useSession();
   const uid = session.user.id;
   const profile = useMyProfile(uid);
@@ -56,165 +48,48 @@ export function Coach() {
   const challenges = useMyChallenges(uid);
   const progress = useMyProgress(uid);
   const { recorder } = useGps();
-  const { width, height } = useWindowDimensions();
-  const insets = useSafeAreaInsets();
   const [stage, setStage] = useState(0);
   const [message, setMessage] = useState<string | null>(null);
-  const [speedMode, setSpeedMode] = useState(false);
-  const [dragging, setDragging] = useState(false);
-  const [hidden, setHidden] = useState(false);
-  const showingSpeed = speedMode && !hidden;
-  const recording = recorder.status === 'recording';
-  const now = useClock(showingSpeed && recording);
-  const [flip, setFlip] = useState(0);
   const [visit, setVisit] = useState(0);
   const handled = useRef(-1);
   const lastQuote = useRef(-1);
   const motionOn = useMotionEnabled();
   const bounce = useAnimatedValue(0);
-  const celebration = useAnimatedValue(0);
-  const wiggle = useAnimatedValue(0);
   const hop = useAnimatedValue(0);
   const pokes = useRef(0);
-  const shaking = useRef({ direction: 0, flips: 0, startedAt: 0, lastX: 0 });
-  const [position] = useState(
-    () =>
-      new Animated.ValueXY({
-        x: Math.max(8, width - 90),
-        y: Math.max(insets.top, height - insets.bottom - 190),
-      }),
-  );
-  const origin = useRef({
-    x: Math.max(8, width - 90),
-    y: Math.max(insets.top, height - insets.bottom - 190),
-  });
   const [mood, setMood] = useState<'won' | 'missed' | null>(null);
   const [waving, setWaving] = useState(false);
-  const [idle, setIdle] = useState(false);
+  const [asleep, setAsleep] = useState(() => isNight(new Date().getHours()));
   const [activity, setActivity] = useState(0);
-  const [night, setNight] = useState(() => isNight(new Date().getHours()));
-  const [bubbleLeft, setBubbleLeft] = useState(-130);
-  const spinOnce = useCallback(() => {
-    if (!motionOn) return;
-    celebration.setValue(0);
-    Animated.sequence([
-      Animated.timing(celebration, { toValue: 1, duration: 210, useNativeDriver: true }),
-      Animated.timing(celebration, { toValue: 2, duration: 210, useNativeDriver: true }),
-    ]).start();
-    setFlip((value) => value + 1);
-  }, [celebration, motionOn]);
-  /** A tap: Pushy hops, says something short and gives a little feedback. */
-  const poke = useCallback(() => {
+  const wasNight = useRef(isNight(new Date().getHours()));
+  const recording = recorder.status === 'recording';
+
+  /** A tap: sleeping Pushy wakes up, awake Pushy falls asleep. */
+  const toggleSleep = () => {
     hapticTap();
     playSound('pop');
-    setIdle(false);
     setActivity((value) => value + 1);
-    setWaving(true);
-    pokes.current += 1;
-    setMessage(de.coach.pokes[pokes.current % de.coach.pokes.length]);
-    if (!motionOn) return;
-    hop.setValue(0);
-    Animated.sequence([
-      Animated.timing(hop, { toValue: 1, duration: 130, useNativeDriver: true }),
-      Animated.timing(hop, { toValue: 2, duration: 170, useNativeDriver: true }),
-    ]).start();
-  }, [hop, motionOn, setIdle, setActivity, setWaving]);
-  /** Shaking Pushy to and fro makes it dizzy: one spin and a complaint. */
-  const dizzy = useCallback(() => {
-    hapticSelect();
-    playSound('tick');
-    setMessage(de.coach.shaken);
-    spinOnce();
-  }, [spinOnce]);
-  const switchMode = useCallback(() => {
-    setSpeedMode((wasShowingSpeed) => {
-      if (wasShowingSpeed) spinOnce();
-      return !wasShowingSpeed;
-    });
-  }, [spinOnce]);
-  const bounds = useCallback(
-    (x: number, y: number) => ({
-      x: Math.max(8, Math.min(width - 88, x)),
-      y: Math.max(insets.top + 50, Math.min(height - insets.bottom - 150, y)),
-    }),
-    [width, height, insets.top, insets.bottom],
-  );
-  const responder = useMemo(
-    () =>
-      // Gesture callbacks read refs only when a touch occurs.
-      // eslint-disable-next-line react-hooks/refs
-      PanResponder.create({
-        onStartShouldSetPanResponder: () => true,
-        onPanResponderGrant: (event) => {
-          hapticTap();
-          shaking.current = {
-            direction: 0,
-            flips: 0,
-            startedAt: event.nativeEvent.timestamp,
-            lastX: 0,
-          };
-          setDragging(true);
-        },
-        onPanResponderMove: (event, g) => {
-          const shake = shaking.current;
-          const step = g.dx - shake.lastX;
-          if (Math.abs(step) >= 14) {
-            const direction = step > 0 ? 1 : -1;
-            if (shake.direction !== 0 && direction !== shake.direction) shake.flips += 1;
-            shake.direction = direction;
-            shake.lastX = g.dx;
-            if (event.nativeEvent.timestamp - shake.startedAt > 900) {
-              shake.flips = 0;
-              shake.startedAt = event.nativeEvent.timestamp;
-            }
-            if (shake.flips >= 4) {
-              shake.flips = 0;
-              shake.startedAt = event.nativeEvent.timestamp;
-              dizzy();
-            }
-          }
-          position.setValue({
-            x: Math.max(8, Math.min(width - 88, origin.current.x + g.dx)),
-            y: Math.max(
-              insets.top + 50,
-              Math.min(height - insets.bottom - 150, origin.current.y + g.dy),
-            ),
-          });
-        },
-        onPanResponderRelease: (_, g) => {
-          const next = {
-            x: Math.max(8, Math.min(width - 88, origin.current.x + g.dx)),
-            y: Math.max(
-              insets.top + 50,
-              Math.min(height - insets.bottom - 150, origin.current.y + g.dy),
-            ),
-          };
-          origin.current = next;
-          setBubbleLeft(next.x > width / 2 ? -130 : 0);
-          position.setValue(next);
-          setDragging(false);
-          if (Math.abs(g.dx) + Math.abs(g.dy) < 8) {
-            poke();
-            switchMode();
-          }
-        },
-        onPanResponderTerminate: () => {
-          position.setValue(origin.current);
-          setDragging(false);
-        },
-      }),
-    [height, width, insets.top, insets.bottom, position, switchMode, poke, dizzy],
-  );
-  useEffect(() => {
-    const next = bounds(origin.current.x, origin.current.y);
-    origin.current = next;
-    position.setValue(next);
-  }, [width, height, insets.top, insets.bottom, position, bounds]);
+    if (asleep) {
+      setAsleep(false);
+      setWaving(true);
+      pokes.current += 1;
+      setMessage(de.coach.pokes[pokes.current % de.coach.pokes.length]);
+      if (!motionOn) return;
+      hop.setValue(0);
+      Animated.sequence([
+        Animated.timing(hop, { toValue: 1, duration: 130, useNativeDriver: true }),
+        Animated.timing(hop, { toValue: 2, duration: 170, useNativeDriver: true }),
+      ]).start();
+    } else {
+      setWaving(false);
+      setMessage(null);
+      setAsleep(true);
+    }
+  };
   useEffect(() => {
     const sub = AppState.addEventListener('change', (state) => {
       if (state === 'active') {
         setVisit((v) => v + 1);
-        setIdle(false);
         setActivity((value) => value + 1);
       }
     });
@@ -324,31 +199,20 @@ export function Coach() {
   }, [message]);
   useEffect(() => {
     const timer = setInterval(() => {
-      if (AppState.currentState !== 'active') return;
+      if (AppState.currentState !== 'active' || asleep) return;
       const next = (lastQuote.current + 1) % de.challengeStart.quotes.length;
       lastQuote.current = next;
       setMessage(de.challengeStart.quotes[next]);
       setMood(null);
     }, 60000);
     return () => clearInterval(timer);
-  }, []);
-  const { speed: previewSpeed } = useLiveSpeed(
-    showingSpeed && !recording && recorder.status !== 'paused',
-  );
+  }, [asleep]);
   useEffect(() => {
-    if (!motionOn) return;
+    if (!motionOn || asleep) return;
     const animation = Animated.loop(
       Animated.sequence([
-        Animated.timing(bounce, {
-          toValue: 1,
-          duration: dragging ? 100 : 1200,
-          useNativeDriver: true,
-        }),
-        Animated.timing(bounce, {
-          toValue: 0,
-          duration: dragging ? 100 : 1200,
-          useNativeDriver: true,
-        }),
+        Animated.timing(bounce, { toValue: 1, duration: 1200, useNativeDriver: true }),
+        Animated.timing(bounce, { toValue: 0, duration: 1200, useNativeDriver: true }),
       ]),
     );
     animation.start();
@@ -356,145 +220,84 @@ export function Coach() {
       animation.stop();
       bounce.setValue(0);
     };
-  }, [motionOn, dragging, bounce]);
-  useEffect(() => {
-    if (!motionOn || speedMode || hidden) return;
-    const timer = setInterval(() => {
-      wiggle.setValue(0);
-      Animated.sequence([
-        Animated.timing(wiggle, { toValue: -1, duration: 120, useNativeDriver: true }),
-        Animated.timing(wiggle, { toValue: 1, duration: 160, useNativeDriver: true }),
-        Animated.timing(wiggle, { toValue: 0, duration: 120, useNativeDriver: true }),
-      ]).start();
-    }, 18000);
-    return () => clearInterval(timer);
-  }, [hidden, motionOn, speedMode, wiggle]);
+  }, [motionOn, asleep, bounce]);
   useEffect(() => {
     if (!waving) return;
     const timer = setTimeout(() => setWaving(false), WAVE_MS);
     return () => clearTimeout(timer);
   }, [waving]);
   useEffect(() => {
-    const timer = setTimeout(() => setIdle(true), IDLE_MS);
+    const timer = setTimeout(() => setAsleep(true), IDLE_MS);
     return () => clearTimeout(timer);
   }, [activity]);
   useEffect(() => {
-    const timer = setInterval(() => setNight(isNight(new Date().getHours())), 60000);
+    const timer = setInterval(() => {
+      const night = isNight(new Date().getHours());
+      if (night && !wasNight.current) setAsleep(true);
+      wasNight.current = night;
+    }, 60000);
     return () => clearInterval(timer);
   }, []);
-  const pose: PushyPose = dragging
-    ? 'dizzy'
-    : night || idle
-      ? 'sleep'
-      : message && mood === 'missed'
-        ? 'sad'
-        : message && mood === 'won'
-          ? 'cheer'
-          : waving
-            ? 'wave'
-            : recording
-              ? 'run'
-              : 'sit';
-  const speed =
-    showingSpeed && recording ? currentSpeed(recorder.points, now, recorder.segment) : previewSpeed;
-  if (hidden)
+  if (!visible) {
     return (
-      <Pressable
-        style={[styles.restore, { bottom: insets.bottom + 75 }]}
-        accessibilityLabel={de.coach.show}
-        onPress={() => setHidden(false)}
-      >
-        <Text color="accent">●</Text>
-      </Pressable>
-    );
-  return (
-    <Animated.View
-      style={[styles.root, { transform: position.getTranslateTransform() }]}
-      pointerEvents="box-none"
-    >
-      {message && !speedMode ? (
-        <View pointerEvents="none" style={[styles.bubble, { left: bubbleLeft }]}>
-          <Text variant="caption">{message}</Text>
-        </View>
-      ) : null}
-      <View
-        {...responder.panHandlers}
-        accessible
-        accessibilityRole="button"
-        accessibilityLabel={de.coach.move}
-        onAccessibilityTap={switchMode}
-      >
-        {speedMode ? (
-          <View style={styles.speed}>
-            <FurNumber value={formatSpeed(speed)} height={26} maxWidth={72} />
-            <Text variant="caption">{de.coach.speed}</Text>
-          </View>
-        ) : (
-          <Animated.View
-            key={flip}
-            style={{
-              transform: [
-                {
-                  translateY: Animated.add(
-                    bounce.interpolate({
-                      inputRange: [0, 1],
-                      outputRange: [0, recording ? -9 : -3],
-                    }),
-                    Animated.add(
-                      celebration.interpolate({ inputRange: [0, 1, 2], outputRange: [0, -17, 0] }),
-                      hop.interpolate({ inputRange: [0, 1, 2], outputRange: [0, -22, 0] }),
-                    ),
-                  ),
-                },
-                {
-                  rotate: dragging
-                    ? bounce.interpolate({ inputRange: [0, 1], outputRange: ['-12deg', '12deg'] })
-                    : Animated.add(
-                        celebration.interpolate({
-                          inputRange: [0, 1, 2],
-                          outputRange: [0, 180, 360],
-                        }),
-                        wiggle.interpolate({ inputRange: [-1, 0, 1], outputRange: [-8, 0, 8] }),
-                      ).interpolate({
-                        inputRange: [-8, 0, 360, 368],
-                        outputRange: ['-8deg', '0deg', '360deg', '368deg'],
-                      }),
-                },
-              ],
-            }}
-          >
-            <Pushy pose={pose} scale={0.9 + stage * 0.05} />
-          </Animated.View>
-        )}
-      </View>
-      <Text variant="caption" color="accent">
-        {de.coach.name}
+      <Text variant="caption" numberOfLines={1} style={styles.text}>
+        {fallback}
       </Text>
-      <Pressable accessibilityLabel={de.coach.hide} onPress={() => setHidden(true)}>
-        <Text variant="caption" color="textMuted">
-          ×
-        </Text>
+    );
+  }
+  const pose: PushyPose = asleep
+    ? 'sleep'
+    : message && mood === 'missed'
+      ? 'sad'
+      : message && mood === 'won'
+        ? 'cheer'
+        : waving
+          ? 'wave'
+          : recording
+            ? 'run'
+            : 'sit';
+  return (
+    <View style={styles.row}>
+      <Text variant="caption" numberOfLines={2} style={styles.text}>
+        {asleep ? de.coach.asleep : (message ?? fallback)}
+      </Text>
+      <Pressable
+        accessibilityRole="button"
+        accessibilityLabel={asleep ? de.coach.wake : de.coach.sleep}
+        onPress={toggleSleep}
+        style={styles.pushy}
+      >
+        <Animated.View
+          style={{
+            transform: [
+              {
+                translateY: Animated.add(
+                  bounce.interpolate({ inputRange: [0, 1], outputRange: [0, recording ? -4 : -2] }),
+                  hop.interpolate({ inputRange: [0, 1, 2], outputRange: [0, -8, 0] }),
+                ),
+              },
+            ],
+          }}
+        >
+          <Pushy pose={pose} scale={0.5 + stage * 0.03} />
+        </Animated.View>
+        {asleep ? (
+          <Text variant="caption" color="accent" style={styles.zzz}>
+            {de.coach.zzz}
+          </Text>
+        ) : null}
       </Pressable>
-    </Animated.View>
+    </View>
   );
 }
 const styles = StyleSheet.create({
-  root: { position: 'absolute', top: 0, left: 0, width: 80, alignItems: 'center', zIndex: 20 },
-  bubble: {
-    position: 'absolute',
-    bottom: 120,
-    width: 200,
-    padding: spacing.sm,
-    borderRadius: radius.card,
-    backgroundColor: colors.surfaceRaised,
-    borderColor: colors.border,
-    borderWidth: 1,
+  row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'flex-end', gap: spacing.sm },
+  text: { flex: 1, textAlign: 'right' },
+  pushy: {
+    minWidth: layout.minTouchTarget,
+    minHeight: layout.minTouchTarget,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
-  speed: {
-    width: '100%',
-    padding: spacing.xs,
-    backgroundColor: colors.surface,
-    borderRadius: radius.card,
-  },
-  restore: { position: 'absolute', right: 8, padding: spacing.sm, zIndex: 20 },
+  zzz: { position: 'absolute', top: 0, right: 0 },
 });
