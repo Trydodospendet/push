@@ -1,5 +1,16 @@
 # Übergabe – Branch `ausbau`
 
+## Korrekturen nach zweitem Handytest (17.11.2026)
+
+- **Freistellung:** `finish-fur-assets.js` löscht den Hintergrund bei Formen nicht mehr per Farbe (Haus, Pokal, Flamme bleiben ganz), bei Pushy nur fast weiße Flächen (Hörner bleiben), zieht die Kante nur 1 px ein und füllt Löcher bei Pushy. Alle Bilder neu erzeugt und auf Schwarz geprüft.
+- **Pushy** sitzt fest im Header der Tabs (rechts, eigener Platz, nichts wird verdeckt). Label und × sind weg; Ausblenden nur unter Profil → Darstellung („Pushy anzeigen“). Antippen = einschlafen (Pose sleep, „Zzz“), nochmal = aufwachen. Das Tempo-Easter-Egg, die km/h-Anzeige im Lauf (der weiße Balken), `speed.ts` und `use-live-speed.ts` sind entfernt. Außerhalb der Tabs (z. B. im Lauf) erscheint Pushy nicht mehr.
+- **Abschneiden unten:** `Screen` hängt in den Tabs am Ende des Scroll-Inhalts Platz für Tab-Leiste und Systemleiste an. Das Lauf-Panel hat Platz für die Systemleiste im Scroll-Inhalt und ist 70 % hoch.
+- **Fell-Knopf** (`Button fur`, Hauptknopf auf Home und „Lauf starten“): `pill-left/mid/right.webp` als drei Teile ohne Verzerrung, weicher pulsierender Glow (`GlowPulse`, bei „Bewegung reduzieren“ statisch). Derselbe Glow liegt hinter dem Fortschrittsring und dem aktiven Tab.
+- **Karte im Lauf:** aktuelle Position als Lime-Punkt mit pulsierendem Ring, die Karte folgt.
+- **Dauerhafte Benachrichtigung:** Profil → Benachrichtigungen → „Fortschritt dauerhaft anzeigen“ (Standard aus, nur Android). `expo-notifications` mit `sticky`, leiser Kanal `progress`, Texte wie „3 km am Stück: noch 1,8 km“, „6.240 / 10.000 Schritte heute“, im Lauf „Lauf: 1,24 km“. Aktualisiert sich bei neuen Daten (Öffnen, Sync, Lauf). Keine neue native Bibliothek.
+- **Lebendiger, ehrlich:** Migration `20261202090000_community_stats.sql` (`get_community_stats`, `get_community_events`: nur Aggregate und anonyme Ereignisse, keine Geldlogik) und Karte „Gemeinsam in PUSH“ auf Home (Läufe heute, Ziele diese Woche, gespendet, Live-Feed, „Freunde einladen“ mit dem vorhandenen Einladungs-Link). Bei wenig Daten stehen einladende Texte statt Nullen. pgTAP: `24_community.test.sql`.
+- **Offen:** (1) pgTAP lief nicht, Docker Desktop antwortete nicht; `npx supabase test db` nach dem Docker-Start ausführen. (2) Die Migration ist weder lokal noch in der Cloud angewendet; ohne sie zeigt die Karte nur den leeren Zustand. (3) `src/lib/database.types.ts` war für mich gesperrt: `community/api.ts` prüft die Antworten mit zod über einen Cast; nach `supabase gen types` den Cast entfernen. (4) Neuer Build nötig (Bilder, Fell-Knopf, Benachrichtigung, Karte).
+
 ## Korrekturen nach Handytest (17.11.2026)
 
 - Fortschrittsring jetzt ein schlanker Lime-Ring (SVG-Bogen, Glow aus zwei transparenten Strichen, 252 pt, Strich 12, Mitte 70 %); das Fellbild `ring` und `pill` sind entfernt. Hauptknopf wieder normal Lime mit weichem Glow (`glow.button`).
