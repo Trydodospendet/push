@@ -39,6 +39,15 @@
 - **Lebendiger, ehrlich:** Migration `20261202090000_community_stats.sql` (`get_community_stats`, `get_community_events`: nur Aggregate und anonyme Ereignisse, keine Geldlogik) und Karte „Gemeinsam in PUSH“ auf Home (Läufe heute, Ziele diese Woche, gespendet, Live-Feed, „Freunde einladen“ mit dem vorhandenen Einladungs-Link). Bei wenig Daten stehen einladende Texte statt Nullen. pgTAP: `24_community.test.sql`.
 - **Offen:** (1) pgTAP lief nicht, Docker Desktop antwortete nicht; `npx supabase test db` nach dem Docker-Start ausführen. (2) Die Migration ist weder lokal noch in der Cloud angewendet; ohne sie zeigt die Karte nur den leeren Zustand. (3) `src/lib/database.types.ts` war für mich gesperrt: `community/api.ts` prüft die Antworten mit zod über einen Cast; nach `supabase gen types` den Cast entfernen. (4) Neuer Build nötig (Bilder, Fell-Knopf, Benachrichtigung, Karte).
 
+## Änderungen nach Handytest 2 (18.11.2026, Vorrang vor docs/design/zielbild)
+
+- **Home:** kein großer Pushy mehr. Mit Ziel: schmaler Zielbalken oben, darunter der schlanke Lime-Ring (`ProgressRing`, wieder eingeführt, Glow aus zwei transparenten Strichen) mit Fell-Zahl, „von 3,00 km“, Restzeit/Pfand und Hauptknopf (`GoalRing`, `HeroGoal`). Ohne Ziel: leerer Ring mit „0“, darunter Chips und „Ziel setzen“.
+- **Pushy:** wieder ein kleiner Helfer (ca. 60×69 pt, `FloatingPushy` im Tab-Layout). Ziehen und herumwirbeln, loslassen rastet am nächsten seitlichen Rand ein (nie mittig über Knöpfen). Antippen: Sprechblase mit Tipp; hin- und herschütteln des Pushys (Geste, kein Gerätesensor) macht ihn schwindelig; 22–6 Uhr schläft er. `SleepyPushy` entfernt.
+- **Grüner Punkt:** Ursache am Gerät nicht bestätigt. Wahrscheinlichster Kandidat war das unsichtbare 1-Pixel-Vorladen der Fellbilder (`FurPreload`); es liegt jetzt außerhalb des Bildschirms. Falls der Punkt nach dem nächsten Build noch da ist, bitte Ort/Tab melden.
+- **Lauf nur mit Ziel:** `useRunGate` (`run-gate.tsx`, Logik `hasRunGoal`): ohne laufendes oder offenes Lauf-Ziel öffnet jedes „Lauf starten“ (Home, Laufen-Tab, Verbindungen, Start/„Ersten Lauf starten“ im Lauf-Bildschirm) ein Sheet „Setz dir zuerst ein Ziel – dann zählt dein Lauf.“ mit Zielauswahl, „Ziel setzen“ (öffnet das Pfand-Sheet) und „Eigenes Ziel“. Danach erneut „Lauf starten“ tippen.
+- **Lauf-Bildschirm:** statt der freistehenden Zahl derselbe Ring (etwas kleiner, 204 pt) mit den Lauf-km in der Mitte, „von X km“ und Zielbalken oben (Stand des Ziels plus aktueller Lauf).
+- Tests: `activity-flow` angepasst (Lauf-Ziel vorgegeben, neuer Test für den Hinweis), neu `run-goal.test.ts`, `model.test.ts`, `progress-ring.test.ts`. Typecheck, Lint, 322 Jest-Tests grün; pgTAP unverändert (keine DB-Änderung). Neuer Build nicht nötig für die Logik, aber Bild-/Layoutänderungen erst im nächsten Dev Build sichtbar, falls der laufende nicht per Metro lädt.
+
 ## Korrekturen nach Handytest (17.11.2026)
 
 - Fortschrittsring jetzt ein schlanker Lime-Ring (SVG-Bogen, Glow aus zwei transparenten Strichen, 252 pt, Strich 12, Mitte 70 %); das Fellbild `ring` und `pill` sind entfernt. Hauptknopf wieder normal Lime mit weichem Glow (`glow.button`).
