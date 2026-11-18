@@ -79,7 +79,8 @@ describe('real-money pledge', () => {
     mockRpc(true);
     await renderRouter('./app', { initialUrl: '/' });
 
-    await user.press(await screen.findByRole('button', { name: '3 km heute' }));
+    await user.press(await screen.findByRole('radio', { name: '3 km heute' }));
+    await user.press(screen.getByRole('button', { name: 'Ziel setzen' }));
     expect(
       await screen.findByText(
         '5 € werden reserviert, nicht abgebucht. Schaffst du dein Ziel, wird nichts abgebucht. Verfehlst du es, wird dein Pfand fällig; 90 % davon spenden wir an Ärzte ohne Grenzen.',
@@ -109,7 +110,8 @@ describe('real-money pledge', () => {
     mockRpc(false);
     await renderRouter('./app', { initialUrl: '/' });
 
-    await user.press(await screen.findByRole('button', { name: '3 km heute' }));
+    await user.press(await screen.findByRole('radio', { name: '3 km heute' }));
+    await user.press(screen.getByRole('button', { name: 'Ziel setzen' }));
     expect(await screen.findByRole('button', { name: '5 Pfand setzen' })).toBeOnTheScreen();
     expect(screen.queryByText(/werden reserviert, nicht abgebucht/)).toBeNull();
     expect(supabaseMock.functions.invoke).not.toHaveBeenCalled();

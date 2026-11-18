@@ -12,8 +12,11 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Button, Card, DraggablePanel, FadeIn, Sheet, Text } from '@/components';
+import { Button, Card, DraggablePanel, FadeIn, ProgressBar, Sheet, Text } from '@/components';
 import { DEFAULT_TIMEZONE } from '@/config/app';
+import { useMyChallenges } from '@/features/challenges/api';
+import { useMyProgress } from '@/features/health/api';
+import { pickPrimaryChallenge, progressNumbers, progressRatio } from '@/features/health/progress';
 import { useMyProfile } from '@/features/auth/api';
 import { useSession } from '@/features/auth/auth-provider';
 import { useMyRecords } from '@/features/gps/analytics-api';
@@ -33,6 +36,7 @@ import { useKilometerAnnouncements } from '@/features/gps/voice';
 import { hapticSelect, hapticSuccess } from '@/features/preferences/haptics';
 import { usePreferences } from '@/features/preferences/store';
 import { FurNumber } from '@/features/fur/fur-number';
+import { isGoalType } from '@/features/challenges/format';
 import { de } from '@/i18n/de';
 import { colors, layout, radius, spacing } from '@/theme';
 
@@ -285,6 +289,7 @@ function ActiveRun({ onInset }: { onInset: (height: number) => void }) {
               <Stat label={de.run.statPace} value={formatPace(pace)} divided />
               <Stat label={de.run.statSpeed} value={speedText} divided />
             </View>
+            <GoalLine liveDistanceM={stats.distanceM} />
           </View>
         }
       >
@@ -355,6 +360,48 @@ function ActiveRun({ onInset }: { onInset: (height: number) => void }) {
         />
       </Sheet>
     </>
+  );
+}
+
+/** Goal of the active run challenge with the live distance of this run added on top. */
+function GoalLine({ liveDistanceM }: { liveDistanceM: number }) {
+  const userId = useSession().user.id;
+  const mine = useMyChallenges(userId);
+  const progress = useMyProgress(userId);
+  const now = useClock(true);
+  const goal = pickPrimaryChallenge(
+    (mine.data ?? []).filter(
+      (challenge) =>
+        challenge.isParticipant &&
+        challenge.status === 'active' &&
+        challenge.goal_type.startsWith('run') &&
+        Date.parse(challenge.ends_at) > now,
+    ),
+  );
+  if (!goal || !isGoalType(goal.goal_type)) {
+    return null;
+  }
+  const saved = progress.data?.[goal.id] ?? 0;
+  const value =
+    goal.goal_type === 'run_single'
+      ? Math.max(saved, liveDistanceM)
+      : saved + Math.round(liveDistanceM);
+  const ratio = progressRatio(goal.goal_type, value, goal.target_value, 1);
+  const target = progressNumbers(goal.goal_type, value, goal.target_value, 1).goal;
+  return (
+    <View style={styles.goal}>
+      <View style={styles.goalRow}>
+        <Text variant="caption" color="textSecondary">
+          {de.run.goalLine(target)}
+        </Text>
+        {ratio >= 1 ? (
+          <Text variant="caption" color="accent">
+            {de.run.goalReached}
+          </Text>
+        ) : null}
+      </View>
+      <ProgressBar progress={ratio} accessibilityLabel={de.run.goalBar} />
+    </View>
   );
 }
 
@@ -465,6 +512,8 @@ const styles = StyleSheet.create({
   noticeCard: {
     gap: spacing.sm,
   },
+  goal: { gap: spacing.xs, alignSelf: 'stretch', marginTop: spacing.xs },
+  goalRow: { flexDirection: 'row', justifyContent: 'space-between' },
   headerNumbers: {
     gap: spacing.xxs,
   },

@@ -116,7 +116,7 @@ describe('goals', () => {
 
     await renderRouter('./app', { initialUrl: '/' });
     expect(await screen.findByText('Was packst du an?')).toBeOnTheScreen();
-    await user.press(screen.getByRole('button', { name: 'Eigenes Ziel' }));
+    await user.press(screen.getByRole('link', { name: 'Eigenes Ziel' }));
 
     await user.press(await screen.findByRole('radio', { name: de.goal.typeLabel.steps_daily }));
     await user.press(screen.getByRole('radio', { name: '8.000 Schritte' }));
@@ -171,7 +171,7 @@ describe('goals', () => {
     mockRpc();
     await renderRouter('./app', { initialUrl: '/' });
     expect(await screen.findByText('Was packst du an?')).toBeOnTheScreen();
-    await user.press(screen.getByRole('button', { name: 'Eigenes Ziel' }));
+    await user.press(screen.getByRole('link', { name: 'Eigenes Ziel' }));
 
     await user.press(await screen.findByRole('radio', { name: 'Eigener Wert' }));
     const target = screen.getByLabelText(de.improvements.km);

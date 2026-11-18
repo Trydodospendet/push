@@ -21,7 +21,7 @@ import { pickPrimaryChallenge } from '@/features/health/progress';
 import { HealthBanner, useLastSyncText } from '@/features/health/sync-status';
 import { TodaySteps } from '@/features/health/today-card';
 import { hapticSelect } from '@/features/preferences/haptics';
-import { QuickGoalCards } from '@/features/pledge/quick-goal-cards';
+import { QuickGoalCards, QuickGoalChips } from '@/features/pledge/quick-goal-cards';
 import { statsKeys } from '@/features/stats/api';
 import { RecentWins, WeekSummary } from '@/features/stats/home-sections';
 import { StreakFlame } from '@/features/stats/streak-flame';
@@ -109,7 +109,10 @@ export default function HomeScreen() {
           <Text variant="label" color="textSecondary">
             {`${de.home.label} · ${de.home.ready}`}
           </Text>
-          <SleepyPushy pose="sit" height={168} />
+          <SleepyPushy pose="sit" height={200} />
+          <Text variant="title" align="center" accessibilityRole="header">
+            {de.pledge.pickTitle}
+          </Text>
         </View>
       )}
       <HealthBanner />
@@ -129,10 +132,7 @@ export default function HomeScreen() {
           <LoadingState />
         )
       ) : (
-        <View style={styles.pick}>
-          <Text variant="title">{de.pledge.pickTitle}</Text>
-          <QuickGoalCards />
-        </View>
+        <QuickGoalChips />
       )}
       <View style={styles.tiles}>
         <StreakFlame userId={session.user.id} />
@@ -234,9 +234,6 @@ const styles = StyleSheet.create({
   },
   idle: { alignItems: 'center', gap: spacing.md },
   tiles: { flexDirection: 'row', gap: spacing.xs },
-  pick: {
-    gap: spacing.md,
-  },
   moreRow: {
     flexDirection: 'row',
     alignItems: 'center',

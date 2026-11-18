@@ -81,10 +81,10 @@ describe('pledge in two steps', () => {
     await renderRouter('./app', { initialUrl: '/' });
 
     expect(await screen.findByText('Was packst du an?')).toBeOnTheScreen();
-    expect(screen.getByRole('button', { name: '3 km heute' })).toBeOnTheScreen();
-    expect(screen.getByRole('button', { name: '8.000 Schritte heute' })).toBeOnTheScreen();
-    expect(screen.getByRole('button', { name: '10 km diese Woche' })).toBeOnTheScreen();
-    expect(screen.getByRole('button', { name: 'Eigenes Ziel' })).toBeOnTheScreen();
+    expect(screen.getByRole('radio', { name: '3 km heute' })).toBeOnTheScreen();
+    expect(screen.getByRole('radio', { name: '8.000 Schritte heute' })).toBeOnTheScreen();
+    expect(screen.getByRole('radio', { name: '10 km diese Woche' })).toBeOnTheScreen();
+    expect(screen.getByRole('link', { name: 'Eigenes Ziel' })).toBeOnTheScreen();
     expect(screen.queryByRole('button', { name: 'Angaben prüfen' })).toBeNull();
   });
 
@@ -92,7 +92,8 @@ describe('pledge in two steps', () => {
     const user = userEvent.setup();
     await renderRouter('./app', { initialUrl: '/' });
 
-    await user.press(await screen.findByRole('button', { name: '3 km heute' }));
+    await user.press(await screen.findByRole('radio', { name: '3 km heute' }));
+    await user.press(screen.getByRole('button', { name: 'Ziel setzen' }));
     expect(await screen.findByRole('button', { name: '5 Pfand setzen' })).toBeOnTheScreen();
 
     await user.press(screen.getByRole('button', { name: 'Mehr Pfand' }));
@@ -127,7 +128,8 @@ describe('pledge in two steps', () => {
     mockDb.set({ wallets: { balance_cents: 200 } });
     await renderRouter('./app', { initialUrl: '/' });
 
-    await user.press(await screen.findByRole('button', { name: '8.000 Schritte heute' }));
+    await user.press(await screen.findByRole('radio', { name: '8.000 Schritte heute' }));
+    await user.press(screen.getByRole('button', { name: 'Ziel setzen' }));
     await user.press(await screen.findByRole('button', { name: 'Weniger Pfand' }));
     await user.press(screen.getByRole('button', { name: 'Weniger Pfand' }));
     await user.press(screen.getByRole('button', { name: 'Weniger Pfand' }));

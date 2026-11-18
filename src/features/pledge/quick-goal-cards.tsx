@@ -8,7 +8,7 @@ import { hapticTap } from '@/features/preferences/haptics';
 import { useMotionEnabled } from '@/features/preferences/motion';
 import { playSound } from '@/features/preferences/sounds';
 import { de } from '@/i18n/de';
-import { colors, layout, spacing } from '@/theme';
+import { colors, layout, radius, spacing } from '@/theme';
 
 import { PledgeSheet } from './pledge-sheet';
 import { quickGoalScopeLabel, quickGoalTarget, type QuickGoal } from './quick-goals';
@@ -101,4 +101,77 @@ const styles = StyleSheet.create({
   text: {
     flex: 1,
   },
+  chipRoot: { gap: spacing.md },
+  chipRow: { flexDirection: 'row', gap: spacing.xs },
+  chip: {
+    flex: 1,
+    minHeight: layout.minTouchTarget + spacing.md,
+    justifyContent: 'center',
+    gap: spacing.xxs,
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.xs,
+    borderRadius: radius.card,
+    borderWidth: layout.borderWidth,
+    borderColor: colors.border,
+    backgroundColor: colors.surface,
+  },
+  chipActive: { borderColor: colors.accent },
+  link: { minHeight: layout.minTouchTarget, justifyContent: 'center' },
 });
+
+/**
+ * Home without an active goal: the three suggestions as chips in one row, a big lime button to
+ * set the pledge for the chosen one, and "Eigenes Ziel" as a text link.
+ */
+export function QuickGoalChips() {
+  const router = useRouter();
+  const [selected, setSelected] = useState<QuickGoal['id']>(QUICK_GOALS[0].id);
+  const [picked, setPicked] = useState<QuickGoal | null>(null);
+
+  return (
+    <View style={styles.chipRoot}>
+      <View style={styles.chipRow} accessibilityRole="radiogroup">
+        {QUICK_GOALS.map((goal) => {
+          const active = goal.id === selected;
+          const label = de.pledge.chipLabel(quickGoalTarget(goal), quickGoalScopeLabel(goal));
+          return (
+            <Pressable
+              key={goal.id}
+              accessibilityRole="radio"
+              accessibilityLabel={label}
+              accessibilityState={{ checked: active }}
+              onPress={() => {
+                hapticTap();
+                setSelected(goal.id);
+              }}
+              style={[styles.chip, active && styles.chipActive]}
+            >
+              <Text variant="caption" color={active ? 'accent' : 'text'} align="center">
+                {quickGoalTarget(goal)}
+              </Text>
+              <Text variant="label" color="textSecondary" align="center" numberOfLines={1}>
+                {quickGoalScopeLabel(goal)}
+              </Text>
+            </Pressable>
+          );
+        })}
+      </View>
+      <Button
+        label={de.pledge.setGoal}
+        onPress={() => setPicked(QUICK_GOALS.find((goal) => goal.id === selected) ?? null)}
+      />
+      <Pressable
+        accessibilityRole="link"
+        accessibilityLabel={de.pledge.custom}
+        accessibilityHint={de.pledge.customHint}
+        onPress={() => router.push('/challenge/create')}
+        style={styles.link}
+      >
+        <Text color="textSecondary" align="center">
+          {de.pledge.custom}
+        </Text>
+      </Pressable>
+      <PledgeSheet key={picked?.id ?? 'none'} goal={picked} onClose={() => setPicked(null)} />
+    </View>
+  );
+}
