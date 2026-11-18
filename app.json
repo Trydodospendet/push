@@ -79,7 +79,8 @@
           "android": {
             "minSdkVersion": 26,
             "compileSdkVersion": 37,
-            "targetSdkVersion": 36
+            "targetSdkVersion": 36,
+            "extraProguardRules": "-dontwarn com.stripe.android.pushProvisioning.**\n-dontwarn com.google.android.gms.tapandpay.**"
           }
         }
       ],
