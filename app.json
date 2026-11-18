@@ -71,6 +71,7 @@
         }
       ],
       "./plugins/with-health-connect-privacy",
+      "./plugins/with-stripe-no-tapandpay",
       "react-native-health-connect",
       [
         "expo-build-properties",
