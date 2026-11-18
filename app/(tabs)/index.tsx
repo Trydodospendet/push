@@ -5,11 +5,12 @@ import { Pressable, RefreshControl, StyleSheet, View } from 'react-native';
 
 import { Button, Card, ErrorState, Icon, LoadingState, Screen, Text } from '@/components';
 import { DEFAULT_TIMEZONE } from '@/config/app';
-import { SleepyPushy } from '@/features/coach/sleepy-pushy';
 import { CommunityCounter } from '@/features/donations/donation-cards';
 import { useSession } from '@/features/auth/auth-provider';
 import { useMyChallenges } from '@/features/challenges/api';
 import { CompactGoal } from '@/features/challenges/compact-goal';
+import { GoalRing } from '@/features/challenges/goal-ring';
+import { useRunGate } from '@/features/challenges/run-gate';
 import { formatDistance } from '@/features/challenges/format';
 import { HeroGoal } from '@/features/challenges/hero-goal';
 import { LastGoalResult } from '@/features/challenges/last-goal-result';
@@ -46,6 +47,7 @@ export default function HomeScreen() {
   const clock = useClock(true);
   const now = new Date(clock);
   const [more, setMore] = useState(false);
+  const { requestRun, gate } = useRunGate(() => router.push('/run'));
   const joined = mine.data?.filter(
     (challenge) =>
       challenge.isParticipant &&
@@ -109,7 +111,12 @@ export default function HomeScreen() {
           <Text variant="label" color="textSecondary">
             {`${de.home.label} · ${de.home.ready}`}
           </Text>
-          <SleepyPushy pose="sit" height={200} />
+          <GoalRing
+            ratio={0}
+            value="0"
+            spoken={de.home.noGoalRing}
+            barLabel={de.progress.barLabel}
+          />
           <Text variant="title" align="center" accessibilityRole="header">
             {de.pledge.pickTitle}
           </Text>
@@ -124,7 +131,7 @@ export default function HomeScreen() {
             now={now}
             mainLabel={isRun ? de.home.run : de.home.refreshSteps}
             mainLoading={!isRun && health.syncing}
-            onMainAction={isRun ? () => router.push('/run') : refresh}
+            onMainAction={isRun ? requestRun : refresh}
           />
         ) : progress.isError ? (
           <Text color="textSecondary">{de.home.goalsUnavailable}</Text>
@@ -205,9 +212,7 @@ export default function HomeScreen() {
               onPress={() => router.push('/training')}
             />
           )}
-          {primary ? null : (
-            <Button label={de.home.run} variant="secondary" onPress={() => router.push('/run')} />
-          )}
+          {primary ? null : <Button label={de.home.run} variant="secondary" onPress={requestRun} />}
           <LastGoalResult />
           <CommunityCard />
           <WeekSummary userId={session.user.id} />
@@ -222,6 +227,7 @@ export default function HomeScreen() {
           </Card>
         </View>
       ) : null}
+      {gate}
     </Screen>
   );
 }

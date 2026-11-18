@@ -16,6 +16,7 @@ import { DEFAULT_TIMEZONE } from '@/config/app';
 import { useMyProfile } from '@/features/auth/api';
 import { useSession } from '@/features/auth/auth-provider';
 import { formatSteps } from '@/features/challenges/format';
+import { useRunGate } from '@/features/challenges/run-gate';
 import { HistoryMap } from '@/features/gps/history-map';
 import { RunList } from '@/features/gps/run-list';
 import { activityKeys, useRecentWorkouts, type RecentWorkout } from '@/features/health/api';
@@ -65,6 +66,7 @@ export default function ActivityScreen() {
   const userId = session.user.id;
   const profile = useMyProfile(userId);
   const health = useHealth();
+  const { requestRun, gate } = useRunGate(() => router.push('/run'));
   const timezone = profile.data?.timezone ?? DEFAULT_TIMEZONE;
   const lastSync = useLastSyncText(timezone);
   const workouts = useRecentWorkouts(userId);
@@ -110,11 +112,7 @@ export default function ActivityScreen() {
 
       <HealthBanner />
 
-      <Button
-        label={de.activityTab.record}
-        variant="secondary"
-        onPress={() => router.push('/run')}
-      />
+      <Button label={de.activityTab.record} variant="secondary" onPress={requestRun} />
       <Button
         label={de.training.homeButton}
         variant="secondary"
@@ -194,6 +192,7 @@ export default function ActivityScreen() {
         <HistoryMap />
         <RunList timezone={timezone} />
       </View>
+      {gate}
     </Screen>
   );
 }

@@ -14,6 +14,7 @@ export { EmptyState, Illustration, type EmptyStateProps } from './empty-state';
 export { ErrorBoundary } from './error-boundary';
 export { Icon, type IconName, type IconProps } from './icon';
 export { Pill, type PillProps } from './pill';
+export { ProgressRing, type ProgressRingProps } from './progress-ring';
 export { ProgressBar, type ProgressBarProps } from './progress-bar';
 export { Screen, type ScreenProps } from './screen';
 export { Sheet, type SheetProps } from './sheet';

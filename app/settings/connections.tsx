@@ -5,6 +5,7 @@ import { Button, Card, Screen, Text } from '@/components';
 import { DEFAULT_TIMEZONE } from '@/config/app';
 import { useMyProfile } from '@/features/auth/api';
 import { useSession } from '@/features/auth/auth-provider';
+import { useRunGate } from '@/features/challenges/run-gate';
 import { HealthCard } from '@/features/health/health-card';
 import { de } from '@/i18n/de';
 import { spacing } from '@/theme';
@@ -15,6 +16,7 @@ const SCREEN_EDGES = ['bottom', 'left', 'right'] as const;
 export default function ConnectionsScreen() {
   const session = useSession();
   const profile = useMyProfile(session.user.id);
+  const { requestRun, gate } = useRunGate(() => router.push('/run'));
   return (
     <Screen scroll edges={SCREEN_EDGES} contentStyle={styles.content}>
       <HealthCard timezone={profile.data?.timezone ?? DEFAULT_TIMEZONE} />
@@ -28,8 +30,9 @@ export default function ConnectionsScreen() {
           variant="secondary"
           onPress={() => void Linking.openSettings()}
         />
-        <Button label={de.connections.startRun} onPress={() => router.push('/run')} />
+        <Button label={de.connections.startRun} onPress={requestRun} />
       </Card>
+      {gate}
     </Screen>
   );
 }

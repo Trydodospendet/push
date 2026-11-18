@@ -12,7 +12,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
-import { Button, Card, DraggablePanel, FadeIn, ProgressBar, Sheet, Text } from '@/components';
+import { Button, Card, DraggablePanel, FadeIn, Sheet, Text } from '@/components';
 import { DEFAULT_TIMEZONE } from '@/config/app';
 import { useMyChallenges } from '@/features/challenges/api';
 import { useMyProgress } from '@/features/health/api';
@@ -35,7 +35,8 @@ import { useCurrentPosition } from '@/features/gps/use-current-position';
 import { useKilometerAnnouncements } from '@/features/gps/voice';
 import { hapticSelect, hapticSuccess } from '@/features/preferences/haptics';
 import { usePreferences } from '@/features/preferences/store';
-import { FurNumber } from '@/features/fur/fur-number';
+import { GoalRing } from '@/features/challenges/goal-ring';
+import { useRunGate } from '@/features/challenges/run-gate';
 import { isGoalType } from '@/features/challenges/format';
 import { de } from '@/i18n/de';
 import { colors, layout, radius, spacing } from '@/theme';
@@ -149,90 +150,94 @@ function IdleRun({ timezone }: { timezone: string }) {
   const [starting, setStarting] = useState(false);
   const [outcome, setOutcome] = useState<StartOutcome | null>(null);
   const message = outcome === null ? null : startMessage(outcome);
-  const startRun = () => {
+  const beginRun = () => {
     setStarting(true);
     void gps
       .start()
       .then(setOutcome)
       .finally(() => setStarting(false));
   };
+  const { requestRun: startRun, gate } = useRunGate(beginRun);
 
   return (
-    <ScrollView
-      style={StyleSheet.absoluteFill}
-      showsVerticalScrollIndicator={false}
-      refreshControl={
-        <RefreshControl
-          refreshing={refreshing}
-          onRefresh={() => {
-            hapticSelect();
-            setRefreshing(true);
-            void queryClient.invalidateQueries().finally(() => setRefreshing(false));
-          }}
-          tintColor={colors.accent}
-          colors={[colors.onAccent]}
-          progressBackgroundColor={colors.accent}
-        />
-      }
-    >
-      <View style={styles.mapStage} />
-      <View style={[styles.sheet, { paddingBottom: spacing.xl + insets.bottom }]}>
-        <FadeIn style={styles.sheetSection}>
-          <Button
-            label={de.run.start}
-            loading={starting}
-            disabled={gps.recovered !== null}
-            onPress={startRun}
+    <>
+      <ScrollView
+        style={StyleSheet.absoluteFill}
+        showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={() => {
+              hapticSelect();
+              setRefreshing(true);
+              void queryClient.invalidateQueries().finally(() => setRefreshing(false));
+            }}
+            tintColor={colors.accent}
+            colors={[colors.onAccent]}
+            progressBackgroundColor={colors.accent}
           />
-          {message ? (
-            <Text color="danger" accessibilityRole="alert">
-              {message}
-            </Text>
-          ) : null}
-          {outcome === 'blocked' ? (
+        }
+      >
+        <View style={styles.mapStage} />
+        <View style={[styles.sheet, { paddingBottom: spacing.xl + insets.bottom }]}>
+          <FadeIn style={styles.sheetSection}>
             <Button
-              label={de.run.openSettings}
-              variant="secondary"
-              onPress={() => void Linking.openSettings()}
+              label={de.run.start}
+              loading={starting}
+              disabled={gps.recovered !== null}
+              onPress={startRun}
             />
-          ) : null}
-        </FadeIn>
-        <FadeIn delayMs={60}>
-          <Pressable
-            accessibilityRole="link"
-            accessibilityLabel={de.battery.link}
-            onPress={() => router.push('/battery')}
-            style={styles.textLink}
-          >
-            <Text variant="caption" color="accent" align="center">
-              {de.battery.link}
+            {message ? (
+              <Text color="danger" accessibilityRole="alert">
+                {message}
+              </Text>
+            ) : null}
+            {outcome === 'blocked' ? (
+              <Button
+                label={de.run.openSettings}
+                variant="secondary"
+                onPress={() => void Linking.openSettings()}
+              />
+            ) : null}
+          </FadeIn>
+          <FadeIn delayMs={60}>
+            <Pressable
+              accessibilityRole="link"
+              accessibilityLabel={de.battery.link}
+              onPress={() => router.push('/battery')}
+              style={styles.textLink}
+            >
+              <Text variant="caption" color="accent" align="center">
+                {de.battery.link}
+              </Text>
+            </Pressable>
+          </FadeIn>
+          <FadeIn delayMs={100}>
+            <PeriodCard userId={session.user.id} onStart={startRun} />
+          </FadeIn>
+          <FadeIn delayMs={160}>
+            <RecordsCard userId={session.user.id} />
+          </FadeIn>
+          <FadeIn delayMs={220} style={styles.sheetSection}>
+            <Text variant="label" color="textSecondary" accessibilityRole="header">
+              {de.run.historyLabel}
             </Text>
-          </Pressable>
-        </FadeIn>
-        <FadeIn delayMs={100}>
-          <PeriodCard userId={session.user.id} onStart={startRun} />
-        </FadeIn>
-        <FadeIn delayMs={160}>
-          <RecordsCard userId={session.user.id} />
-        </FadeIn>
-        <FadeIn delayMs={220} style={styles.sheetSection}>
-          <Text variant="label" color="textSecondary" accessibilityRole="header">
-            {de.run.historyLabel}
-          </Text>
-          <RunList timezone={timezone} />
-        </FadeIn>
-        <Card style={styles.explain}>
-          <Text variant="label" color="textSecondary">
-            {de.run.explainTitle}
-          </Text>
-          {de.run.explain.map((line) => (
-            <Text key={line} variant="caption" color="textSecondary">
-              {`• ${line}`}
+            <RunList timezone={timezone} />
+          </FadeIn>
+          <Card style={styles.explain}>
+            <Text variant="label" color="textSecondary">
+              {de.run.explainTitle}
             </Text>
-          ))}
-        </Card>
-      </View>
-    </ScrollView>
+            {de.run.explain.map((line) => (
+              <Text key={line} variant="caption" color="textSecondary">
+                {`• ${line}`}
+              </Text>
+            ))}
+          </Card>
+        </View>
+      </ScrollView>
+      {gate}
+    </>
   );
 }
 
@@ -283,13 +288,12 @@ function ActiveRun({ onInset }: { onInset: (height: number) => void }) {
             >
               {paused ? de.run.paused : !hasCurrentFix ? de.run.accuracyWaiting : de.run.recording}
             </Text>
-            <FurNumber value={formatKm(stats.distanceM)} unit="km" height={80} maxWidth={300} />
+            <RunGoalRing liveDistanceM={stats.distanceM} />
             <View style={styles.statCard}>
               <Stat label={de.run.statTime} value={formatClock(elapsed)} />
               <Stat label={de.run.statPace} value={formatPace(pace)} divided />
               <Stat label={de.run.statSpeed} value={speedText} divided />
             </View>
-            <GoalLine liveDistanceM={stats.distanceM} />
           </View>
         }
       >
@@ -363,8 +367,11 @@ function ActiveRun({ onInset }: { onInset: (height: number) => void }) {
   );
 }
 
-/** Goal of the active run challenge with the live distance of this run added on top. */
-function GoalLine({ liveDistanceM }: { liveDistanceM: number }) {
+/**
+ * The same ring as on Home: the goal bar on top, the distance of this run in the middle and the
+ * goal under it. The bar counts the saved progress of the active run goal plus this run.
+ */
+function RunGoalRing({ liveDistanceM }: { liveDistanceM: number }) {
   const userId = useSession().user.id;
   const mine = useMyChallenges(userId);
   const progress = useMyProgress(userId);
@@ -378,8 +385,17 @@ function GoalLine({ liveDistanceM }: { liveDistanceM: number }) {
         Date.parse(challenge.ends_at) > now,
     ),
   );
+  const distance = formatKm(liveDistanceM);
   if (!goal || !isGoalType(goal.goal_type)) {
-    return null;
+    return (
+      <GoalRing
+        ratio={0}
+        value={distance}
+        spoken={de.run.ringSpoken(distance)}
+        barLabel={de.run.goalBar}
+        compact
+      />
+    );
   }
   const saved = progress.data?.[goal.id] ?? 0;
   const value =
@@ -390,17 +406,19 @@ function GoalLine({ liveDistanceM }: { liveDistanceM: number }) {
   const target = progressNumbers(goal.goal_type, value, goal.target_value, 1).goal;
   return (
     <View style={styles.goal}>
-      <View style={styles.goalRow}>
-        <Text variant="caption" color="textSecondary">
-          {de.run.goalLine(target)}
+      <GoalRing
+        ratio={ratio}
+        value={distance}
+        caption={`${de.progress.of(target)} km`}
+        spoken={de.run.ringSpoken(distance)}
+        barLabel={de.run.goalBar}
+        compact
+      />
+      {ratio >= 1 ? (
+        <Text variant="caption" color="accent" align="center">
+          {de.run.goalReached}
         </Text>
-        {ratio >= 1 ? (
-          <Text variant="caption" color="accent">
-            {de.run.goalReached}
-          </Text>
-        ) : null}
-      </View>
-      <ProgressBar progress={ratio} accessibilityLabel={de.run.goalBar} />
+      ) : null}
     </View>
   );
 }
@@ -512,8 +530,7 @@ const styles = StyleSheet.create({
   noticeCard: {
     gap: spacing.sm,
   },
-  goal: { gap: spacing.xs, alignSelf: 'stretch', marginTop: spacing.xs },
-  goalRow: { flexDirection: 'row', justifyContent: 'space-between' },
+  goal: { gap: spacing.xs, alignSelf: 'stretch' },
   headerNumbers: {
     gap: spacing.xxs,
   },

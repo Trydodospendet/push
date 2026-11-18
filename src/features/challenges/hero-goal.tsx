@@ -1,24 +1,19 @@
 import { useRouter } from 'expo-router';
 import { Pressable, StyleSheet, View } from 'react-native';
 
-import { Button, ProgressBar, Text } from '@/components';
-import { SleepyPushy } from '@/features/coach/sleepy-pushy';
-import { FurNumber } from '@/features/fur/fur-number';
+import { Button, Text } from '@/components';
+import { GoalRing } from '@/features/challenges/goal-ring';
 import { challengeDays, isGoalType } from '@/features/challenges/format';
 import type { Challenge } from '@/features/challenges/types';
-import { useGps } from '@/features/gps/gps-provider';
 import { progressNumbers, progressRatio, remainingLabel } from '@/features/health/progress';
 import { de } from '@/i18n/de';
 import { formatDayLabel } from '@/lib/dates';
 import { formatAmount } from '@/lib/money';
 import { opacity, spacing } from '@/theme';
 
-const NUMBER_WIDTH = 300;
-const PUSHY_HEIGHT = 168;
-
 /**
- * The one active goal on Home: label, Pushy, the one big fur number, a slim bar with the
- * time left and the pledge, and the main button. Tapping the number opens the details.
+ * The one active goal on Home: label, the goal bar with the ring and the fur number below it,
+ * the time left and the pledge, and the main button. Tapping the ring opens the details.
  */
 export function HeroGoal({
   challenge,
@@ -37,7 +32,6 @@ export function HeroGoal({
   mainLoading?: boolean;
 }) {
   const router = useRouter();
-  const { recorder } = useGps();
   if (!isGoalType(challenge.goal_type)) {
     return null;
   }
@@ -52,14 +46,12 @@ export function HeroGoal({
         ? remainingLabel(new Date(challenge.ends_at), now)
         : de.progress.startsOn(formatDayLabel(firstDay));
   const unit = challenge.goal_type.startsWith('run') ? 'km' : numbers.unit;
-  const pose = ratio >= 1 ? 'cheer' : recorder.status === 'recording' ? 'run' : 'sit';
 
   return (
     <View style={styles.root}>
       <Text variant="label" color="textSecondary" align="center" numberOfLines={1}>
         {`${de.home.label} · ${challenge.title}`}
       </Text>
-      <SleepyPushy pose={pose} height={PUSHY_HEIGHT} />
       <Pressable
         accessibilityRole="button"
         accessibilityLabel={challenge.title}
@@ -67,19 +59,15 @@ export function HeroGoal({
         onPress={() => router.push({ pathname: '/challenge/[id]', params: { id: challenge.id } })}
         style={({ pressed }) => [styles.numberBlock, pressed && styles.pressed]}
       >
-        <FurNumber
+        <GoalRing
+          ratio={ratio}
           value={numbers.current}
-          height={88}
-          maxWidth={NUMBER_WIDTH}
-          label={numbers.spoken}
+          caption={`${de.progress.of(numbers.goal)} ${unit}`}
+          spoken={numbers.spoken}
+          barLabel={de.progress.barLabel}
         />
-        <Text color="textSecondary">{`${de.progress.of(numbers.goal)} ${unit}`}</Text>
       </Pressable>
       <View style={styles.bar}>
-        <ProgressBar
-          progress={ratio}
-          accessibilityLabel={`${de.progress.barLabel}: ${numbers.spoken}`}
-        />
         <View style={styles.meta}>
           <Text variant="label" color="textSecondary">
             {status}
@@ -96,7 +84,7 @@ export function HeroGoal({
 
 const styles = StyleSheet.create({
   root: { gap: spacing.md, alignItems: 'stretch' },
-  numberBlock: { alignItems: 'center', gap: spacing.xs },
+  numberBlock: { alignItems: 'stretch' },
   bar: { gap: spacing.xs },
   meta: { flexDirection: 'row', justifyContent: 'space-between' },
   pressed: { opacity: opacity.pressed },

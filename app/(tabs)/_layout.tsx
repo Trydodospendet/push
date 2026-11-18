@@ -4,6 +4,7 @@ import { Tabs } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { Icon, type IconName } from '@/components';
+import { FloatingPushy } from '@/features/coach/floating-pushy';
 import { WinCelebration } from '@/features/stats/win-celebration';
 import { de } from '@/i18n/de';
 import { colors, layout, typography } from '@/theme';
@@ -71,6 +72,7 @@ export default function TabsLayout() {
           }}
         />
       </Tabs>
+      <FloatingPushy />
       <WinCelebration />
     </ScreenHeaderContext.Provider>
   );

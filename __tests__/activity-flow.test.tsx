@@ -22,6 +22,49 @@ const { mockAdapter } = jest.requireMock<typeof import('../src/features/health/_
 );
 
 const USER_ID = 'user-1';
+const DAY = 24 * 60 * 60 * 1000;
+
+const runGoal = {
+  id: 'goal-1',
+  creator_id: USER_ID,
+  title: '3 km laufen · heute',
+  goal_type: 'run_total',
+  target_value: 3000,
+  stake_cents: 1000,
+  fee_bps: 0,
+  timezone: 'Europe/Berlin',
+  starts_at: new Date(Date.now() - DAY).toISOString(),
+  ends_at: new Date(Date.now() + DAY).toISOString(),
+  sync_grace_hours: 24,
+  min_participants: 1,
+  max_participants: 1,
+  visibility: 'private',
+  mode: 'goal',
+  invite_code: 'ABC234',
+  status: 'active',
+  participant_count: 1,
+  pot_cents: 1000,
+  settled_at: null,
+  created_at: '2026-11-12T09:00:00Z',
+};
+
+function seedRunGoal() {
+  mockDb.set({
+    challenges: [runGoal],
+    challenge_participants: [
+      {
+        challenge_id: runGoal.id,
+        user_id: USER_ID,
+        result: 'pending',
+        stake_cents: runGoal.stake_cents,
+        payout_cents: null,
+        joined_at: '2026-11-12T11:00:00Z',
+        profile: { display_name: 'Anna Lauf' },
+        challenge: runGoal,
+      },
+    ],
+  });
+}
 
 const profile = {
   id: USER_ID,
@@ -58,15 +101,25 @@ describe('activity tab', () => {
     'opens the recorder from %s instead of a nonexistent run detail',
     async (initialUrl, label) => {
       const user = userEvent.setup();
+      seedRunGoal();
       await renderRouter('./app', { initialUrl });
-      if (initialUrl === '/') {
-        await user.press(await screen.findByRole('button', { name: 'Mehr' }));
-      }
       await user.press(await screen.findByRole('button', { name: label }));
       expect(await screen.findByRole('button', { name: 'Lauf starten' })).toBeOnTheScreen();
       expect(screen).toHavePathname('/run');
     },
   );
+
+  it('asks for a goal first when there is no run goal', async () => {
+    const user = userEvent.setup();
+    mockDb.set({ challenges: [], challenge_participants: [] });
+    await renderRouter('./app', { initialUrl: '/activity' });
+    await user.press(await screen.findByRole('button', { name: 'Lauf aufzeichnen' }));
+    expect(
+      await screen.findByText('Setz dir zuerst ein Ziel – dann zählt dein Lauf.'),
+    ).toBeOnTheScreen();
+    expect(screen).toHavePathname('/activity');
+    expect(screen.getByRole('button', { name: 'Ziel setzen' })).toBeOnTheScreen();
+  });
 
   it('opens from the tab bar and explains the empty state', async () => {
     const user = userEvent.setup();
