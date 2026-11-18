@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { StyleSheet } from 'react-native';
 
-import { Card, ChipGroup, ErrorState, LoadingState } from '@/components';
+import { Button, Card, ChipGroup, ErrorState, LoadingState, Text } from '@/components';
 import { de } from '@/i18n/de';
 import { spacing } from '@/theme';
 
@@ -9,7 +9,7 @@ import { usePeriodStats } from './analytics-api';
 import { PeriodChart } from './charts';
 
 /** Distance per week or month with a switch; the numbers come from the server. */
-export function PeriodCard({ userId }: { userId: string }) {
+export function PeriodCard({ userId, onStart }: { userId: string; onStart: () => void }) {
   const [unit, setUnit] = useState<'week' | 'month'>('week');
   const stats = usePeriodStats(userId, unit);
 
@@ -32,6 +32,11 @@ export function PeriodCard({ userId }: { userId: string }) {
           onRetry={() => stats.refetch()}
           retrying={stats.isFetching}
         />
+      ) : stats.data.every((stat) => stat.runs === 0) ? (
+        <>
+          <Text color="textSecondary">{de.runStats.noRuns}</Text>
+          <Button label={de.runStats.noRunsButton} onPress={onStart} />
+        </>
       ) : (
         <PeriodChart stats={stats.data} unit={unit} />
       )}

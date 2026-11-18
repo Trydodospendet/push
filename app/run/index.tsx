@@ -20,7 +20,7 @@ import { useMyRecords } from '@/features/gps/analytics-api';
 import { useGpsRunRoute, useMyGpsRuns } from '@/features/gps/api';
 import { maybeAskForReview } from '@/features/review/review';
 import { formatClock, formatKm, formatPace } from '@/features/gps/format';
-import { liveSplits, paceSecondsPerKm } from '@/features/gps/geo';
+import { liveSpeedKmh, liveSplits, paceSecondsPerKm } from '@/features/gps/geo';
 import { useGps, type StartOutcome } from '@/features/gps/gps-provider';
 import { PeriodCard } from '@/features/gps/period-card';
 import { liveStats } from '@/features/gps/recorder';
@@ -28,13 +28,15 @@ import { RecordsCard } from '@/features/gps/records-card';
 import { RouteMap } from '@/features/gps/route-map';
 import { RunList } from '@/features/gps/run-list';
 import { useClock } from '@/features/gps/use-clock';
+import { useCurrentPosition } from '@/features/gps/use-current-position';
 import { useKilometerAnnouncements } from '@/features/gps/voice';
 import { hapticSelect, hapticSuccess } from '@/features/preferences/haptics';
 import { usePreferences } from '@/features/preferences/store';
-import { Pushy } from '@/features/coach/pushy';
 import { FurNumber } from '@/features/fur/fur-number';
 import { de } from '@/i18n/de';
 import { colors, layout, radius, spacing } from '@/theme';
+
+const IDLE_ZOOM = 15;
 
 const speedFormat = new Intl.NumberFormat('de-DE', { maximumFractionDigits: 1 });
 
@@ -73,11 +75,14 @@ function LastRunBackground() {
   const runs = useMyGpsRuns(session.user.id);
   const latest = runs.data?.find((run) => run.hasRoute);
   const route = useGpsRunRoute(latest?.id ?? '', latest !== undefined);
+  const position = useCurrentPosition();
   const { height } = useWindowDimensions();
   return (
     <RouteMap
-      points={route.data ?? []}
-      mode="fit"
+      points={position ? [] : (route.data ?? [])}
+      mode={position ? 'follow' : 'fit'}
+      position={position}
+      zoom={IDLE_ZOOM}
       animate
       bottomInset={Math.round(height * 0.55)}
     />
@@ -140,6 +145,13 @@ function IdleRun({ timezone }: { timezone: string }) {
   const [starting, setStarting] = useState(false);
   const [outcome, setOutcome] = useState<StartOutcome | null>(null);
   const message = outcome === null ? null : startMessage(outcome);
+  const startRun = () => {
+    setStarting(true);
+    void gps
+      .start()
+      .then(setOutcome)
+      .finally(() => setStarting(false));
+  };
 
   return (
     <ScrollView
@@ -159,22 +171,14 @@ function IdleRun({ timezone }: { timezone: string }) {
         />
       }
     >
-      <View style={[styles.pushyStage, { paddingTop: insets.top + 56 }]}>
-        <Pushy pose="run" scale={1.6} />
-      </View>
+      <View style={styles.mapStage} />
       <View style={[styles.sheet, { paddingBottom: spacing.xl + insets.bottom }]}>
         <FadeIn style={styles.sheetSection}>
           <Button
             label={de.run.start}
             loading={starting}
             disabled={gps.recovered !== null}
-            onPress={() => {
-              setStarting(true);
-              void gps
-                .start()
-                .then(setOutcome)
-                .finally(() => setStarting(false));
-            }}
+            onPress={startRun}
           />
           {message ? (
             <Text color="danger" accessibilityRole="alert">
@@ -202,7 +206,7 @@ function IdleRun({ timezone }: { timezone: string }) {
           </Pressable>
         </FadeIn>
         <FadeIn delayMs={100}>
-          <PeriodCard userId={session.user.id} />
+          <PeriodCard userId={session.user.id} onStart={startRun} />
         </FadeIn>
         <FadeIn delayMs={160}>
           <RecordsCard userId={session.user.id} />
@@ -246,8 +250,8 @@ function ActiveRun({ onInset }: { onInset: (height: number) => void }) {
   const sinceLast = !paused && hasCurrentFix ? Math.min(10, Math.max(0, (now - last.t) / 1000)) : 0;
   const elapsed = stats.elapsedS + sinceLast;
   const pace = paceSecondsPerKm(stats.distanceM, stats.elapsedS);
-  const averageSpeed =
-    stats.elapsedS > 0 ? speedFormat.format((stats.distanceM / stats.elapsedS) * 3.6) : '–';
+  const currentSpeed = paused ? 0 : liveSpeedKmh(recorder.points, now);
+  const speedText = currentSpeed === null ? '–' : speedFormat.format(currentSpeed);
   const { voice } = usePreferences();
   useKilometerAnnouncements(recorder.points, stats.elapsedS, voice && !paused);
 
@@ -279,7 +283,7 @@ function ActiveRun({ onInset }: { onInset: (height: number) => void }) {
             <View style={styles.statCard}>
               <Stat label={de.run.statTime} value={formatClock(elapsed)} />
               <Stat label={de.run.statPace} value={formatPace(pace)} divided />
-              <Stat label={de.run.statSpeed} value={averageSpeed} divided />
+              <Stat label={de.run.statSpeed} value={speedText} divided />
             </View>
           </View>
         }
@@ -464,10 +468,8 @@ const styles = StyleSheet.create({
   headerNumbers: {
     gap: spacing.xxs,
   },
-  pushyStage: {
-    alignItems: 'center',
+  mapStage: {
     height: 300,
-    justifyContent: 'flex-end',
   },
   statCard: {
     flexDirection: 'row',

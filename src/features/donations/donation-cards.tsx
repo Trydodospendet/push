@@ -13,7 +13,7 @@ import { de } from '@/i18n/de';
 import { formatDateTime } from '@/lib/dates';
 import { toUserMessage } from '@/lib/errors';
 import { formatAmount } from '@/lib/money';
-import { colors, layout, radius, spacing } from '@/theme';
+import { colors, fontFamily, layout, radius, spacing } from '@/theme';
 
 import {
   useCommunityDonations,
@@ -136,11 +136,11 @@ export function CommunityCounter() {
       accessibilityLabel={`${de.donations.communityLabel}: ${de.donations.communityValue(amount)}`}
     >
       <Icon name="heart-outline" color="accent" />
-      <Text variant="label" color="textSecondary">
-        {de.donations.communityLabel}
-      </Text>
-      <Text variant="heading" color="accent">
+      <Text style={styles.communityValue} numberOfLines={1}>
         {de.donations.communityValue(amount)}
+      </Text>
+      <Text variant="caption" color="textSecondary">
+        {de.donations.communityLabel}
       </Text>
     </View>
   );
@@ -227,9 +227,15 @@ const styles = StyleSheet.create({
   grow: {
     flex: 1,
   },
+  communityValue: {
+    fontFamily: fontFamily.extraBold,
+    fontSize: 22,
+    lineHeight: 28,
+    color: colors.text,
+  },
   community: {
     flex: 1,
-    gap: spacing.xs,
+    gap: spacing.sm,
     padding: spacing.md,
     borderRadius: radius.card,
     borderWidth: layout.borderWidth,

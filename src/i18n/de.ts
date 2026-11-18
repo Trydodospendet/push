@@ -536,6 +536,8 @@ export const de = {
   },
   stats: {
     streak: (days: number) => (days === 1 ? '1 Tag in Folge' : `${days} Tage in Folge`),
+    streakValue: (days: number) => (days === 1 ? '1 Tag' : `${days} Tage`),
+    streakCaption: 'in Folge',
     streakNone: 'Starte heute deine Serie',
     streakHint: 'Ein Tag zählt mit einem gültigen Lauf oder mindestens 8.000 Schritten.',
     flameLines: ['Heiß!', 'Weiter so!', 'Nicht ausgehen lassen!', 'Feuer frei!'],
@@ -1221,6 +1223,8 @@ export const de = {
     ],
   },
   runStats: {
+    noRuns: 'Noch keine Läufe – starte deinen ersten.',
+    noRunsButton: 'Ersten Lauf starten',
     splits: 'KILOMETER-ZEITEN',
     noSplits: 'Noch keine volle Kilometer-Zeit – dafür war der Lauf zu kurz.',
     splitSpoken: (label: string, pace: string) => `Kilometer ${label}: ${pace} pro Kilometer`,
@@ -1275,7 +1279,6 @@ export const de = {
     secretTitle: '???',
     secretDescription: 'Ein geheimes Abzeichen. Finde heraus, wie du es bekommst.',
     secretUnlocked: 'Geheimes Abzeichen entdeckt!',
-    logoHint: 'PUSH.',
     newBadge: 'NEUES ABZEICHEN',
     close: 'Weiter',
     accessibility: (title: string, description: string) =>
@@ -1347,7 +1350,7 @@ export const de = {
     overviewEmpty:
       'Noch keine Spende. Sie erscheint hier, sobald wir ein Pfand von dir weitergespendet haben.',
     total: 'Insgesamt von uns weitergespendet',
-    communityLabel: 'GEMEINSAM GESPENDET DIESEN MONAT',
+    communityLabel: 'gespendet diesen Monat',
     communityValue: (amount: string) => `${amount} Credits`,
   },
   reminders: {

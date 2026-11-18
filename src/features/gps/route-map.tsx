@@ -20,6 +20,10 @@ type RouteMapProps = {
   bottomInset?: number;
   /** Build the line up from start to end when the route appears. */
   animate?: boolean;
+  /** Show this position (lime dot with a glow ring) and centre on it, e.g. before a run. */
+  position?: MapPoint | null;
+  /** Zoom level when centred on a position. */
+  zoom?: number;
 };
 
 const FOLLOW_ZOOM = 16;
@@ -126,23 +130,26 @@ export function RouteMap({
   height,
   bottomInset = 0,
   animate = false,
+  position = null,
+  zoom = FOLLOW_ZOOM,
 }: RouteMapProps) {
   const shown = useRevealCount(points.length, animate && mode === 'fit');
   const visible = points.slice(0, shown);
   const last = points[points.length - 1];
   const hasRoute = points.length >= 2;
-  const showPosition = mode === 'follow' && last !== undefined;
+  const marker = position ?? (mode === 'follow' ? last : undefined);
+  const showPosition = marker !== undefined;
   const pulse = usePulse(showPosition);
   const padding = { top: 96, right: 32, bottom: Math.max(32, bottomInset + 24), left: 32 };
 
   const body = (
     <Map mapStyle={PUSH_MAP_STYLE} style={styles.map} compass={false} logo={false}>
-      {mode === 'fit' && hasRoute ? (
+      {mode === 'fit' && hasRoute && position === null ? (
         <Camera bounds={toBounds(points)} padding={padding} />
       ) : (
         <Camera
-          center={last ? [last.lng, last.lat] : FALLBACK_CENTER}
-          zoom={last ? FOLLOW_ZOOM : 5}
+          center={marker ? [marker.lng, marker.lat] : FALLBACK_CENTER}
+          zoom={marker ? zoom : 5}
           padding={{ top: 0, right: 0, bottom: bottomInset, left: 0 }}
         />
       )}
@@ -166,7 +173,7 @@ export function RouteMap({
         />
       </GeoJSONSource>
       {showPosition ? (
-        <GeoJSONSource id="position" data={toPosition(last)}>
+        <GeoJSONSource id="position" data={toPosition(marker)}>
           <Layer
             id="position-pulse"
             type="circle"

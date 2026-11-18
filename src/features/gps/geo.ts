@@ -152,3 +152,40 @@ export function paceSecondsPerKm(distanceM: number, seconds: number): number | n
   }
   return (seconds / distanceM) * 1000;
 }
+
+export const SPEED_WINDOW_MS = 10_000;
+export const MIN_MOVING_KMH = 1;
+
+/**
+ * Current speed in km/h as a moving average over the last ~10 seconds of the current segment.
+ * Null when the signal is too weak to say (fewer than two accurate fixes in the window);
+ * 0 below 1 km/h, so standing still does not flicker.
+ */
+export function liveSpeedKmh(points: readonly TrackPoint[], nowMs: number): number | null {
+  const last = points.at(-1);
+  if (!last || nowMs - last.t > SPEED_WINDOW_MS) {
+    return null;
+  }
+  const window = points.filter(
+    (point) =>
+      point.segment === last.segment &&
+      point.t >= last.t - SPEED_WINDOW_MS &&
+      point.accuracy <= MAX_ACCURACY_M,
+  );
+  const first = window[0];
+  if (!first || window.length < 2 || last.accuracy > MAX_ACCURACY_M) {
+    return null;
+  }
+  const seconds = (last.t - first.t) / 1000;
+  if (seconds <= 0) {
+    return null;
+  }
+  let distance = 0;
+  for (let index = 1; index < window.length; index += 1) {
+    const from = window[index - 1];
+    const to = window[index];
+    distance += haversineM(from.lat, from.lng, to.lat, to.lng);
+  }
+  const kmh = (distance / seconds) * 3.6;
+  return kmh < MIN_MOVING_KMH ? 0 : kmh;
+}

@@ -94,12 +94,14 @@ export default function ProfileScreen() {
       ) : (
         <View style={styles.details}>
           <View style={styles.identity}>
-            <Avatar
-              name={profile.data.display_name}
-              size="lg"
-              highlight
-              uri={avatar.data ?? null}
-            />
+            <LogoEgg>
+              <Avatar
+                name={profile.data.display_name}
+                size="lg"
+                highlight
+                uri={avatar.data ?? null}
+              />
+            </LogoEgg>
             <View style={styles.name}>
               <Text variant="title" accessibilityRole="header" numberOfLines={2}>
                 {profile.data.display_name}
@@ -149,7 +151,6 @@ export default function ProfileScreen() {
           loading={signOut.isPending}
         />
       </Card>
-      <LogoEgg />
     </Screen>
   );
 }

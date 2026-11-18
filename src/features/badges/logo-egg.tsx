@@ -1,12 +1,10 @@
 import { useRef } from 'react';
-import { Animated, Pressable, StyleSheet, useAnimatedValue } from 'react-native';
+import { Animated, Pressable, useAnimatedValue } from 'react-native';
 
-import { Text } from '@/components';
 import { useSession } from '@/features/auth/auth-provider';
 import { hapticSelect, hapticSuccess } from '@/features/preferences/haptics';
 import { useMotionEnabled } from '@/features/preferences/motion';
-import { de } from '@/i18n/de';
-import { spacing } from '@/theme';
+import type { ReactNode } from 'react';
 
 import { useClaimLogoBadge } from './api';
 
@@ -14,10 +12,10 @@ const TAPS_NEEDED = 7;
 const WINDOW_MS = 4000;
 
 /**
- * The wordmark at the bottom of the profile. Tapping it seven times within four seconds is a
- * secret: the logo hops and a hidden badge is unlocked.
+ * Wraps the profile picture. Tapping it seven times within four seconds is a secret: it hops
+ * and a hidden badge is unlocked.
  */
-export function LogoEgg() {
+export function LogoEgg({ children }: { children: ReactNode }) {
   const userId = useSession().user.id;
   const claim = useClaimLogoBadge(userId);
   const motionOn = useMotionEnabled();
@@ -43,27 +41,8 @@ export function LogoEgg() {
   };
 
   return (
-    <Pressable
-      onPress={onPress}
-      accessibilityRole="text"
-      accessibilityLabel={de.badges.logoHint}
-      style={styles.root}
-    >
-      <Animated.View style={{ transform: [{ translateY: hop }] }}>
-        <Text variant="heading" color="textMuted" align="center">
-          {de.welcome.logo}
-        </Text>
-      </Animated.View>
+    <Pressable onPress={onPress} accessible={false}>
+      <Animated.View style={{ transform: [{ translateY: hop }] }}>{children}</Animated.View>
     </Pressable>
   );
 }
-
-const styles = StyleSheet.create({
-  root: {
-    alignSelf: 'center',
-    minHeight: 44,
-    justifyContent: 'center',
-    paddingVertical: spacing.sm,
-    paddingHorizontal: spacing.lg,
-  },
-});

@@ -134,11 +134,6 @@ export default function HomeScreen() {
           <QuickGoalCards />
         </View>
       )}
-      {health.connected && primary ? (
-        <Text variant="caption" color="textMuted" align="center">
-          {lastSync}
-        </Text>
-      ) : null}
       <View style={styles.tiles}>
         <StreakFlame userId={session.user.id} />
         <CommunityCounter />
@@ -160,6 +155,11 @@ export default function HomeScreen() {
 
       {more ? (
         <View style={styles.moreBody}>
+          {health.connected && primary ? (
+            <Text variant="caption" color="textMuted">
+              {lastSync}
+            </Text>
+          ) : null}
           {primary ? (
             <>
               <Text variant="label" color="textSecondary" accessibilityRole="header">

@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Image, StyleSheet, View } from 'react-native';
 
 import { initials } from '@/lib/initials';
@@ -19,6 +20,7 @@ const textVariant = { sm: 'caption', md: 'body', lg: 'title', xl: 'display' } as
 /** Initials in a circle. Decorative: the name is always shown next to it. */
 export function Avatar({ name, size = 'md', highlight = false, uri = null }: AvatarProps) {
   const dimension = layout.avatar[size];
+  const [failed, setFailed] = useState(false);
   return (
     <View
       accessibilityElementsHidden
@@ -29,8 +31,12 @@ export function Avatar({ name, size = 'md', highlight = false, uri = null }: Ava
         highlight && styles.highlight,
       ]}
     >
-      {uri ? (
-        <Image source={{ uri }} style={{ width: dimension, height: dimension }} />
+      {uri && !failed ? (
+        <Image
+          source={{ uri }}
+          onError={() => setFailed(true)}
+          style={{ width: dimension, height: dimension }}
+        />
       ) : (
         <Text variant={textVariant[size]} color="text">
           {initials(name)}
